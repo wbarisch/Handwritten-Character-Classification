@@ -1,0 +1,14 @@
+{
+
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+
+	"features": {
+		"ghcr.io/nordcominc/devcontainer-features/android-sdk:1": {},
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers/features/powershell:1": {},
+		"ghcr.io/mikaello/devcontainer-features/kotlinc:1": {}
+	}
+
+}
