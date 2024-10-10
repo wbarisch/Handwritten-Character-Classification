@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/devcontainers/base:jammy as devcontainer
 
 ARG PYTHON_VERSION=3.11
-ARG JAVA_VERSION=openjdk-11-jdk
+ARG JAVA_VERSION=openjdk-17-jdk
 
 # Allow automated installation of packages
 ENV DEBIAN_FRONTEND=noninteractive
@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y \
     python${PYTHON_VERSION} \
     python${PYTHON_VERSION}.dev \
     python${PYTHON_VERSION}-distutils \
-    python${PYTHON_VERSION}.pip
+    python3-pip
 
 # Install Miniforge (Mamba)
 RUN curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && \
@@ -39,12 +39,13 @@ rm Miniforge3-Linux-x86_64.sh
 # Add Mamba to the PATH
 ENV PATH="/opt/conda/bin:$PATH"
 
-# Create the dl4cv environment using Mamba and activate it
-RUN mamba init bash \
-    && mamba create -n dl4cv python=${PYTHON_VERSION} -y \
-    && echo "source activate dl4cv" >> ~/.bashrc
+# Initialize Mamba
+RUN mamba init bash
 
-# Install Python libraries for machine learning
-RUN mamba install -n dl4cv -y \
-    pytorch torchvision pytorch-cuda=11.8 -c pytorch -c nvidia \
-    matplotlib seaborn pandas scikit-learn mlxtend nltk jupyterlab tqdm ipywidgets python-graphviz
+# Create and activate the dl4cv environment
+RUN mamba create -n dl4cv python=${PYTHON_VERSION} -y
+
+# Activate the environment and install libraries
+RUN /bin/bash -c "source activate dl4cv && \
+    mamba install pytorch torchvision pytorch-cuda=11.8 -c pytorch -c nvidia && \
+    mamba install matplotlib seaborn pandas scikit-learn mlxtend nltk jupyterlab tqdm ipywidgets python-graphviz"
