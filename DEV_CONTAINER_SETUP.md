@@ -3,8 +3,21 @@
 ## Introduction
 This document contains the steps required to set up the development container for this project.
 
-## Setting up Dev Environment in Windows with VS Code
+## Prerequisites
+- Docker installed on your machine
+- Dev Containers Extension (if using VS Code)
+- Docker Extension (if using VS Code)
 
+## Features
+- Nvidia-cuda
+- Powershell
+- Python
+- SSH
+- Conda and Miniforge
+- Kotlin
+TODO: Add Onnx to dev container. Also get list of versions from container
+
+## Setting up Dev Environment in Windows with VS Code
 1. Install these extensions in VS Code: "Dev Containers" and "Docker".
 2. After installing Docker extension, a pop-up to install "WSL" will be on the screen. Click yes on this.
 4. Install "Docker" from "https://docs.docker.com/desktop/install/windows-install/"
@@ -24,5 +37,16 @@ Note: The image when loaded in docker after unpacking it is 35GB in size.
 ## Setting up Dev Environment in Windows without VS Code
 
 1. TODO. There is a way to setup the docker image in the "Docker" application in Windows, but haven't got around to trying it yet
+
+## Creation Steps of Initial Dev Container
+1. In VSCode press Ctrl+Shift+P and type in "Add Dev Container" and press enter
+2. Click on "Add to Workspace"
+3. Select "Ubuntu" devcontainer and then select "jammy"
+4. Select needed features that are required in this environment
+5. Create a "Dockerfile" within the newly created .devcontainer folder
+6. First line is where the image for this container will be download from
+7. TODO: Finish steps for creation of Dev Container
+
+
 
 
