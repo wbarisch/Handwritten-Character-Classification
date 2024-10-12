@@ -16,6 +16,10 @@ This document contains the steps required to set up the development container fo
 10. To verify that the docker image has loaded, input this command in terminal: "docker images". It show should the docker image, its "TAG", "IMAGE ID" (make note of your image ID for step 11) and so forth
 11. To run the docker image, use this command: "docker run -it <image-name> /bin/bash". For me the <image-name> is: "e0b1594d3c78"
 12. Now you are inside the dev container
+13. To leave the container from the linux terminal, type "exit"
+14. <Optional> The container is now shut down, however "WSL" will keep running in the background and use a 2GB of memory. To shutdown "WSL" as well, type "wsl --shutdown"
+
+Note: The image when loaded in docker after unpacking it is 35GB in size.
 
 ## Setting up Dev Environment in Windows without VS Code
 
