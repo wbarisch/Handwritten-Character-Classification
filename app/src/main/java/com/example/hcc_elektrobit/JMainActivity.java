@@ -13,6 +13,7 @@ public class JMainActivity extends AppCompatActivity {
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
+    private CNNonnxModel model;
 
     boolean noActivity; // :true if no drawing activity on the canvas
 
@@ -24,6 +25,8 @@ public class JMainActivity extends AppCompatActivity {
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
+
+        model = new CNNonnxModel();
 
         noActivity = true; // initialize as inactive
 
@@ -89,6 +92,8 @@ public class JMainActivity extends AppCompatActivity {
 
             //Display the image for testing
             bitmapDisplay.setImageBitmap(bitmap);
+
+            model.classify(bitmap);
         });
 
         drawingCanvas.clearCanvas();
