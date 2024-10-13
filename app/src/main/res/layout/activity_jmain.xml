@@ -24,7 +24,6 @@
         android:layout_margin="10dp"
         android:text="Recongnized as:"
         android:textSize="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/recognized_char"
         app:layout_constraintTop_toBottomOf="@id/drawing_canvas"/>
@@ -38,7 +37,6 @@
         android:text="_"
         android:textSize="30dp"
         android:textColor="#FF0000"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/recognized_as"
         app:layout_constraintTop_toBottomOf="@id/drawing_canvas"/>
 
