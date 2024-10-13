@@ -39,5 +39,12 @@
         android:textColor="#FF0000"
         app:layout_constraintLeft_toRightOf="@+id/recognized_as"
         app:layout_constraintTop_toBottomOf="@id/drawing_canvas"/>
+    <ImageView
+        android:id="@+id/bitmap_display"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:contentDescription="Displayed Bitmap"
+        app:layout_constraintBottom_toBottomOf="@id/drawing_canvas"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

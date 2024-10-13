@@ -3,6 +3,7 @@ package com.example.hcc_elektrobit;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.MotionEvent;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +12,7 @@ public class JMainActivity extends AppCompatActivity {
 
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
+    private ImageView bitmapDisplay;
 
     boolean noActivity; // :true if no drawing activity on the canvas
 
@@ -21,6 +23,7 @@ public class JMainActivity extends AppCompatActivity {
 
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
+        bitmapDisplay = findViewById(R.id.bitmap_display);
 
         noActivity = true; // initialize as inactive
 
@@ -83,6 +86,9 @@ public class JMainActivity extends AppCompatActivity {
             // Display the dimensions in the recognizedCharTextView
             String dimensionsText = "Bitmap Dimensions: " + width + "x" + height;
             recognizedCharTextView.setText(dimensionsText);
+
+            //Display the image for testing
+            bitmapDisplay.setImageBitmap(bitmap);
         });
 
         drawingCanvas.clearCanvas();
