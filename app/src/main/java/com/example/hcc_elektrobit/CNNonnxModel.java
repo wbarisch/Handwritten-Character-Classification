@@ -1,12 +1,22 @@
 package com.example.hcc_elektrobit;
 
+import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.util.Log;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
@@ -14,19 +24,124 @@ import ai.onnxruntime.OrtSession;
 public class CNNonnxModel {
     private OrtEnvironment env;
     private OrtSession session;
-    String modelPath = "";
+    private Context context;
+    private static final String TAG = "CNNonnxModel";
 
-    public CNNonnxModel() {
+    public CNNonnxModel(Context context) {
+        this.context = context;
         try {
-            // Create the environment and session for ONNX model
+            String modelPath = copyModelToCache("mymodelcnn.onnx");
             env = OrtEnvironment.getEnvironment();
             session = env.createSession(modelPath, new OrtSession.SessionOptions());
+            Log.e(TAG, "ONNX session created");
+            Log.e("pog", "session created");
         } catch (OrtException e) {
-            e.printStackTrace();
+            Log.e("CNNonnxModel", "Error creating ONNX session", e);
+        } catch (IOException e) {
+            Log.e("CNNonnxModel", "Error reading ONNX model from assets", e);
         }
     }
 
-    public float[] classify(Bitmap bitmap) {
-        return new float[0];
+    private String copyModelToCache(String modelFileName) throws IOException {
+        // Get the cache directory
+        File cacheDir = context.getCacheDir();
+        File modelFile = new File(cacheDir, modelFileName);
+
+        // If the model file doesn't exist in the cache, copy it from assets
+        if (!modelFile.exists()) {
+            try (InputStream is = context.getAssets().open(modelFileName);
+                 FileOutputStream fos = new FileOutputStream(modelFile)) {
+                byte[] buffer = new byte[1024];
+                int length;
+                while ((length = is.read(buffer)) > 0) {
+                    fos.write(buffer, 0, length);
+                }
+            }
+        }
+        return modelFile.getAbsolutePath(); // Return the absolute path of the model file
+    }
+    public float[][] classify(Bitmap bitmap) {
+        try {
+
+            float[] inputTensorData = preprocessBitmap(bitmap);
+
+            OnnxTensor inputTensor = OnnxTensor.createTensor(env, FloatBuffer.wrap(inputTensorData), new long[]{1, 1, 28, 28});
+
+            Map<String, OnnxTensor> inputMap = new HashMap<>();
+            inputMap.put(session.getInputNames().iterator().next(), inputTensor);
+
+            OrtSession.Result result = session.run(inputMap);
+            float[][] output = (float[][]) result.get(0).getValue();
+
+            Log.i(TAG, "Output Tensor Shape: [" + output.length + ", " + output[0].length + "]");
+
+            Log.i(TAG, "Output Tensor Values: " + java.util.Arrays.toString(output[0]));
+
+
+            //float [] output = {1.0f,2.9f,3.0f};
+            // Return the classification result
+            return output;
+
+        } catch (OrtException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public int classifyAndReturnDigit(Bitmap bitmap){
+        float[][] result = this.classify(bitmap);
+        //float[] result = {2.0f};
+        return argmax(result[0]);
+
+    }
+    private float[] preprocessBitmap(Bitmap bitmap) {
+
+        //Yassine help
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        float[] data = new float[28 * 28];
+        int index = 0;
+
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                // Get the pixel color (we assume the bitmap is in black-and-white)
+                int pixel = bitmap.getPixel(i, j);
+
+                // Convert to grayscale and normalize to [0, 1]
+                int r = (pixel >> 16) & 0xff;
+                int g = (pixel >> 8) & 0xff;
+                int b = pixel & 0xff;
+
+                // Average RGB values to get grayscale
+                float grayscale = (r + g + b) / 3.0f / 255.0f;
+
+                data[index++] = grayscale;  // Store normalized grayscale pixel
+            }
+        }
+        return data;
+    }
+
+    private int argmax(float[] array) {
+        int maxIndex = 0;
+        for (int i = 1; i < array.length; i++) {
+            if (array[i] > array[maxIndex]) {
+                maxIndex = i;
+            }
+        }
+        return maxIndex;
+    }
+
+    public void close() {
+        try {
+            if (session != null) {
+                session.close();
+            }
+            if (env != null) {
+                env.close();
+            }
+        } catch (OrtException e) {
+            e.printStackTrace();
+        }
     }
 }

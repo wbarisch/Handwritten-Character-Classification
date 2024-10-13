@@ -26,7 +26,7 @@ public class JMainActivity extends AppCompatActivity {
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
 
-        model = new CNNonnxModel();
+        model = new CNNonnxModel(this);
 
         noActivity = true; // initialize as inactive
 
@@ -81,19 +81,16 @@ public class JMainActivity extends AppCompatActivity {
         // - Call CharacterClassifier class
         // - To display the output character, set it to "recognizedCharTextView".
 
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
+        int result = model.classifyAndReturnDigit(bitmap);
 
-        // Display the dimensions in the recognizedCharTextView
         runOnUiThread(() -> {
-            // Display the dimensions in the recognizedCharTextView
-            String dimensionsText = "Bitmap Dimensions: " + width + "x" + height;
-            recognizedCharTextView.setText(dimensionsText);
+
+            recognizedCharTextView.setText(String.valueOf(result));
 
             //Display the image for testing
             bitmapDisplay.setImageBitmap(bitmap);
 
-            model.classify(bitmap);
+
         });
 
         drawingCanvas.clearCanvas();
