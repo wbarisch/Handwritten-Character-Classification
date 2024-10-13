@@ -33,7 +33,6 @@ public class JMainActivity extends AppCompatActivity {
             if (event.getAction() == MotionEvent.ACTION_UP) {
 
                 setTimeOut(); // invoke "classifyCharacter after 1 second of inactivity"
-                classifyCharacter();
             }
 
             return true;
@@ -57,8 +56,7 @@ public class JMainActivity extends AppCompatActivity {
                 }
 
                 if (noActivity){
-                    //Comented out for now cuz of bug
-                    //classifyCharacter();
+                    classifyCharacter();
                 }
 
             }
@@ -81,8 +79,11 @@ public class JMainActivity extends AppCompatActivity {
         int height = bitmap.getHeight();
 
         // Display the dimensions in the recognizedCharTextView
-        String dimensionsText = "B" + width + "x" + height;
-        recognizedCharTextView.setText(dimensionsText);
+        runOnUiThread(() -> {
+            // Display the dimensions in the recognizedCharTextView
+            String dimensionsText = "Bitmap Dimensions: " + width + "x" + height;
+            recognizedCharTextView.setText(dimensionsText);
+        });
 
         drawingCanvas.clearCanvas();
 
