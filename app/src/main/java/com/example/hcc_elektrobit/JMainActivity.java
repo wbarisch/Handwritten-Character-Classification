@@ -26,13 +26,14 @@ public class JMainActivity extends AppCompatActivity {
 
         drawingCanvas.setOnTouchListener((v, event) -> {
 
+
             noActivity = false;
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
 
                 setTimeOut(); // invoke "classifyCharacter after 1 second of inactivity"
-
+                classifyCharacter();
             }
 
             return true;
@@ -56,7 +57,8 @@ public class JMainActivity extends AppCompatActivity {
                 }
 
                 if (noActivity){
-                    classifyCharacter();
+                    //Comented out for now cuz of bug
+                    //classifyCharacter();
                 }
 
             }
@@ -74,6 +76,13 @@ public class JMainActivity extends AppCompatActivity {
         // TO DO:
         // - Call CharacterClassifier class
         // - To display the output character, set it to "recognizedCharTextView".
+
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        // Display the dimensions in the recognizedCharTextView
+        String dimensionsText = "B" + width + "x" + height;
+        recognizedCharTextView.setText(dimensionsText);
 
         drawingCanvas.clearCanvas();
 
