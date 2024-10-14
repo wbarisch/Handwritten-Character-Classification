@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.util.Log;
 
 
@@ -30,7 +31,7 @@ public class CNNonnxModel {
     public CNNonnxModel(Context context) {
         this.context = context;
         try {
-            String modelPath = copyModelToCache("mymodelcnn.onnx");
+            String modelPath = copyModelToCache("cnnModelMnist.onnx");
             env = OrtEnvironment.getEnvironment();
             session = env.createSession(modelPath, new OrtSession.SessionOptions());
             Log.e(TAG, "ONNX session created");
@@ -94,33 +95,43 @@ public class CNNonnxModel {
         return argmax(result[0]);
 
     }
-    private float[] preprocessBitmap(Bitmap bitmap) {
 
-        //Yassine help
+    static public float[] preprocessBitmap(Bitmap bitmap) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
+
+        Matrix matrix = new Matrix();
+        matrix.postRotate(90);
+        matrix.postScale(-1, 1, width / 2f, height / 2f);
+
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
 
         float[] data = new float[28 * 28];
         int index = 0;
 
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                // Get the pixel color (we assume the bitmap is in black-and-white)
-                int pixel = bitmap.getPixel(i, j);
+        //attempt to normalize correctly, i dont think its working right
+        for (int i = 0; i < rotatedBitmap.getWidth(); i++) {
+            for (int j = 0; j < rotatedBitmap.getHeight(); j++) {
+                int pixel = rotatedBitmap.getPixel(i, j);
 
-                // Convert to grayscale and normalize to [0, 1]
+                // Extract RGB components
                 int r = (pixel >> 16) & 0xff;
                 int g = (pixel >> 8) & 0xff;
                 int b = pixel & 0xff;
 
-                // Average RGB values to get grayscale
+                // Compute the grayscale value
                 float grayscale = (r + g + b) / 3.0f / 255.0f;
 
-                data[index++] = grayscale;  // Store normalized grayscale pixel
+                // Adjust grayscale to range between 1.0 and 0.9
+                grayscale = 1.0f - grayscale;
+
+                data[index++] = grayscale;
             }
         }
+
         return data;
     }
+
 
     private int argmax(float[] array) {
         int maxIndex = 0;
