@@ -96,7 +96,7 @@ public class CNNonnxModel {
 
     }
 
-    static public float[] preprocessBitmap(Bitmap bitmap) {
+    public float[] preprocessBitmap(Bitmap bitmap) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
 

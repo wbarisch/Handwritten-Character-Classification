@@ -15,6 +15,7 @@ public class JMainActivity extends AppCompatActivity {
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
     private CNNonnxModel model;
+    private Bitmap bitmap;
 
     boolean noActivity; // :true if no drawing activity on the canvas
 
@@ -76,7 +77,7 @@ public class JMainActivity extends AppCompatActivity {
     // Invoke external CharacterClassifier class from here to start processing the drawing.
     private void classifyCharacter(){
 
-        Bitmap bitmap = drawingCanvas.getBitmap(); // ! The return value invalid currently
+        bitmap = drawingCanvas.getBitmap(); // ! The return value invalid currently
 
         // TO DO:
         // - Call CharacterClassifier class
@@ -84,12 +85,14 @@ public class JMainActivity extends AppCompatActivity {
 
         int result = model.classifyAndReturnDigit(bitmap);
 
+        bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
+
         runOnUiThread(() -> {
 
             recognizedCharTextView.setText(String.valueOf(result));
 
             //Display the image for testing
-            bitmapDisplay.setImageBitmap(createBitmapFromFloatArray(CNNonnxModel.preprocessBitmap(bitmap), 28, 28));
+            bitmapDisplay.setImageBitmap(bitmap);
 
 
         });
@@ -98,7 +101,7 @@ public class JMainActivity extends AppCompatActivity {
 
     }
 
-    public static Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
+    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
         // Ensure that the float array length matches width * height
         if (floatArray.length != width * height) {
             throw new IllegalArgumentException("Float array length must match width * height");
