@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,6 +29,13 @@ public class JMainActivity extends AppCompatActivity {
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
+        Button shareButton = findViewById(R.id.share_button);
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                shareImage(bitmap);
+            }
+        });
 
         model = new CNNonnxModel(this);
 
@@ -134,6 +143,10 @@ public class JMainActivity extends AppCompatActivity {
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
         return bitmap;
+    }
+
+    private void shareImage(Bitmap bitmap) {
+
     }
 
 }
