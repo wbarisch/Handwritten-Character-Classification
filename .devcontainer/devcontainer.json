@@ -1,0 +1,29 @@
+{
+	"build": {
+	  "dockerfile": "Dockerfile"
+	},
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+	"workspaceFolder": "/workspace",
+	"customizations": {
+	  "vscode": {
+		"extensions": [
+		  "ms-python.python",
+		  "ms-toolsai.jupyter"
+		],
+		"settings": {
+		  "terminal.integrated.defaultProfile.linux": "bash",
+		  "terminal.integrated.profiles.linux": {
+			"bash": {
+			  "path": "/bin/bash"
+			}
+		  },
+		  "python.pythonPath": "/opt/conda/envs/dl4cv/bin/python"
+		}
+	  }
+	},
+	"JAVA_HOME": "/usr/lib/jvm/java-17-openjdk-amd64",
+	"CONDA_DEFAULT_ENV": "dl4cv",
+	"CONDA_PREFIX": "/opt/conda/envs/dl4cv",
+	"remoteUser": "root" 
+  }
+  
