@@ -18,7 +18,7 @@ This document provides an overview of the versions of the libraries, utilities, 
 
 ### 1. Base Image
 
-- **Ubuntu Version**: Jammy Jellyfish (22.04.5 LTS) 
+- **Ubuntu Version**: Jammy Jellyfish (22.04.4 LTS) 
 
 ### 2. Programming Languages
 
@@ -36,17 +36,16 @@ This document provides an overview of the versions of the libraries, utilities, 
 ### 4. Build Tools
 
 - **CMake**: Version 3.22.1
-- **Git**: Version 2.46.2
+- **Git**: Version 2.34.1
 
 ### 5. Gradle and Kotlin
 
 - **Gradle**: Version 8.10.2  
-- **Kotlin**: Version 1.9.24
+- **Kotlin**: Version 2.0.21
 
 ### 6. Miniforge (Mamba)
 
 - **Mamba**: Version 1.5.9  
-- **Conda**: Version 24.7.1
 
 ### 7. Machine Learning Libraries
 
