@@ -24,6 +24,6 @@
 	"JAVA_HOME": "/usr/lib/jvm/java-17-openjdk-amd64",
 	"CONDA_DEFAULT_ENV": "dl4cv",
 	"CONDA_PREFIX": "/opt/conda/envs/dl4cv",
+	"runArgs": ["--gpus", "all"],
 	"remoteUser": "root" 
-  }
-  
+}

@@ -1,11 +1,16 @@
-# Ubuntu Jammy Base Image
-FROM mcr.microsoft.com/devcontainers/base:jammy as devcontainer
+# Use an NVIDIA CUDA Base Image with Ubuntu 22.04 (Jammy) and cuDNN support, "devel" version includes development tools
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
 
 ARG PYTHON_VERSION=3.11
 ARG JAVA_VERSION=openjdk-17-jdk
 
 # Allow automated installation of packages
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Add Ubuntu Universe repository and update the apt package index
+RUN apt-get update && apt-get install -y software-properties-common && \
+    add-apt-repository universe && \
+    apt-get update
 
 # Android SDK versions
 ENV ANDROID_SDK_TOOLS_VERSION 7583922
@@ -22,10 +27,16 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     unzip \
-    wget
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
 # Java (OpenJDK 17)
-RUN apt-get install -y ${JAVA_VERSION} \
+# Add the OpenJDK PPA and install OpenJDK 17
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:openjdk-r/ppa && \
+    apt-get update && \
+    apt-get install -y openjdk-17-jdk \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Android SDK command-line tools
@@ -58,6 +69,8 @@ RUN curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download
 # Mamba Added to $PATH
 ENV PATH="/opt/conda/bin:$PATH"
 
+RUN mamba clean --all
+
 # Initialize Conda and create dl4cv environment for root
 RUN conda init bash && \
     bash -c "source /opt/conda/etc/profile.d/conda.sh && mamba create -n dl4cv python=${PYTHON_VERSION} -y"
@@ -66,6 +79,10 @@ RUN conda init bash && \
 RUN bash -c "source /opt/conda/etc/profile.d/conda.sh && conda activate dl4cv && \
     mamba install pytorch=2.4.0 torchvision=0.19.0 pytorch-cuda=12.4 onnx onnxruntime=1.15.1 -c pytorch -c nvidia -c conda-forge && \
     mamba install matplotlib seaborn pandas scikit-learn mlxtend nltk jupyterlab tqdm ipywidgets python-graphviz"
+
+
+# Install zip and unzip utilities for SDKMAN
+RUN apt-get update && apt-get install -y zip unzip
 
 # Install SDKMAN and set up Gradle and Kotlin for root
 RUN curl -s "https://get.sdkman.io" | bash && \
