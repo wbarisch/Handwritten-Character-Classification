@@ -133,7 +133,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     }
 
     private void shareImage(Bitmap bitmap) {
-
+        // To be implemented
     }
 
 }

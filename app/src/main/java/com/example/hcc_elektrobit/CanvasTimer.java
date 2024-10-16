@@ -28,7 +28,9 @@ public class CanvasTimer implements Runnable {
     }
 
     public void cancel() {
+
         running = false; // Signal the thread to stop
+
     }
 
 }

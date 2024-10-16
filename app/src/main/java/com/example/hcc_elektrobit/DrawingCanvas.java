@@ -56,6 +56,7 @@ public class DrawingCanvas extends View {
 
             default:
                 return false;
+
         }
 
     }
