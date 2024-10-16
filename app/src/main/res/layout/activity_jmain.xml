@@ -45,6 +45,8 @@
         android:layout_height="100dp"
         android:layout_gravity="center"
         android:contentDescription="Displayed Bitmap"
-        app:layout_constraintBottom_toBottomOf="@id/drawing_canvas"/>
+        app:layout_constraintBottom_toBottomOf="@id/drawing_canvas"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
