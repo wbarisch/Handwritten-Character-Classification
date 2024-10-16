@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class JMainActivity extends AppCompatActivity {
+public class JMainActivity extends AppCompatActivity implements TimeoutActivity {
 
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
@@ -19,7 +19,8 @@ public class JMainActivity extends AppCompatActivity {
     private CNNonnxModel model;
     private Bitmap bitmap;
 
-    boolean noActivity; // :true if no drawing activity on the canvas
+    CanvasTimer canvasTimer;
+    boolean timerStarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,7 @@ public class JMainActivity extends AppCompatActivity {
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
         Button shareButton = findViewById(R.id.share_button);
+
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -39,17 +41,21 @@ public class JMainActivity extends AppCompatActivity {
 
         model = new CNNonnxModel(this);
 
-        noActivity = true; // initialize as inactive
-
         drawingCanvas.setOnTouchListener((v, event) -> {
 
+            if(timerStarted){
+                canvasTimer.cancel();
+                timerStarted = false;
+            }
 
-            noActivity = false;
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
 
-                setTimeOut(); // invoke "classifyCharacter after 1 second of inactivity"
+                canvasTimer = new CanvasTimer(this);
+                new Thread(canvasTimer).start();
+                timerStarted = true;
+
             }
 
             return true;
@@ -58,35 +64,19 @@ public class JMainActivity extends AppCompatActivity {
 
     }
 
-    // Invoke the method classifyCharacter() after 1 second of inactivity"
-    private void setTimeOut(){
+    // What to do on timeout
+    public void onTimeout(){
 
-        noActivity = true;
-
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                if (noActivity){
-                    classifyCharacter();
-                }
-
-            }
-        };
-
-        new Thread(runnable).start();
+        classifyCharacter();
+        drawingCanvas.clear();
+        timerStarted = false;
 
     }
 
-    // Invoke external CharacterClassifier class from here to start processing the drawing.
+    // Invoke external CharacterClassifier class method from here to start processing the drawing.
     private void classifyCharacter(){
 
-        bitmap = drawingCanvas.getBitmap(); // ! The return value invalid currently
+        bitmap = drawingCanvas.getBitmap();
 
         // TO DO:
         // - Call CharacterClassifier class
@@ -103,10 +93,7 @@ public class JMainActivity extends AppCompatActivity {
             //Display the image for testing
             bitmapDisplay.setImageBitmap(bitmap);
 
-
         });
-
-        drawingCanvas.clearCanvas();
 
     }
 
@@ -146,6 +133,7 @@ public class JMainActivity extends AppCompatActivity {
     }
 
     private void shareImage(Bitmap bitmap) {
+
 
     }
 
