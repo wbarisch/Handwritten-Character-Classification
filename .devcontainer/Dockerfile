@@ -1,4 +1,4 @@
-# Use an NVIDIA CUDA Base Image with Ubuntu 22.04 (Jammy) and cuDNN support, "devel" version includes development tools
+# NVIDIA CUDA Base Image with Ubuntu 22.04 (Jammy) and cuDNN support
 FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
 
 ARG PYTHON_VERSION=3.11
@@ -7,7 +7,7 @@ ARG JAVA_VERSION=openjdk-17-jdk
 # Allow automated installation of packages
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Add Ubuntu Universe repository and update the apt package index
+# Add Ubuntu Universe repository
 RUN apt-get update && apt-get install -y software-properties-common && \
     add-apt-repository universe && \
     apt-get update
@@ -28,18 +28,15 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     wget \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Java (OpenJDK 17)
-# Add the OpenJDK PPA and install OpenJDK 17
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:openjdk-r/ppa && \
-    apt-get update && \
-    apt-get install -y openjdk-17-jdk \
+RUN apt-get update && apt-get install -y \
+    openjdk-17-jdk \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Android SDK command-line tools
+# Android SDK command-line tools
 RUN mkdir -p ${ANDROID_SDK_HOME}/cmdline-tools/latest && \
     wget -O cmdline-tools.zip "https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_SDK_TOOLS_VERSION}_latest.zip" && \
     unzip -q cmdline-tools.zip -d ${ANDROID_SDK_HOME}/cmdline-tools/latest && \
@@ -61,40 +58,32 @@ RUN apt-get update && apt-get install -y \
     python${PYTHON_VERSION}-distutils \
     python3-pip
 
-# Install Miniforge (Mamba)
-RUN curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && \
-    bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda && \
-    rm Miniforge3-Linux-x86_64.sh
+# Install Mamba
+RUN curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh && \
+    bash Mambaforge-Linux-x86_64.sh -b -p /opt/mamba && \
+    rm Mambaforge-Linux-x86_64.sh
 
 # Mamba Added to $PATH
-ENV PATH="/opt/conda/bin:$PATH"
+ENV PATH="/opt/mamba/bin:$PATH"
 
-RUN mamba clean --all
-
-# Initialize Conda and create dl4cv environment for root
-RUN conda init bash && \
-    bash -c "source /opt/conda/etc/profile.d/conda.sh && mamba create -n dl4cv python=${PYTHON_VERSION} -y"
-
-# Install Machine Learning Libraries in dl4cv environment, including onnx
-RUN bash -c "source /opt/conda/etc/profile.d/conda.sh && conda activate dl4cv && \
-    mamba install pytorch=2.4.0 torchvision=0.19.0 pytorch-cuda=12.4 onnx onnxruntime=1.15.1 -c pytorch -c nvidia -c conda-forge && \
-    mamba install matplotlib seaborn pandas scikit-learn mlxtend nltk jupyterlab tqdm ipywidgets python-graphviz"
+# Machine Learning Libraries
+RUN /opt/mamba/bin/mamba init bash && \
+    /opt/mamba/bin/mamba create -n dl4cv python=${PYTHON_VERSION} -y && \
+    /opt/mamba/bin/mamba install -n dl4cv pytorch=2.4.0 torchvision=0.19.0 pytorch-cuda=12.4 onnx onnxruntime=1.15.1 -c pytorch -c nvidia -c conda-forge && \
+    /opt/mamba/bin/mamba install -n dl4cv matplotlib seaborn pandas scikit-learn mlxtend nltk jupyterlab tqdm ipywidgets python-graphviz
 
 
-# Install zip and unzip utilities for SDKMAN
-RUN apt-get update && apt-get install -y zip unzip
-
-# Install SDKMAN and set up Gradle and Kotlin for root
+# SDKMAN, Gradle and Kotlin
 RUN curl -s "https://get.sdkman.io" | bash && \
     bash -c "source /root/.sdkman/bin/sdkman-init.sh && \
     sdk install gradle ${GRADLE_VERSION} && \
     sdk install kotlin && \
     echo 'source /root/.sdkman/bin/sdkman-init.sh' >> /root/.bashrc"
 
-# Adding SDKMAN binaries to PATH (Gradle and Kotlin)
+# Adding SDKMAN binaries to PATH
 ENV PATH="/root/.sdkman/candidates/gradle/current/bin:/root/.sdkman/candidates/kotlin/current/bin:$PATH"
 
-# Disable update commands (move to end)
+# Disable update commands
 RUN mv /usr/bin/apt-get /usr/bin/apt-get.original && \
     echo '#!/bin/sh' > /usr/bin/apt-get && \
     echo 'echo "apt-get is disabled in this container."' >> /usr/bin/apt-get && \
@@ -108,5 +97,5 @@ RUN mv /usr/bin/apt-get /usr/bin/apt-get.original && \
     echo 'echo "wget is disabled in this container."' >> /usr/bin/wget && \
     chmod +x /usr/bin/wget
 
-# Ensure Conda is initialized and dl4cv is activated when the container starts
-RUN echo "source /opt/conda/etc/profile.d/conda.sh && conda activate dl4cv" >> ~/.bashrc
+# Mamba init and activate dl4cv environment
+RUN echo "source /opt/mamba/etc/profile.d/mamba.sh && mamba activate dl4cv" >> ~/.bashrc
