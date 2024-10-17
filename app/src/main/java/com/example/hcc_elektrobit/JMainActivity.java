@@ -1,8 +1,11 @@
 package com.example.hcc_elektrobit;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -19,8 +22,17 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private CNNonnxModel model;
     private Bitmap bitmap;
 
+
     CanvasTimer canvasTimer;
     boolean timerStarted = false;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        MenuItem item = menu.findItem(R.id.menuButton);
+        item.setTitle("History");
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +73,18 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             return true;
 
         });
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        int id = item.getItemId();
+        if(id == R.id.menuButton) {
+            Intent intent = new Intent(JMainActivity.this, JHistoryActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
 
     }
 
