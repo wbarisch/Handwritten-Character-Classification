@@ -165,8 +165,7 @@ public class JMainActivity extends AppCompatActivity {
 
         try {
         
-            String homeDir = System.getProperty("user.home");
-            File dir = new File(homeDir, "BitmapImages");
+            File dir = new File(getFilesDir(), "BitmapImages");
 
             if (!dir.exists()) {
                 boolean created = dir.mkdirs();
