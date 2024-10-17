@@ -99,3 +99,10 @@ RUN mv /usr/bin/apt-get /usr/bin/apt-get.original && \
 
 # Mamba init and activate dl4cv environment
 RUN echo "source /opt/mamba/etc/profile.d/mamba.sh && mamba activate dl4cv" >> ~/.bashrc
+
+# Android SDK and NDK paths
+ENV ANDROID_HOME=/usr/lib/android-sdk
+ENV ANDROID_NDK_HOME=$ANDROID_HOME/ndk/21.4.7075529
+
+# Add Android SDK and NDK to the system PATH
+ENV PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools:$ANDROID_NDK_HOME:$PATH"
