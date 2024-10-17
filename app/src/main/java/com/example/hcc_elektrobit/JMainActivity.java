@@ -8,6 +8,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Environment;
+import android.util.Log;
+import androidx.core.content.FileProvider;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -147,6 +157,40 @@ public class JMainActivity extends AppCompatActivity {
 
     private void shareImage(Bitmap bitmap) {
 
+        if (bitmap == null) {
+        
+        return;
+
+        }
+
+        try {
+        
+            String homeDir = System.getProperty("user.home");
+            File dir = new File(homeDir, "BitmapImages");
+
+            if (!dir.exists()) {
+                boolean created = dir.mkdirs();
+                if (!created) {
+                    Log.e("ShareImage", "Failed to create directory.");
+                    return;
+                }
+            }
+
+            String fileName = "shared_image_" + System.currentTimeMillis() + ".png";
+            File imageFile = new File(dir, fileName);
+
+            try (FileOutputStream out = new FileOutputStream(imageFile)) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                out.flush();
+                Log.d("ShareImage", "Image saved to: " + imageFile.getAbsolutePath());
+            }
+
+            Log.d("ShareImage", "Image saved at: " + imageFile.getAbsolutePath());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e("ShareImage", "Failed to save the image.");
+        }
     }
 
 }
