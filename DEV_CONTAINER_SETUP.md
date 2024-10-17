@@ -25,7 +25,7 @@ return your local directory in VS Code
 14. Then to delete the build cache, type "docker builder prune" and then type "y"
 15. Now to reconnect to Dev Container, elect Ctrl+Shift and add this ">" to the search bar and select "Dev Containers: Reopen in Container"
 
-- Note: The image when loaded in docker after unpacking it is 22GB in size.
+- Note: The image when loaded in docker after unpacking it is 29GB in size.
 - Note: To run docker commands, the Docker application must be running in the background on Windows machines
 
 
