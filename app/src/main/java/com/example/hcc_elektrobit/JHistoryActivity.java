@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.GridView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -33,6 +34,10 @@ public class JHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jhistory);
+
+        GridView gridView = findViewById(R.id.grid_view);
+        HistoryAdapter adapter = new HistoryAdapter(this, R.layout.history_item, History.getInstance().getItems());
+        gridView.setAdapter(adapter);
 
 
     }

@@ -108,6 +108,8 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
         int result = model.classifyAndReturnDigit(bitmap);
 
+        History.getInstance().addItem(new HistoryItem(bitmap, result));
+
         bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
 
         runOnUiThread(() -> {
@@ -118,7 +120,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             bitmapDisplay.setImageBitmap(bitmap);
 
         });
-
     }
 
     public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
