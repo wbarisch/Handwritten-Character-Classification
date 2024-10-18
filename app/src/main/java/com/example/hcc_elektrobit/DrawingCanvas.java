@@ -10,12 +10,12 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 public class DrawingCanvas extends View {
 
-    Paint paint;
-    Path path;
-
-    Bitmap bitmap;
+    private final Paint paint;
+    private final Path path;
 
     public DrawingCanvas(Context context, AttributeSet attributeSet){
 
@@ -31,7 +31,7 @@ public class DrawingCanvas extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas){
+    protected void onDraw(@NonNull Canvas canvas){
         super.onDraw(canvas);
         canvas.drawPath(path,paint);
     }
@@ -54,6 +54,11 @@ public class DrawingCanvas extends View {
                 invalidate();
                 return true;
 
+            case MotionEvent.ACTION_UP:
+                performClick();
+                invalidate();
+                return true;
+
             default:
                 return false;
 
@@ -61,26 +66,22 @@ public class DrawingCanvas extends View {
 
     }
 
-    // clear the current drawing
-    public void clearCanvas(){
-
-        path.reset();
-        invalidate();
-
+    @Override
+    public boolean performClick() {
+        return super.performClick();
     }
 
-    // get the Bitmap
+
+    public void clearCanvas(){
+        path.reset();
+        invalidate();
+    }
+
     public Bitmap getBitmap(){
-        bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         this.draw(canvas);
 
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 28, 28, true);
-
-
-        return scaledBitmap;
-
-
+        return Bitmap.createScaledBitmap(bitmap, 28, 28, true);
     }
-
 }

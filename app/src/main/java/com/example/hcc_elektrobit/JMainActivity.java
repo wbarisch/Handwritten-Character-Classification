@@ -1,35 +1,38 @@
 package com.example.hcc_elektrobit;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Environment;
-import android.util.Log;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
-import androidx.appcompat.app.AppCompatActivity;
+import java.io.OutputStream;
 
 public class JMainActivity extends AppCompatActivity {
 
-    private DrawingCanvas drawingCanvas;
-    private TextView recognizedCharTextView;
-    private ImageView bitmapDisplay;
-    private CNNonnxModel model;
+    private ActivityResultLauncher<Intent> createDocumentLauncher;
     private Bitmap bitmap;
-
-    boolean noActivity; // :true if no drawing activity on the canvas
+    private CNNonnxModel model;
+    private DrawingCanvas drawingCanvas;
+    private ImageView bitmapDisplay;
+    private TextView recognizedCharTextView;
+    private static final String TAG = "JMainActivity";
+    boolean noActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,58 +42,81 @@ public class JMainActivity extends AppCompatActivity {
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
+
         Button shareButton = findViewById(R.id.share_button);
-        shareButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                shareImage(bitmap);
-            }
-        });
+        shareButton.setOnClickListener(v -> showShareOrSaveDialog());
 
         model = new CNNonnxModel(this);
+        noActivity = true;
 
-        noActivity = true; // initialize as inactive
+
+        createDocumentLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                        Uri uri = result.getData().getData();
+                        if (uri != null) {
+                            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                                if (out != null) {
+                                    saveBitmapAsBMP(bitmap, out);
+                                    Log.d("SaveImage", "Image saved to: " + uri);
+                                } else {
+                                    Log.e("SaveImage", "'out' OutputStream is null");
+                                }
+                            } catch (IOException e) {
+                                Log.e("SaveImage", "Failed to save the image.", e);
+                            }
+                        }
+                    }
+                }
+        );
+
 
         drawingCanvas.setOnTouchListener((v, event) -> {
-
-
             noActivity = false;
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-
-                setTimeOut(); // invoke "classifyCharacter after 1 second of inactivity"
+                v.performClick();
+                setTimeOut();
             }
 
             return true;
-
         });
-
     }
 
-    // Invoke the method classifyCharacter() after 1 second of inactivity"
-    private void setTimeOut(){
+
+    private void showShareOrSaveDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Choose an action");
+        String[] options = {"Share", "Save to Device"};
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                shareImage(bitmap);
+            } else if (which == 1) {
+                saveImageUsingDocumentIntent();
+            }
+        });
+
+        builder.show();
+    }
+
+    private void setTimeOut() {
 
         noActivity = true;
 
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                if (noActivity){
-                    classifyCharacter();
-                }
-
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Thread interrupted during timeout", e);
             }
-        };
 
-        new Thread(runnable).start();
-
+            if (noActivity) {
+                classifyCharacter();
+            }
+        }).start();
     }
 
     // Invoke external CharacterClassifier class from here to start processing the drawing.
@@ -121,50 +147,82 @@ public class JMainActivity extends AppCompatActivity {
     }
 
     public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
-        // Ensure that the float array length matches width * height
+
         if (floatArray.length != width * height) {
             throw new IllegalArgumentException("Float array length must match width * height");
         }
 
-        // Create a bitmap with the specified width and height
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        // Create an array to hold the pixel colors
         int[] pixels = new int[width * height];
 
-        // Iterate over the float array and convert each value to a grayscale color
         for (int i = 0; i < floatArray.length; i++) {
-            float value = floatArray[i];  // Get the float value
 
-            // Ensure the value is clamped between 0 and 1
+            float value = floatArray[i];
+
             value = Math.max(0, Math.min(1, value));
 
-            // Convert the float value to an integer between 0 and 255
             int grayscale = (int) (value * 255);
-
-            // Create a grayscale color (same value for R, G, and B, and full alpha)
             int color = Color.argb(255, grayscale, grayscale, grayscale);
 
-            // Set the color in the pixel array
             pixels[i] = color;
         }
 
-        // Set the pixel data to the bitmap
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
         return bitmap;
     }
 
+    private void saveBitmapAsBMP(Bitmap bitmap, OutputStream out) throws IOException {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int paddedRowSize = (width * 3 + 3) & (~3);
+        int bmpSize = paddedRowSize * height;
+
+        out.write(0x42); out.write(0x4D);
+        out.write(intToByteArray(14 + 40 + bmpSize));
+        out.write(new byte[4]);
+        out.write(intToByteArray(14 + 40));
+        out.write(intToByteArray(40));
+        out.write(intToByteArray(width));
+        out.write(intToByteArray(height));
+        out.write(0x01); out.write(0x00);
+        out.write(0x18); out.write(0x00);
+        out.write(new byte[4]);
+        out.write(intToByteArray(bmpSize));
+        out.write(new byte[4]);
+        out.write(new byte[4]);
+        out.write(new byte[4]);
+        out.write(new byte[4]);
+
+        byte[] row = new byte[paddedRowSize];
+        for (int y = height - 1; y >= 0; y--) {
+            for (int x = 0; x < width; x++) {
+                int pixel = bitmap.getPixel(x, y);
+                row[x * 3] = (byte) (pixel & 0xFF);
+                row[x * 3 + 1] = (byte) ((pixel >> 8) & 0xFF);
+                row[x * 3 + 2] = (byte) ((pixel >> 16) & 0xFF);
+            }
+            out.write(row);
+        }
+    }
+
+    private byte[] intToByteArray(int value) {
+        return new byte[] {
+                (byte) (value & 0xFF),
+                (byte) ((value >> 8) & 0xFF),
+                (byte) ((value >> 16) & 0xFF),
+                (byte) ((value >> 24) & 0xFF)
+        };
+    }
+
     private void shareImage(Bitmap bitmap) {
 
         if (bitmap == null) {
-        
-        return;
-
+            return;
         }
 
         try {
-        
+
             File dir = new File(getFilesDir(), "BitmapImages");
 
             if (!dir.exists()) {
@@ -175,21 +233,43 @@ public class JMainActivity extends AppCompatActivity {
                 }
             }
 
-            String fileName = "shared_image_" + System.currentTimeMillis() + ".png";
+            String fileName = "shared_image_" + System.currentTimeMillis() + ".bmp";
             File imageFile = new File(dir, fileName);
 
             try (FileOutputStream out = new FileOutputStream(imageFile)) {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                out.flush();
+                saveBitmapAsBMP(bitmap, out);
                 Log.d("ShareImage", "Image saved to: " + imageFile.getAbsolutePath());
+            }
+
+            Uri contentUri = FileProvider.getUriForFile(this, "com.example.hcc_elektrobit.fileprovider", imageFile);
+
+            if (contentUri != null) {
+
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("image/bmp");
+                shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(Intent.createChooser(shareIntent, "Share image via"));
             }
 
             Log.d("ShareImage", "Image saved at: " + imageFile.getAbsolutePath());
 
         } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("ShareImage", "Failed to save the image.");
+            Log.e("ShareImage", "Failed to save the image.", e);
         }
+    }
+
+    private void saveImageUsingDocumentIntent() {
+        if (bitmap == null) {
+            return;
+        }
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/bmp");
+        intent.putExtra(Intent.EXTRA_TITLE, "image_" + System.currentTimeMillis() + ".bmp");
+
+        createDocumentLauncher.launch(intent);
     }
 
 }
