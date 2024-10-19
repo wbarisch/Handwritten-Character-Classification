@@ -108,7 +108,11 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
         int result = model.classifyAndReturnDigit(bitmap);
 
-        History.getInstance().addItem(new HistoryItem(bitmap, result));
+        History history = History.getInstance();
+        HistoryItem historyItem = new HistoryItem(bitmap, result);
+
+        History.getInstance().addItem(historyItem);
+        History.getInstance().saveItem(historyItem, this);
 
         bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
 
