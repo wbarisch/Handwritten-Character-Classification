@@ -18,6 +18,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private ImageView bitmapDisplay;
     private CNNonnxModel model;
     private Bitmap bitmap;
+    private Audioplayer audioplayer;
 
     CanvasTimer canvasTimer;
     boolean timerStarted = false;
@@ -40,6 +41,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         });
 
         model = new CNNonnxModel(this);
+        audioplayer = new Audioplayer(this);
 
         drawingCanvas.setOnTouchListener((v, event) -> {
 
@@ -85,7 +87,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         int result = model.classifyAndReturnDigit(bitmap);
 
         bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
-
+        audioplayer.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
 
             recognizedCharTextView.setText(String.valueOf(result));
