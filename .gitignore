@@ -1,3 +1,5 @@
+Handwritten-Character-Classification.code-workspace
+.github
 *.iml
 .gradle
 /local.properties
@@ -13,3 +15,4 @@
 .externalNativeBuild
 .cxx
 local.properties
+
