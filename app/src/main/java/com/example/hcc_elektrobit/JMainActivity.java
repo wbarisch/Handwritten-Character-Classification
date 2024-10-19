@@ -111,7 +111,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         History history = History.getInstance();
         HistoryItem historyItem = new HistoryItem(bitmap, result);
 
-        History.getInstance().saveItem(historyItem, this);
+        history.saveItem(historyItem, this);
 
         bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
 
