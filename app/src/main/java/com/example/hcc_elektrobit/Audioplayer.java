@@ -4,13 +4,15 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.media.MediaPlayer;
+import android.util.Log;
 
 import java.io.File;
 
-public class Audioplayer {
-    private MediaPlayer mp;
-    private Context context;
-    public  Audioplayer(Context context){
+public class AudioPlayer {
+    private final MediaPlayer mp;
+    private final Context context;
+    private static final String TAG = "AudioPlayer";
+    public  AudioPlayer(Context context){
         this.mp = new MediaPlayer();
         this.context = context;
     }
@@ -29,7 +31,7 @@ public class Audioplayer {
 
             afd.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error playing audio for character: " + recognisedChar, e);
         }
     }
 }

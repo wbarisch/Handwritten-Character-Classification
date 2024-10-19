@@ -39,12 +39,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         bitmapDisplay = findViewById(R.id.bitmap_display);
         Button shareButton = findViewById(R.id.share_button);
 
-        shareButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                shareImage(bitmap);
-            }
-        });
 
         model = new CNNonnxModel(this);
         audioPlayer = new AudioPlayer(this);
@@ -91,7 +85,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
-
+            }
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 v.performClick();
             }
@@ -99,6 +93,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             return true;
         });
     }
+
 
     public void onTimeout(){
 
@@ -125,7 +120,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
         bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
         audioPlayer.PlayAudio(String.valueOf(result));
-        audioplayer.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
 
             recognizedCharTextView.setText(String.valueOf(result));
