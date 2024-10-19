@@ -1,11 +1,15 @@
 package com.example.hcc_elektrobit;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -32,6 +36,31 @@ public class ImageSavingManager {
 
         documentLauncher.launch(intent);
     }
+
+    public void saveImageToDevice(Context context, Bitmap bitmap) {
+        if (bitmap == null) {
+            Log.e("ImageSavingManager", "Bitmap is null, cannot save");
+            return;
+        }
+
+        File storageDir = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "TrainingImages");
+
+        if (!storageDir.exists() && !storageDir.mkdirs()) {
+            Log.e("ImageSavingManager", "Failed to create directory");
+            return;
+        }
+
+        String fileName = "image_" + System.currentTimeMillis() + ".bmp";
+        File imageFile = new File(storageDir, fileName);
+
+        try (FileOutputStream fos = new FileOutputStream(imageFile)) {
+            saveBitmapAsBMP(bitmap, fos);
+            Log.d("ImageSavingManager", "Image saved to: " + imageFile.getAbsolutePath());
+        } catch (IOException e) {
+            Log.e("ImageSavingManager", "Error saving image", e);
+        }
+    }
+
 
     public static void saveBitmapAsBMP(Bitmap bitmap, OutputStream out) throws IOException {
         int width = bitmap.getWidth();
