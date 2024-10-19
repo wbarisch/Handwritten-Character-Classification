@@ -36,6 +36,7 @@ public class JHistoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_jhistory);
 
         GridView gridView = findViewById(R.id.grid_view);
+        History.getInstance().updateHistory(this);
         HistoryAdapter adapter = new HistoryAdapter(this, R.layout.history_item, History.getInstance().getItems());
         gridView.setAdapter(adapter);
 

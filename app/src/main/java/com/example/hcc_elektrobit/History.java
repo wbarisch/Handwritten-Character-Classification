@@ -61,7 +61,6 @@ public class History {
         try(FileOutputStream out = new FileOutputStream(file)){
             historyItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             Log.i("Bitmap Saved!", "Bitmap save in " + file);
-            updateHistory(context);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -69,7 +68,7 @@ public class History {
 
 
     // fill the history set with the saved imgs
-    private void updateHistory(Context context){
+    public void updateHistory(Context context){
         File bitmapDir = new File(context.getFilesDir(), "saved_bitmaps");
         if(!bitmapDir.exists()){
             return;
