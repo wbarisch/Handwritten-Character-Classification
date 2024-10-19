@@ -12,12 +12,10 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import androidx.annotation.NonNull;
-
 public class DrawingCanvas extends View {
 
-    private final Paint paint;
-    private final Path path;
+    Paint paint;
+    Path path;
 
     public DrawingCanvas(Context context, AttributeSet attributeSet){
 
@@ -34,58 +32,56 @@ public class DrawingCanvas extends View {
 
     @Override
     protected void onDraw(@NonNull Canvas canvas){
-    protected void onDraw(@NonNull Canvas canvas){
         super.onDraw(canvas);
         canvas.drawPath(path,paint);
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event){
-
+    public boolean onTouchEvent(MotionEvent event) {
         float xPos = event.getX();
         float yPos = event.getY();
 
-        switch(event.getAction()){
-
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                path.moveTo(xPos,yPos);
+                path.moveTo(xPos, yPos);
                 invalidate();
                 return true;
 
             case MotionEvent.ACTION_MOVE:
-                path.lineTo(xPos,yPos);
+                path.lineTo(xPos, yPos);
                 invalidate();
                 return true;
 
             case MotionEvent.ACTION_UP:
                 performClick();
-                invalidate();
-                return true;
+                break;
 
             default:
                 return false;
-
         }
 
+        return true;
     }
 
     @Override
     public boolean performClick() {
+
         return super.performClick();
     }
 
+    public void clear(){
 
-    public void clearCanvas(){
         path.reset();
         invalidate();
+
     }
 
     public Bitmap getBitmap(){
+
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         this.draw(canvas);
-
-        return Bitmap.createScaledBitmap(bitmap, 28, 28, true);
         return Bitmap.createScaledBitmap(bitmap, 28, 28, true);
     }
+
 }
