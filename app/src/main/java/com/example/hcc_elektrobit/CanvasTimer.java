@@ -1,11 +1,12 @@
 package com.example.hcc_elektrobit;
 
+import android.util.Log;
+
 public class CanvasTimer implements Runnable {
 
+    private static final String TAG = "CanvasTimer";
     private final TimeoutActivity activity;
-
-    private volatile boolean running = true; // Volatile to ensure visibility across threads
-
+    private volatile boolean running = true;
     public CanvasTimer(TimeoutActivity activity){
 
         this.activity = activity;
@@ -18,7 +19,7 @@ public class CanvasTimer implements Runnable {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Thread interrupted while sleeping", e);
         }
 
         if(running) {
@@ -29,7 +30,7 @@ public class CanvasTimer implements Runnable {
 
     public void cancel() {
 
-        running = false; // Signal the thread to stop
+        running = false;
 
     }
 

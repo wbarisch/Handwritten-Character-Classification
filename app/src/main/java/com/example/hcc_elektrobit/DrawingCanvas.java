@@ -37,31 +37,38 @@ public class DrawingCanvas extends View {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event){
-
+    public boolean onTouchEvent(MotionEvent event) {
         float xPos = event.getX();
         float yPos = event.getY();
 
-        switch(event.getAction()){
-
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                path.moveTo(xPos,yPos);
+                path.moveTo(xPos, yPos);
                 invalidate();
                 return true;
 
             case MotionEvent.ACTION_MOVE:
-                path.lineTo(xPos,yPos);
+                path.lineTo(xPos, yPos);
                 invalidate();
                 return true;
 
+            case MotionEvent.ACTION_UP:
+                performClick();
+                break;
+
             default:
                 return false;
-
         }
 
+        return true;
     }
 
-    // Erase the current drawing
+    @Override
+    public boolean performClick() {
+
+        return super.performClick();
+    }
+
     public void clear(){
 
         path.reset();
@@ -69,13 +76,11 @@ public class DrawingCanvas extends View {
 
     }
 
-    // Get bitmap of the drawing
     public Bitmap getBitmap(){
 
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         this.draw(canvas);
-
         return Bitmap.createScaledBitmap(bitmap, 28, 28, true);
     }
 

@@ -1,15 +1,22 @@
 package com.example.hcc_elektrobit;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class JMainActivity extends AppCompatActivity implements TimeoutActivity {
 
@@ -18,10 +25,9 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private ImageView bitmapDisplay;
     private CNNonnxModel model;
     private Bitmap bitmap;
-    private Audioplayer audioplayer;
-
-    CanvasTimer canvasTimer;
-    boolean timerStarted = false;
+    private AudioPlayer audioPlayer;
+    private CanvasTimer canvasTimer;
+    private boolean timerStarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +47,35 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         });
 
         model = new CNNonnxModel(this);
-        audioplayer = new Audioplayer(this);
+        audioPlayer = new AudioPlayer(this);
+
+        ActivityResultLauncher<Intent> createDocumentLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri uri = result.getData().getData();
+                        if (uri != null) {
+                            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+                                if (out != null) {
+                                    ImageSavingManager.saveBitmapAsBMP(bitmap, out);
+                                    Log.d("SaveImage", "Image saved to: " + uri);
+                                } else {
+                                    Log.e("SaveImage", "'out' OutputStream is null");
+                                }
+                            } catch (IOException e) {
+                                Log.e("SaveImage", "Failed to save the image.", e);
+                            }
+                        }
+                    }
+                }
+        );
+
+        ImageSharingManager imageSharingManager = new ImageSharingManager(this);
+        ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher);
+
+        DialogManager dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
+
+        shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
 
         drawingCanvas.setOnTouchListener((v, event) -> {
 
@@ -53,20 +87,19 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-
+                bitmap = drawingCanvas.getBitmap();
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
 
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                v.performClick();
             }
 
             return true;
-
         });
-
     }
 
-    // What to do on timeout
     public void onTimeout(){
 
         classifyCharacter();
@@ -75,10 +108,14 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     }
 
-    // Invoke external CharacterClassifier class method from here to start processing the drawing.
     private void classifyCharacter(){
 
         bitmap = drawingCanvas.getBitmap();
+
+        if (bitmap == null) {
+            Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
+            return;
+        }
 
         // TO DO:
         // - Call CharacterClassifier class
@@ -87,12 +124,11 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         int result = model.classifyAndReturnDigit(bitmap);
 
         bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
+        audioPlayer.PlayAudio(String.valueOf(result));
         audioplayer.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
 
             recognizedCharTextView.setText(String.valueOf(result));
-
-            //Display the image for testing
             bitmapDisplay.setImageBitmap(bitmap);
 
         });
@@ -100,42 +136,31 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     }
 
     public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
-        // Ensure that the float array length matches width * height
+
         if (floatArray.length != width * height) {
             throw new IllegalArgumentException("Float array length must match width * height");
         }
 
-        // Create a bitmap with the specified width and height
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
-        // Create an array to hold the pixel colors
         int[] pixels = new int[width * height];
 
-        // Iterate over the float array and convert each value to a grayscale color
         for (int i = 0; i < floatArray.length; i++) {
-            float value = floatArray[i];  // Get the float value
 
-            // Ensure the value is clamped between 0 and 1
+            float value = floatArray[i];
             value = Math.max(0, Math.min(1, value));
-
-            // Convert the float value to an integer between 0 and 255
             int grayscale = (int) (value * 255);
-
-            // Create a grayscale color (same value for R, G, and B, and full alpha)
             int color = Color.argb(255, grayscale, grayscale, grayscale);
-
-            // Set the color in the pixel array
             pixels[i] = color;
         }
 
-        // Set the pixel data to the bitmap
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
         return bitmap;
     }
 
-    private void shareImage(Bitmap bitmap) {
-        // To be implemented
+    public Bitmap getBitmap() {
+        return bitmap;
     }
 
 }
