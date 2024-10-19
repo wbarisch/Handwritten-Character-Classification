@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-Handwritten-Character-Classification.code-workspace
-.github
-=======
 *.iml
 .gradle
 /local.properties
@@ -17,4 +13,5 @@ Handwritten-Character-Classification.code-workspace
 .externalNativeBuild
 .cxx
 local.properties
->>>>>>> 33615ee (Initial Commit)
+Handwritten-Character-Classification.code-workspace
+.github

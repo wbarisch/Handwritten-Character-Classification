@@ -23,7 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class JMainActivity extends AppCompatActivity {
+public class JMainActivity extends AppCompatActivity implements TimeoutActivity {
 
     private ActivityResultLauncher<Intent> createDocumentLauncher;
     private Bitmap bitmap;
@@ -119,10 +119,10 @@ public class JMainActivity extends AppCompatActivity {
         }).start();
     }
 
-    // Invoke external CharacterClassifier class from here to start processing the drawing.
+    // Invoke external CharacterClassifier class method from here to start processing the drawing.
     private void classifyCharacter(){
 
-        bitmap = drawingCanvas.getBitmap(); // ! The return value invalid currently
+        bitmap = drawingCanvas.getBitmap();
 
         // TO DO:
         // - Call CharacterClassifier class
@@ -139,10 +139,7 @@ public class JMainActivity extends AppCompatActivity {
             //Display the image for testing
             bitmapDisplay.setImageBitmap(bitmap);
 
-
         });
-
-        drawingCanvas.clearCanvas();
 
     }
 

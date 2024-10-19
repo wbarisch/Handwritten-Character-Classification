@@ -12,6 +12,8 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import androidx.annotation.NonNull;
+
 public class DrawingCanvas extends View {
 
     private final Paint paint;
@@ -31,6 +33,7 @@ public class DrawingCanvas extends View {
     }
 
     @Override
+    protected void onDraw(@NonNull Canvas canvas){
     protected void onDraw(@NonNull Canvas canvas){
         super.onDraw(canvas);
         canvas.drawPath(path,paint);
@@ -82,6 +85,7 @@ public class DrawingCanvas extends View {
         Canvas canvas = new Canvas(bitmap);
         this.draw(canvas);
 
+        return Bitmap.createScaledBitmap(bitmap, 28, 28, true);
         return Bitmap.createScaledBitmap(bitmap, 28, 28, true);
     }
 }

@@ -47,7 +47,6 @@
         android:contentDescription="Displayed Bitmap"
         app:layout_constraintBottom_toBottomOf="@id/drawing_canvas"
         app:layout_constraintLeft_toLeftOf="@+id/drawing_canvas"/>
-
     <Button
         android:id="@+id/share_button"
         android:layout_width="wrap_content"
