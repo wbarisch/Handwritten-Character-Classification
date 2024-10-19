@@ -1,15 +1,12 @@
 package com.example.hcc_elektrobit;
 
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.util.Log;
 
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,17 +22,16 @@ import ai.onnxruntime.OrtSession;
 public class CNNonnxModel {
     private OrtEnvironment env;
     private OrtSession session;
-    private Context context;
+    private final Context context;
     private static final String TAG = "CNNonnxModel";
 
     public CNNonnxModel(Context context) {
         this.context = context;
         try {
-            String modelPath = copyModelToCache("cnnModelMnist.onnx");
+            String modelPath = copyModelToCache();
             env = OrtEnvironment.getEnvironment();
             session = env.createSession(modelPath, new OrtSession.SessionOptions());
-            Log.e(TAG, "ONNX session created");
-            Log.e("pog", "session created");
+            Log.i(TAG, "ONNX session created successfully.");
         } catch (OrtException e) {
             Log.e("CNNonnxModel", "Error creating ONNX session", e);
         } catch (IOException e) {
@@ -43,12 +39,11 @@ public class CNNonnxModel {
         }
     }
 
-    private String copyModelToCache(String modelFileName) throws IOException {
-        // Get the cache directory
+    private String copyModelToCache() throws IOException {
+        String modelFileName = "cnnModelMnist.onnx";
         File cacheDir = context.getCacheDir();
         File modelFile = new File(cacheDir, modelFileName);
 
-        // If the model file doesn't exist in the cache, copy it from assets
         if (!modelFile.exists()) {
             try (InputStream is = context.getAssets().open(modelFileName);
                  FileOutputStream fos = new FileOutputStream(modelFile)) {
@@ -59,7 +54,7 @@ public class CNNonnxModel {
                 }
             }
         }
-        return modelFile.getAbsolutePath(); // Return the absolute path of the model file
+        return modelFile.getAbsolutePath();
     }
     public float[][] classify(Bitmap bitmap) {
         try {
@@ -80,11 +75,10 @@ public class CNNonnxModel {
 
 
             //float [] output = {1.0f,2.9f,3.0f};
-            // Return the classification result
             return output;
 
         } catch (OrtException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error during classification", e);
         }
         return null;
     }
@@ -114,24 +108,18 @@ public class CNNonnxModel {
             for (int j = 0; j < rotatedBitmap.getHeight(); j++) {
                 int pixel = rotatedBitmap.getPixel(i, j);
 
-                // Extract RGB components
                 int r = (pixel >> 16) & 0xff;
                 int g = (pixel >> 8) & 0xff;
                 int b = pixel & 0xff;
 
-                // Compute the grayscale value
                 float grayscale = (r + g + b) / 3.0f / 255.0f;
-
-                // Adjust grayscale to range between 1.0 and 0.9
                 grayscale = 1.0f - grayscale;
-
                 data[index++] = grayscale;
             }
         }
 
         return data;
     }
-
 
     private int argmax(float[] array) {
         int maxIndex = 0;
@@ -152,7 +140,7 @@ public class CNNonnxModel {
                 env.close();
             }
         } catch (OrtException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error closing ONNX environment or session", e);
         }
     }
 }
