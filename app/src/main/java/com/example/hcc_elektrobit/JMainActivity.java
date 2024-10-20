@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -26,8 +28,16 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private CNNonnxModel model;
     private Bitmap bitmap;
     private AudioPlayer audioPlayer;
-    private CanvasTimer canvasTimer;
-    private boolean timerStarted = false;
+    CanvasTimer canvasTimer;
+    boolean timerStarted = false;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        MenuItem item = menu.findItem(R.id.menuButton);
+        item.setTitle("History");
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,9 +102,22 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
             return true;
         });
+
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        int id = item.getItemId();
+        if(id == R.id.menuButton) {
+            Intent intent = new Intent(JMainActivity.this, JHistoryActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
 
+    }
+
+    // What to do on timeout
     public void onTimeout(){
 
         classifyCharacter();
@@ -103,6 +126,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     }
 
+    // Invoke external CharacterClassifier class method from here to start processing the drawing.
     private void classifyCharacter(){
 
         bitmap = drawingCanvas.getBitmap();
@@ -118,15 +142,18 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
         int result = model.classifyAndReturnDigit(bitmap);
 
+        History.getInstance().addItem(new HistoryItem(bitmap, result));
+
         bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
         audioPlayer.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
 
             recognizedCharTextView.setText(String.valueOf(result));
+
+            //Display the image for testing
             bitmapDisplay.setImageBitmap(bitmap);
 
         });
-
     }
 
     public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
@@ -143,11 +170,18 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
             float value = floatArray[i];
             value = Math.max(0, Math.min(1, value));
+
+            // Convert the float value to an integer between 0 and 255
             int grayscale = (int) (value * 255);
+
+            // Create a grayscale color (same value for R, G, and B, and full alpha)
             int color = Color.argb(255, grayscale, grayscale, grayscale);
+
+            // Set the color in the pixel array
             pixels[i] = color;
         }
 
+        // Set the pixel data to the bitmap
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
         return bitmap;
