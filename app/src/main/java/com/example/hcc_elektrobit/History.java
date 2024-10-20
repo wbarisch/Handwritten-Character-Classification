@@ -85,4 +85,20 @@ public class History {
             }
         }
     }
+    public void clearHistory(Context context) {
+        File bitmapDir = new File(context.getFilesDir(), "saved_bitmaps");
+        if (bitmapDir.exists()) {
+            for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
+                if (file.delete()) {
+                    Log.i("File Deleted", "Deleted file: " + file.getName());
+                } else {
+                    Log.e("File Deletion Failed", "Failed to delete file: " + file.getName());
+                }
+            }
+            historyItems.clear();
+            Log.i("History Cleared", "All history items have been deleted and memory cleared.");
+        } else {
+            Log.i("No History Found", "No history to delete.");
+        }
+    }
 }
