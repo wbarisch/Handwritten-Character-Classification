@@ -45,7 +45,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
                 float[] processedBitmapData = model.preprocessBitmap(bitmap);
                 Bitmap preprocessedBitmap = createBitmapFromFloatArray(processedBitmapData, 28, 28);
                 trainingBitmapDisplay.setImageBitmap(preprocessedBitmap);
-                imageSavingManager.saveImageToDevice(this, preprocessedBitmap);
+
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
@@ -57,9 +57,12 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
     @Override
     public void onTimeout() {
-
+        bitmap = drawingCanvas.getBitmap();
+        float[] processedBitmapData = model.preprocessBitmap(bitmap);
+        Bitmap preprocessedBitmap = createBitmapFromFloatArray(processedBitmapData, 28, 28);
         drawingCanvas.clear();
         timerStarted = false;
+        imageSavingManager.saveImageToDevice(this, preprocessedBitmap);
     }
 
     public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
