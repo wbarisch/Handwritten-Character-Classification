@@ -2,6 +2,7 @@ package com.example.hcc_elektrobit;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.util.Log;
 import android.widget.Toast;
@@ -48,6 +49,20 @@ public class DialogManager {
             }
         });
 
+        builder.show();
+    }
+
+    public void showTrainingModeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Training Mode");
+        builder.setMessage("Do you want to enter Training Mode?");
+        builder.setPositiveButton("Yes", (dialog, which) -> {
+            Intent intent = new Intent(activity, TrainingActivity.class);
+            activity.startActivity(intent);
+        });
+        builder.setNegativeButton("No", (dialog, which) -> {
+            dialog.dismiss();
+        });
         builder.show();
     }
 }

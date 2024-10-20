@@ -48,6 +48,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
         Button shareButton = findViewById(R.id.share_button);
+        Button trainingModeButton = findViewById(R.id.training_mode_button);
 
 
         model = new CNNonnxModel(this);
@@ -80,6 +81,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         DialogManager dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
 
         shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
+        trainingModeButton.setOnClickListener(v -> dialogManager.showTrainingModeDialog());
 
         drawingCanvas.setOnTouchListener((v, event) -> {
 
@@ -189,6 +191,10 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     public Bitmap getBitmap() {
         return bitmap;
+    }
+
+    public void enterTrainingMode() {
+        Log.d("JMainActivity", "Training mode enabled");
     }
 
 }
