@@ -45,6 +45,7 @@
         </activity>
         <activity android:name=".TrainingActivity"
                   android:exported="true" />
+        <activity android:name=".SiameseTesterActivity" />
     </application>
 
 </manifest>

@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -49,10 +50,20 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         bitmapDisplay = findViewById(R.id.bitmap_display);
         Button shareButton = findViewById(R.id.share_button);
         Button trainingModeButton = findViewById(R.id.training_mode_button);
+        Button siameseActivityButton = findViewById(R.id.siamese_test_button);
 
 
         model = new CNNonnxModel(this);
         audioPlayer = new AudioPlayer(this);
+
+        siameseActivityButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Switch to SiameseTesterActivity
+                Intent intent = new Intent(JMainActivity.this, SiameseTesterActivity.class);
+                startActivity(intent);
+            }
+        });
 
         ActivityResultLauncher<Intent> createDocumentLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -93,7 +104,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap();
+                bitmap = drawingCanvas.getBitmap(28);
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
@@ -119,7 +130,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     }
 
-    // What to do on timeout
     public void onTimeout(){
 
         classifyCharacter();
@@ -128,10 +138,9 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     }
 
-    // Invoke external CharacterClassifier class method from here to start processing the drawing.
     private void classifyCharacter(){
 
-        bitmap = drawingCanvas.getBitmap();
+        bitmap = drawingCanvas.getBitmap(28);
 
         if (bitmap == null) {
             Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
@@ -151,8 +160,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         runOnUiThread(() -> {
 
             recognizedCharTextView.setText(String.valueOf(result));
-
-            //Display the image for testing
             bitmapDisplay.setImageBitmap(bitmap);
 
         });
@@ -172,18 +179,11 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
             float value = floatArray[i];
             value = Math.max(0, Math.min(1, value));
-
-            // Convert the float value to an integer between 0 and 255
             int grayscale = (int) (value * 255);
-
-            // Create a grayscale color (same value for R, G, and B, and full alpha)
             int color = Color.argb(255, grayscale, grayscale, grayscale);
-
-            // Set the color in the pixel array
             pixels[i] = color;
         }
 
-        // Set the pixel data to the bitmap
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
         return bitmap;
