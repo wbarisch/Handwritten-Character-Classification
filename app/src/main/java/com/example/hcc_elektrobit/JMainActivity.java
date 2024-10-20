@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -38,10 +39,20 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
         Button shareButton = findViewById(R.id.share_button);
+        Button siameseActivityButton = findViewById(R.id.siamese_test_button);
 
 
         model = new CNNonnxModel(this);
         audioPlayer = new AudioPlayer(this);
+
+        siameseActivityButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Switch to SiameseTesterActivity
+                Intent intent = new Intent(JMainActivity.this, SiameseTesterActivity.class);
+                startActivity(intent);
+            }
+        });
 
         ActivityResultLauncher<Intent> createDocumentLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
@@ -81,7 +92,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap();
+                bitmap = drawingCanvas.getBitmap(28);
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
@@ -105,7 +116,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     private void classifyCharacter(){
 
-        bitmap = drawingCanvas.getBitmap();
+        bitmap = drawingCanvas.getBitmap(28);
 
         if (bitmap == null) {
             Log.e("JMainActivity", "Bitmap is null in classifyCharacter");

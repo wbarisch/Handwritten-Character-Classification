@@ -76,12 +76,12 @@ public class DrawingCanvas extends View {
 
     }
 
-    public Bitmap getBitmap(){
+    public Bitmap getBitmap(int dims){
 
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         this.draw(canvas);
-        return Bitmap.createScaledBitmap(bitmap, 28, 28, true);
+        return Bitmap.createScaledBitmap(bitmap, dims, dims, true);
     }
 
 }

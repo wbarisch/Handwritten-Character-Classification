@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,11 +24,14 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
-    private CNNonnxModel model;
+    private ImageView bitmapDisplay2;
+    private SMSonnxModel model;
     private Bitmap bitmap;
+    private Bitmap bitmap2;
     private AudioPlayer audioPlayer;
     private CanvasTimer canvasTimer;
     private boolean timerStarted = false;
+    int bitmapState = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,10 +41,11 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
+        bitmapDisplay2 = findViewById(R.id.bitmap_display2);
 
 
 
-        //model = new CNNonnxModel(this);
+        model = new SMSonnxModel(this);
 
 
 
@@ -55,7 +60,7 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap();
+                bitmap = drawingCanvas.getBitmap(105);
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
@@ -79,27 +84,34 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
 
     private void findSimilarity(){
 
-        bitmap = drawingCanvas.getBitmap();
+       if(bitmapState == 0) {
 
-        if (bitmap == null) {
-            Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
-            return;
+            bitmap = drawingCanvas.getBitmap(105);
+            runOnUiThread(() -> {
+                bitmapDisplay2.setImageDrawable(null);
+                bitmapDisplay.setImageBitmap(createBitmapFromFloatArray(model.preprocessBitmap(bitmap),105,105));
+                recognizedCharTextView.setText("_");
+
+
+            });
+            bitmapState = 1;
+        } else {
+            bitmap2 = drawingCanvas.getBitmap(105);
+
+            float similarity = model.classify_similarity(bitmap,bitmap2);
+
+            runOnUiThread(() -> {
+
+                bitmapDisplay2.setImageBitmap(createBitmapFromFloatArray(model.preprocessBitmap(bitmap2),105,105));
+                recognizedCharTextView.setText(String.valueOf(similarity));
+
+            });
+            bitmapState = 0;
+
         }
 
-        // TO DO:
-        // - Call CharacterClassifier class
-        // - To display the output character, set it to "recognizedCharTextView".
 
-        int result = model.classifyAndReturnDigit(bitmap);
 
-        bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
-        audioPlayer.PlayAudio(String.valueOf(result));
-        runOnUiThread(() -> {
-
-            recognizedCharTextView.setText(String.valueOf(result));
-            bitmapDisplay.setImageBitmap(bitmap);
-
-        });
 
     }
 
