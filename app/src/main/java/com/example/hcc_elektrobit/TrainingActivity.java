@@ -41,7 +41,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap();
+                bitmap = drawingCanvas.getBitmap(28);
                 float[] processedBitmapData = model.preprocessBitmap(bitmap);
                 Bitmap preprocessedBitmap = createBitmapFromFloatArray(processedBitmapData, 28, 28);
                 trainingBitmapDisplay.setImageBitmap(preprocessedBitmap);
@@ -57,7 +57,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
     @Override
     public void onTimeout() {
-        bitmap = drawingCanvas.getBitmap();
+        bitmap = drawingCanvas.getBitmap(28);
         float[] processedBitmapData = model.preprocessBitmap(bitmap);
         Bitmap preprocessedBitmap = createBitmapFromFloatArray(processedBitmapData, 28, 28);
         drawingCanvas.clear();
