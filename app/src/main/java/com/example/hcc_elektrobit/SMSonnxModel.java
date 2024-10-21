@@ -97,31 +97,34 @@ public class SMSonnxModel {
     }
 
     public float[] preprocessBitmap(Bitmap bitmap) {
-        // Step 1: Resize the bitmap to 105x105
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 105, 105, true);
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
 
-        // Step 2: Create a float array to hold the binary image data (1, 1, 105, 105)
-        float[] inputTensorData = new float[1 * 1 * 105 * 105]; // total size is 1*1*105*105 = 11025
+        Matrix matrix = new Matrix();
+        matrix.postRotate(90);
+        matrix.postScale(-1, 1, width / 2f, height / 2f);
 
-        // Step 3: Loop through each pixel, invert the colors, and normalize
-        for (int i = 0; i < 105; i++) {
-            for (int j = 0; j < 105; j++) {
-                // Get the pixel value at (i, j)
-                int pixel = resizedBitmap.getPixel(i, j);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
 
-                // Since the image is black and white, just grab the red channel (all channels are the same in grayscale)
-                int red = Color.red(pixel);  // Extract the red channel, which is enough for a grayscale image
+        float[] data = new float[105 * 105];
+        int index = 0;
 
-                // Invert the pixel (white becomes black and vice versa)
-                float invertedValue = (255 - red) / 255.0f; // Normalizing to range [0, 1] and inverting
+        //attempt to normalize correctly, i dont think its working right
+        for (int i = 0; i < rotatedBitmap.getWidth(); i++) {
+            for (int j = 0; j < rotatedBitmap.getHeight(); j++) {
+                int pixel = rotatedBitmap.getPixel(i, j);
 
-                // Assign the inverted and normalized pixel value to the float array
-                inputTensorData[i * 105 + j] = invertedValue;
+                int r = (pixel >> 16) & 0xff;
+                int g = (pixel >> 8) & 0xff;
+                int b = pixel & 0xff;
+
+                float grayscale = (r + g + b) / 3.0f / 255.0f;
+                grayscale = 1.0f - grayscale;
+                data[index++] = grayscale;
             }
         }
 
-        // Return the preprocessed tensor data in the correct format
-        return inputTensorData;
+        return data;
     }
 
     private int argmax(float[] array) {
