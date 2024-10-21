@@ -9,7 +9,7 @@ public class CharacterMapping {
     public CharacterMapping() {
         idToCharacterMap = new HashMap<>();
         for (int i = 0; i < 10; i++) {
-            idToCharacterMap.put(i, String.valueOf(i)); // For digits 0-9
+            idToCharacterMap.put(i, String.valueOf(i));
         }
 
         char letter = 'a';
