@@ -48,6 +48,30 @@ public class ImageSavingManager {
         saveImageToPublicStorage(context, bitmap);
     }
 
+    public void saveImageToCharacterFolder(Context context, Bitmap bitmap, String character, String filename) {
+        if (bitmap == null || character == null || filename == null) {
+            Log.e("ImageSavingManager", "Invalid input for saving image to character folder");
+            return;
+        }
+
+        File characterDir = new File(context.getExternalFilesDir(null), "TrainingImages/" + character);
+        if (!characterDir.exists()) {
+            if (!characterDir.mkdirs()) {
+                Log.e("ImageSavingManager", "Failed to create directory: " + characterDir.getPath());
+                return;
+            }
+        }
+
+        File imageFile = new File(characterDir, filename);
+        try (FileOutputStream fos = new FileOutputStream(imageFile)) {
+            saveBitmapAsBMP(bitmap, fos);
+            fos.flush();
+            Log.d("ImageSavingManager", "Image saved as " + filename + " in folder: " + characterDir.getPath());
+        } catch (IOException e) {
+            Log.e("ImageSavingManager", "Error saving image to character folder", e);
+        }
+    }
+
     public void saveImageToPublicStorage(Context context, Bitmap bitmap) {
         if (bitmap == null) {
             Log.e("ImageSavingManager", "Bitmap is null, cannot save");
