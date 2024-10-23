@@ -3,12 +3,14 @@ package com.example.hcc_elektrobit;
 import android.graphics.Bitmap;
 
 public class HistoryItem {
+    float[][] pred_tensor;
     Bitmap bitmap;
     String pred;
 
-    HistoryItem(Bitmap bmp, String prediction){
+    HistoryItem(Bitmap bmp, String prediction, float[][] prediction_tensor){
         this.bitmap = bmp;
         this.pred = prediction;
+        this.pred_tensor = prediction_tensor;
     }
 
     public Bitmap getBitmap(){
