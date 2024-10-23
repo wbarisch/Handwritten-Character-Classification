@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.util.Log;
-import android.util.Pair;
 
 
 import java.io.File;
@@ -91,9 +90,12 @@ public class CNNonnxModel {
 
     }
 
-    public Pair<Integer, float[][]> classifyAndReturnIntAndTensor(Bitmap bitmap){
+    public Map<String, Object> classifyAndReturnIntAndTensor(Bitmap bitmap){
         float[][] result = this.classify(bitmap);
-        return new Pair<>(argmax(result[0]), result);
+        Map<String, Object> res_map= new HashMap<>();
+        res_map.put("int", argmax(result[0]));
+        res_map.put("tensor", result);
+        return res_map;
     }
 
     public float[] preprocessBitmap(Bitmap bitmap) {
