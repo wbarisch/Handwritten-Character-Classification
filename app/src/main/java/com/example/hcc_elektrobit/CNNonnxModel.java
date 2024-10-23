@@ -90,6 +90,14 @@ public class CNNonnxModel {
 
     }
 
+    public Map<String, Object> classifyAndReturnIntAndTensor(Bitmap bitmap){
+        float[][] result = this.classify(bitmap);
+        Map<String, Object> res_map= new HashMap<>();
+        res_map.put("int", argmax(result[0]));
+        res_map.put("tensor", result);
+        return res_map;
+    }
+
     public float[] preprocessBitmap(Bitmap bitmap) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
