@@ -119,7 +119,7 @@ public class SMSonnxModel {
                 int b = pixel & 0xff;
 
                 float grayscale = (r + g + b) / 3.0f / 255.0f;
-                grayscale = 1.0f - grayscale;
+                grayscale = grayscale;
                 data[index++] = grayscale;
             }
         }
