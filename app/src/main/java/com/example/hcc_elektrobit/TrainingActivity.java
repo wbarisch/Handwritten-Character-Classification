@@ -30,7 +30,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     
     private DrawingCanvas drawingCanvas;
     private ImageSavingManager imageSavingManager;
-    private ImageView trainingBitmapDisplay;
     private boolean timerStarted = false;
 
     private ImageButton leaveButton;
@@ -44,7 +43,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private CharacterMapping characterMapping;
     private List<Bitmap> bitmapsToSave;
     private String selectedCharacter = "";
-    private int imageCounter = 1;
 
 
     @Override
@@ -58,7 +56,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         bitmapsToSave = new ArrayList<>();
 
         drawingCanvas = findViewById(R.id.fullscreen_canvas);
-        trainingBitmapDisplay = findViewById(R.id.training_bitmap_display);
         imageSavingManager = new ImageSavingManager(null);
         model = new CNNonnxModel(this);
 
@@ -198,14 +195,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         chatboxContainer.setVisibility(View.VISIBLE);
         bitmapsToSave.clear();
         selectedCharacter = "";
-    }
-
-
-
-    private void saveImagesToFolder(Context context, String character) {
-        imageSavingManager.saveSelectedImages(context, bitmapsToSave, character);
-        bitmapsToSave.clear();
-        imageSavingManager.clearImageCache(this);
     }
 
     @Override
