@@ -54,7 +54,6 @@ public class ReviewAdapter extends BaseAdapter {
 
         Bitmap bitmap = bitmaps.get(position);
         holder.imageView.setImageBitmap(bitmap);
-
         holder.checkBox.setOnCheckedChangeListener(null);
         holder.checkBox.setChecked(selectedBitmaps.contains(bitmap));
 
@@ -67,7 +66,6 @@ public class ReviewAdapter extends BaseAdapter {
                 selectedBitmaps.remove(bitmap);
             }
         });
-
         return convertView;
     }
 
@@ -75,4 +73,16 @@ public class ReviewAdapter extends BaseAdapter {
         ImageView imageView;
         CheckBox checkBox;
     }
+
+    public void selectAll() {
+        selectedBitmaps.clear();
+        selectedBitmaps.addAll(bitmaps);
+        notifyDataSetChanged();
+    }
+
+    public void deselectAll() {
+        selectedBitmaps.clear();
+        notifyDataSetChanged();
+    }
+
 }

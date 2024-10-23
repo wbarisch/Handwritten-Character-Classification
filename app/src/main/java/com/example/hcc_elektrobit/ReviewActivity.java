@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.GridView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,7 +19,7 @@ public class ReviewActivity extends AppCompatActivity {
     private ArrayList<Bitmap> selectedBitmaps;
     private ReviewAdapter reviewAdapter;
     private GridView gridView;
-
+    private CheckBox selectAllCheckBox;
     private DialogManager dialogManager;
     private ImageSavingManager imageSavingManager;
 
@@ -33,6 +34,7 @@ public class ReviewActivity extends AppCompatActivity {
         gridView = findViewById(R.id.grid_view);
         Button keepButton = findViewById(R.id.keep_button);
         Button discardButton = findViewById(R.id.discard_button);
+        selectAllCheckBox = findViewById(R.id.select_all_checkbox);
 
         Intent intent = getIntent();
 
@@ -77,6 +79,14 @@ public class ReviewActivity extends AppCompatActivity {
                 finish();
             }, () -> {
             });
+        });
+
+        selectAllCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                reviewAdapter.selectAll();
+            } else {
+                reviewAdapter.deselectAll();
+            }
         });
     }
 }
