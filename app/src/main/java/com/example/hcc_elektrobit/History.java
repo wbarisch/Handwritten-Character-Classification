@@ -64,7 +64,7 @@ public class History {
         if(!root.exists()){
             root.mkdir();
         }
-        String imgFileName = historyItem.pred + Integer.toString(historyItem.bitmap.getGenerationId()) + ".png";
+        String imgFileName = historyItem.pred + "" + (int) (Math.random() * 10000) + ".png";
         File img_file = new File(root, imgFileName);
         try(FileOutputStream out = new FileOutputStream(img_file)){
             historyItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
@@ -186,7 +186,6 @@ public class History {
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-
 
         return result;
     }
