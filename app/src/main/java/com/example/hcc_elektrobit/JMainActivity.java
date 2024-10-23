@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 public class JMainActivity extends AppCompatActivity implements TimeoutActivity {
 
@@ -151,13 +152,13 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         // - Call CharacterClassifier class
         // - To display the output character, set it to "recognizedCharTextView".
 
-        int result = model.classifyAndReturnDigit(bitmap);
+        Map<String, Object> result_map = model.classifyAndReturnIntAndTensor(bitmap);
 
         History history = History.getInstance();
-        HistoryItem historyItem = new HistoryItem(bitmap, result);
+        HistoryItem historyItem = new HistoryItem(bitmap, (int)result_map.get("int"), (float[][]) result_map.get("tensor"));
 
         history.saveItem(historyItem, this);
-
+        int result = (int)result_map.get("int");
         bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
         audioPlayer.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
