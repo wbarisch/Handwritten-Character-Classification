@@ -4,8 +4,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -26,7 +28,7 @@ public class DrawingCanvas extends View {
         paint.setColor(Color.BLACK);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(100f);
+        paint.setStrokeWidth(30f);
 
     }
 
@@ -76,12 +78,48 @@ public class DrawingCanvas extends View {
 
     }
 
-    public Bitmap getBitmap(int dims){
+    public Bitmap getBitmap(int dims) {
 
-        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        this.draw(canvas);
-        return Bitmap.createScaledBitmap(bitmap, dims, dims, true);
+        int margin = 2;
+
+        RectF bounds = new RectF();
+        path.computeBounds(bounds, true);
+
+        if (bounds.isEmpty() || bounds.width() <= 0 || bounds.height() <= 0) {
+
+            Bitmap emptyBitmap = Bitmap.createBitmap(dims, dims, Bitmap.Config.ARGB_8888);
+            Canvas emptyCanvas = new Canvas(emptyBitmap);
+            emptyCanvas.drawColor(Color.WHITE);
+            return emptyBitmap;
+        }
+
+        float strokeWidth = paint.getStrokeWidth();
+        float halfStrokeWidth = strokeWidth / 2f;
+        bounds.inset(-halfStrokeWidth, -halfStrokeWidth);
+
+        float contentWidth = bounds.width();
+        float contentHeight = bounds.height();
+
+        float targetSize = dims - 2 * margin;
+        float scale = Math.min(targetSize / contentWidth, targetSize / contentHeight);
+
+        Bitmap finalBitmap = Bitmap.createBitmap(dims, dims, Bitmap.Config.ARGB_8888);
+        Canvas finalCanvas = new Canvas(finalBitmap);
+        finalCanvas.drawColor(Color.WHITE);
+        Matrix matrix = new Matrix();
+        matrix.postTranslate(-bounds.left, -bounds.top);
+        matrix.postScale(scale, scale);
+        float dx = (dims - contentWidth * scale) / 2f;
+        float dy = (dims - contentHeight * scale) / 2f;
+        matrix.postTranslate(dx, dy);
+        Path scaledPath = new Path();
+        path.transform(matrix, scaledPath);
+        Paint scaledPaint = new Paint(paint);
+        float desiredStrokeWidth = dims * 0.07f; // Bigger bitmap sizes, this value may need to be increased
+        scaledPaint.setStrokeWidth(desiredStrokeWidth);
+        scaledPaint.setAntiAlias(true);
+        finalCanvas.drawPath(scaledPath, scaledPaint);
+        return finalBitmap;
     }
 
 }
