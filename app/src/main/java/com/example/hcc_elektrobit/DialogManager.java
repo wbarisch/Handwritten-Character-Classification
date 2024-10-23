@@ -21,6 +21,13 @@ public class DialogManager {
         this.imageSavingManager = imageSavingManager;
     }
 
+    public DialogManager(Activity activity) {
+        this.activity = activity;
+        this.jMainActivity = null;
+        this.imageSharingManager = null;
+        this.imageSavingManager = null;
+    }
+
     public void showShareOrSaveDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("Choose an action");
@@ -65,5 +72,53 @@ public class DialogManager {
         });
         builder.show();
     }
+
+    public void showExitTrainingModeDialog(Runnable onConfirmExit) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Exit Training Mode");
+        builder.setMessage("Do you want to leave training mode?");
+        builder.setPositiveButton("Yes", (dialog, which) -> onConfirmExit.run());
+        builder.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    public void showLeaveTestingDialog(Runnable onConfirmLeave) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Stop Testing Characters");
+        builder.setMessage("Do you want to stop testing characters and discard your data?");
+        builder.setPositiveButton("Yes", (dialog, which) -> {
+            onConfirmLeave.run();
+        });
+        builder.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    public void showDiscardAllDialog(Runnable onConfirmDiscard, Runnable onCancelDiscard) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Discard All Images")
+                .setMessage("Do you want to discard all the images?")
+                .setPositiveButton("Yes", (dialog, which) -> onConfirmDiscard.run())
+                .setNegativeButton("No", (dialog, which) -> onCancelDiscard.run())
+                .show();
+    }
+
+    public void showNoImagesDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("No Images")
+                .setMessage("No images available to review.")
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                .show();
+    }
+
+    public void showKeepSelectedDialog(Runnable onConfirmSave, Runnable onCancelSave) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Keep Selected Images")
+                .setMessage("Do you want to keep the selected images?")
+                .setPositiveButton("Yes", (dialog, which) -> onConfirmSave.run())
+                .setNegativeButton("No", (dialog, which) -> onCancelSave.run())
+                .show();
+    }
+
+
 }
 
