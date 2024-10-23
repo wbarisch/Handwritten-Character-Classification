@@ -54,23 +54,49 @@ public class ImageSavingManager {
             return;
         }
 
-        File characterDir = new File(context.getExternalFilesDir(null), "TrainingImages/" + character);
-        if (!characterDir.exists()) {
-            if (!characterDir.mkdirs()) {
-                Log.e("ImageSavingManager", "Failed to create directory: " + characterDir.getPath());
-                return;
+        String directoryPath = Environment.DIRECTORY_PICTURES + "/TrainingImages/" + character;
+        String fileName = character + "_" + System.currentTimeMillis() + ".bmp";
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/bmp");
+        values.put(MediaStore.Images.Media.RELATIVE_PATH, directoryPath);
+
+        try (OutputStream fos = context.getContentResolver()
+                .openOutputStream(context.getContentResolver()
+                        .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values))) {
+
+            if (fos != null) {
+                saveBitmapAsBMP(bitmap, fos);
+                fos.flush();
+                Log.d("ImageSavingManager", "Image saved to public storage in folder: " + directoryPath);
+            } else {
+                Log.e("ImageSavingManager", "Failed to open output stream for public storage");
             }
+        } catch (IOException e) {
+            Log.e("ImageSavingManager", "Error saving image to public storage", e);
+        }
+    }
+
+
+    public void saveBitmapToCache(Context context, Bitmap bitmap, String fileName) {
+        if (bitmap == null) {
+            Log.e("ImageSavingManager", "Bitmap is null, cannot save");
+            return;
         }
 
-        File imageFile = new File(characterDir, filename);
+        File cacheDir = context.getCacheDir();
+        File imageFile = new File(cacheDir, fileName + ".bmp");
         try (FileOutputStream fos = new FileOutputStream(imageFile)) {
             saveBitmapAsBMP(bitmap, fos);
             fos.flush();
-            Log.d("ImageSavingManager", "Image saved as " + filename + " in folder: " + characterDir.getPath());
+            Log.d("ImageSavingManager", "Image saved to cache: " + imageFile.getPath());
         } catch (IOException e) {
-            Log.e("ImageSavingManager", "Error saving image to character folder", e);
+            Log.e("ImageSavingManager", "Error saving image to cache", e);
         }
     }
+
+
 
     public void saveImageToPublicStorage(Context context, Bitmap bitmap) {
         if (bitmap == null) {
@@ -100,6 +126,33 @@ public class ImageSavingManager {
             Log.e("ImageSavingManager", "Error saving image to public storage", e);
         }
     }
+
+    public void deleteAllImages(Context context) {
+        File cacheDir = context.getCacheDir();
+        if (cacheDir.isDirectory()) {
+            for (File file : cacheDir.listFiles()) {
+                if (file.getName().endsWith(".bmp")) {
+                    file.delete();
+                }
+            }
+        }
+        File externalDir = new File(context.getExternalFilesDir(null), "TrainingImages");
+        if (externalDir.isDirectory()) {
+            for (File characterDir : externalDir.listFiles()) {
+                if (characterDir.isDirectory()) {
+                    for (File file : characterDir.listFiles()) {
+                        if (file.getName().endsWith(".bmp")) {
+                            file.delete();
+                        }
+                    }
+                }
+            }
+        }
+
+        Log.d("ImageSavingManager", "All images deleted from cache and external storage");
+    }
+
+
 
     public static void saveBitmapAsBMP(Bitmap bitmap, OutputStream out) throws IOException {
         int width = bitmap.getWidth();
