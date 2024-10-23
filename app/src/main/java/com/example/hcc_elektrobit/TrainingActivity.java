@@ -33,7 +33,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private ImageView trainingBitmapDisplay;
     private boolean timerStarted = false;
 
-    private ImageButton plusButton;
     private ImageButton leaveButton;
     private View chatboxContainer;
     private Button exitButton;
@@ -63,7 +62,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         imageSavingManager = new ImageSavingManager(null);
         model = new CNNonnxModel(this);
 
-        plusButton = findViewById(R.id.plus_button);
         leaveButton = findViewById(R.id.leave_button);
         chatboxContainer = findViewById(R.id.chatbox_container);
         okButton = findViewById(R.id.ok_button);
@@ -73,8 +71,10 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         characterIdInput = findViewById(R.id.character_id_input);
 
 
-        chatboxContainer.setVisibility(View.GONE);
+        chatboxContainer.setVisibility(View.VISIBLE);
+        exitButton.setVisibility(View.VISIBLE);
         leaveButton.setVisibility(View.GONE);
+        reviewButton.setVisibility(View.GONE);
 
         exitButton.setOnClickListener(v -> {
             dialogManager.showExitTrainingModeDialog(this::finish);
@@ -93,18 +93,9 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
                     .create()
                     .show();
         });
-        reviewButton.setVisibility(View.GONE);
-
-        plusButton.setOnClickListener(v -> {
-            plusButton.setVisibility(View.GONE);
-            chatboxContainer.setVisibility(View.VISIBLE);
-            exitButton.setVisibility(View.GONE);
-        });
 
         cancelButton.setOnClickListener(v -> {
-            chatboxContainer.setVisibility(View.GONE);
-            plusButton.setVisibility(View.VISIBLE);
-            exitButton.setVisibility(View.VISIBLE);
+            dialogManager.showExitTrainingModeDialog(this::finish);
         });
 
         okButton.setOnClickListener(v -> {
@@ -114,7 +105,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
                 selectedCharacter = characterMapping.getCharacterForId(id);
                 if (!selectedCharacter.isEmpty()) {
                     chatboxContainer.setVisibility(View.GONE);
-
+                    exitButton.setVisibility(View.GONE);
                     leaveButton.setVisibility(View.VISIBLE);
                     reviewButton.setVisibility(View.VISIBLE);
                 }
@@ -134,7 +125,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
                 bitmapsToSave.clear();
                 leaveButton.setVisibility(View.GONE);
                 reviewButton.setVisibility(View.GONE);
-                plusButton.setVisibility(View.VISIBLE);
+                chatboxContainer.setVisibility(View.VISIBLE);
                 exitButton.setVisibility(View.VISIBLE);
             });
         });
@@ -192,6 +183,8 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         if (requestCode == REVIEW_IMAGES_REQUEST && resultCode == RESULT_OK) {
             if (data != null && "keep_selected".equals(data.getStringExtra("operation"))) {
                 resetTrainingMode();
+                chatboxContainer.setVisibility(View.VISIBLE);
+                exitButton.setVisibility(View.VISIBLE);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -201,8 +194,8 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private void resetTrainingMode() {
         leaveButton.setVisibility(View.GONE);
         reviewButton.setVisibility(View.GONE);
-        plusButton.setVisibility(View.VISIBLE);
         exitButton.setVisibility(View.VISIBLE);
+        chatboxContainer.setVisibility(View.VISIBLE);
         bitmapsToSave.clear();
         selectedCharacter = "";
     }
@@ -252,5 +245,11 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
         return bitmap;
     }
+
+    /*TODO: create dialog to manually input bitmap dimensions. Delete plus button. Options button in corner of training view.
+    Various options: size of the bitmap and id of the saved image. Introduce sequence. 1-9 for number, 10-36 for alphabet, any additional characters will start at 37. When adding a new support set
+    , it should automatically go on from the last used number, in our case atm 36 for z.
+    In review mode view, add a select all button in top corner and change functionality, where the images you select then can be deleted and then all images that are can be selected and saved
+     */
 
 }
