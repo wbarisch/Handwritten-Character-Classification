@@ -73,4 +73,12 @@
         app:layout_constraintTop_toBottomOf="@id/share_button"
         app:layout_constraintLeft_toLeftOf="@+id/share_button"/>
 
+    <Button
+        android:id="@+id/support_set_gen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Support Set"
+        app:layout_constraintTop_toBottomOf="@id/siamese_test_button"
+        app:layout_constraintLeft_toLeftOf="@+id/share_button"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -51,6 +51,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button shareButton = findViewById(R.id.share_button);
         Button trainingModeButton = findViewById(R.id.training_mode_button);
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
+        Button supportsetActivityButton = findViewById(R.id.support_set_gen);
 
 
         model = new CNNonnxModel(this);
@@ -61,6 +62,15 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             public void onClick(View v) {
                 // Switch to SiameseTesterActivity
                 Intent intent = new Intent(JMainActivity.this, SiameseTesterActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        supportsetActivityButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Switch to SiameseTesterActivity
+                Intent intent = new Intent(JMainActivity.this, SupportSetActivity.class);
                 startActivity(intent);
             }
         });
