@@ -17,11 +17,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -67,8 +64,7 @@ public class History {
         if(!root.exists()){
             root.mkdir();
         }
-
-        String imgFileName = historyItem.pred + "" + (int) (Math.random() * 10000) + historyItem.getModel() + ".png";
+        String imgFileName = historyItem.pred + Integer.toString(historyItem.bitmap.getGenerationId()) + ".png";
         File img_file = new File(root, imgFileName);
         try(FileOutputStream out = new FileOutputStream(img_file)){
             historyItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
@@ -76,11 +72,11 @@ public class History {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        String jsonFileName = "model_outputs.json";
+        String jsonFileName = "tensors.json";
         File json_file = new File(root, jsonFileName);
         if (!json_file.exists()){
             try(FileOutputStream out = new FileOutputStream(json_file)){
-                Log.i("model_outputs.json", "Json file created");
+                Log.i("tensors.json", "Json file created");
             }catch(IOException e){
                 throw new RuntimeException(e);
             }
@@ -88,16 +84,20 @@ public class History {
 
         JSONObject mainJsonObject = getJsonObject(json_file);
 
-        JSONObject similarityMap = new JSONObject();
+        JSONArray tensorArray = new JSONArray();
         String jsonString;
 
         try {
 
-            for (String key: ((Map<String, Float>)historyItem.model_tensor).keySet()) {
-                similarityMap.put(key, ((Map<String, Float>) historyItem.model_tensor).get(key));
+            for (float[] row: historyItem.pred_tensor) {
+                JSONArray rowArray = new JSONArray();
+                for (float value: row) {
+                    rowArray.put(value);
+                }
+                tensorArray.put(rowArray);
             }
 
-            mainJsonObject.put(imgFileName, similarityMap);;
+            mainJsonObject.put(imgFileName, tensorArray);;
             jsonString = mainJsonObject.toString(4);
         } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -135,25 +135,19 @@ public class History {
     // fill the history set with the saved imgs
     public void updateHistory(Context context){
         File bitmapDir = new File(context.getFilesDir(), "saved_bitmaps");
-        File jsonFile = new File(bitmapDir, "model_outputs.json");
+        File jsonFile = new File(bitmapDir, "tensors.json");
         if(!bitmapDir.exists()){
             return;
         }
         historyItems.clear();
         for (File file: Objects.requireNonNull(bitmapDir.listFiles())) {
-            if(file.getName().equals("model_outputs.json")) continue;
+            if(file.getName().equals("tensors.json")) continue;
             try(FileInputStream in = new FileInputStream(file)){
                 Bitmap bmp = BitmapFactory.decodeStream(in);
-                String pred = file.getName().charAt(0)+"";
-                if(file.getName().contains("SMS")){
-                    Map<String, Float> similarityMap = getSimilarityMapFromJSON(file, jsonFile);
-                    SMSHistoryItem _hi = new SMSHistoryItem(bmp, pred, similarityMap);
-                    historyItems.add(_hi);
-                } else if(file.getName().contains("CNN")){
-                    float[][] outputTensor = getTensorFromJSON(file,jsonFile);
-                    CNNHistoryItem _hi = new CNNHistoryItem(bmp, pred, outputTensor);
-                    historyItems.add(_hi);
-                }
+                int pred = Integer.parseInt(file.getName().charAt(0)+"");
+                float[][] tensor = getTensorFromJSON(file, jsonFile);
+                HistoryItem _hi = new HistoryItem(bmp, pred, tensor);
+                historyItems.add(_hi);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -193,35 +187,8 @@ public class History {
             throw new RuntimeException(e);
         }
 
+
         return result;
-    }
-
-    Map<String, Float> getSimilarityMapFromJSON(File file, File source){
-        Map<String, Float> resultMap = new HashMap<>();
-
-        String jsonContent;
-        try(FileInputStream in = new FileInputStream(source)){
-            int size = in.available();
-            byte[] buffer = new byte[size];
-            in.read(buffer);
-            in.close();
-            jsonContent = new String(buffer, StandardCharsets.UTF_8);
-        }catch (IOException e){
-            throw new RuntimeException(e);
-        }
-
-        try{
-            JSONObject jsonFile = new JSONObject(jsonContent);
-            JSONObject similarityMap = jsonFile.getJSONObject(file.getName());
-            for (Iterator<String> it = similarityMap.keys(); it.hasNext(); ) {
-                String key = it.next();
-                resultMap.put(key, (float)similarityMap.getLong(key));
-            }
-        }catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-
-        return resultMap;
     }
 
     public void clearHistory(Context context) {
