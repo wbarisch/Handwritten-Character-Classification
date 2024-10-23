@@ -46,6 +46,7 @@
         <activity android:name=".TrainingActivity"
                   android:exported="true" />
         <activity android:name=".SiameseTesterActivity" />
+        <activity android:name=".ReviewActivity"></activity>
     </application>
 
 </manifest>
