@@ -142,7 +142,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
         drawingCanvas.setOnTouchListener((v, event) -> {
             if (timerStarted) {
-
                 canvasTimer.cancel();
                 timerStarted = false;
             }
@@ -150,13 +149,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap(28);
-                float[] processedBitmapData = model.preprocessBitmap(bitmap);
-                Bitmap preprocessedBitmap = createBitmapFromFloatArray(processedBitmapData, 28, 28);
-                trainingBitmapDisplay.setImageBitmap(preprocessedBitmap);
-
-                addBitmapToSaveList(preprocessedBitmap);
-
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
@@ -164,6 +156,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
             return true;
         });
+
 
     }
 
@@ -177,7 +170,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private void launchReviewActivity() {
         Intent intent = new Intent(this, ReviewActivity.class);
         intent.putStringArrayListExtra("image_paths", getCachedImagePaths());
-        intent.putExtra("selectedCharacter", selectedCharacter);  // Pass the selected character
+        intent.putExtra("selectedCharacter", selectedCharacter);
         startActivityForResult(intent, REVIEW_IMAGES_REQUEST);
     }
 
@@ -197,22 +190,13 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REVIEW_IMAGES_REQUEST && resultCode == RESULT_OK) {
-            ArrayList<String> selectedPaths = data.getStringArrayListExtra("selected_paths");
-
-            if (selectedPaths != null && !selectedPaths.isEmpty()) {
-                for (String path : selectedPaths) {
-                    Bitmap bitmap = BitmapFactory.decodeFile(path);
-                    if (!bitmapsToSave.contains(bitmap)) {
-                        bitmapsToSave.add(bitmap);
-                    }
-                }
-                saveImagesToFolder(this, selectedCharacter);
-
+            if (data != null && "keep_selected".equals(data.getStringExtra("operation"))) {
                 resetTrainingMode();
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
 
     private void resetTrainingMode() {
         leaveButton.setVisibility(View.GONE);
@@ -226,13 +210,9 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
 
     private void saveImagesToFolder(Context context, String character) {
-        for (Bitmap bitmap : bitmapsToSave) {
-            String filename = character + "_" + imageCounter + ".bmp";
-            imageSavingManager.saveImageToCharacterFolder(context, bitmap, character, filename);
-            imageCounter++;
-        }
+        imageSavingManager.saveSelectedImages(context, bitmapsToSave, character);
         bitmapsToSave.clear();
-        clearImageCache();
+        imageSavingManager.clearImageCache(this);
     }
 
     @Override
@@ -240,10 +220,18 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         bitmap = drawingCanvas.getBitmap(28);
         float[] processedBitmapData = model.preprocessBitmap(bitmap);
         Bitmap preprocessedBitmap = createBitmapFromFloatArray(processedBitmapData, 28, 28);
-        drawingCanvas.clear();
+
+        runOnUiThread(() -> {
+            //Uncomment line to show preview and set visiblity of ImageView in activity_training.xml from "gone" to "visible"
+            //trainingBitmapDisplay.setImageBitmap(preprocessedBitmap);
+            addBitmapToSaveList(preprocessedBitmap);
+            drawingCanvas.clear();
+        });
+
         timerStarted = false;
-        imageSavingManager.saveImageToDevice(this, preprocessedBitmap);
     }
+
+
 
     public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
         if (floatArray.length != width * height) {
@@ -263,17 +251,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
         return bitmap;
-    }
-
-    private void clearImageCache() {
-        File cacheDir = getCacheDir();
-        if (cacheDir.isDirectory()) {
-            for (File file : cacheDir.listFiles()) {
-                if (file.getName().endsWith(".bmp")) {
-                    file.delete();
-                }
-            }
-        }
     }
 
 }

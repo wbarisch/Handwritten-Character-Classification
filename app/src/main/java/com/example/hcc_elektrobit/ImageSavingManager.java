@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 public class ImageSavingManager {
 
@@ -23,29 +24,52 @@ public class ImageSavingManager {
         this.documentLauncher = documentLauncher;
     }
 
-    public void saveImageUsingDocumentIntent(Bitmap bitmap) {
-        if (bitmap == null) {
-            Log.e("ImageSavingManager", "Bitmap is null, cannot save");
-            return;
+    private int getMaxImageIndex(Context context, String character) {
+        String directoryPath = Environment.DIRECTORY_PICTURES + "/TrainingImages/" + character;
+        File directory = new File(Environment.getExternalStoragePublicDirectory(directoryPath).toString());
+        if (!directory.exists() || !directory.isDirectory()) {
+            return 0;
         }
 
-        Log.d("ImageSavingManager", "Saving image using document intent");
+        File[] files = directory.listFiles();
+        int maxIndex = 0;
 
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/bmp");
-        intent.putExtra(Intent.EXTRA_TITLE, "image_" + System.currentTimeMillis() + ".bmp");
+        if (files != null) {
+            for (File file : files) {
+                String fileName = file.getName();
+                if (fileName.startsWith(character + "_") && fileName.endsWith(".bmp")) {
+                    String indexPart = fileName.substring(fileName.indexOf("_") + 1, fileName.lastIndexOf("."));
+                    try {
+                        int index = Integer.parseInt(indexPart);
+                        if (index > maxIndex) {
+                            maxIndex = index;
+                        }
+                    } catch (NumberFormatException e) {
+                        Log.e("ImageSavingManager", "Error parsing file index: " + fileName);
+                    }
+                }
+            }
+        }
 
-        documentLauncher.launch(intent);
+        return maxIndex;
     }
 
-    public void saveImageToDevice(Context context, Bitmap bitmap) {
-        if (bitmap == null) {
-            Log.e("ImageSavingManager", "Bitmap is null, cannot save");
+    public void saveSelectedImages(Context context, List<Bitmap> selectedBitmaps, String character) {
+        if (selectedBitmaps == null || selectedBitmaps.isEmpty()) {
+            Log.e("ImageSavingManager", "No images selected to save.");
             return;
         }
 
-        saveImageToPublicStorage(context, bitmap);
+        int currentMaxIndex = getMaxImageIndex(context, character);
+        for (Bitmap bitmap : selectedBitmaps) {
+            if (bitmap != null) {
+                currentMaxIndex++;
+                String filename = character + "_" + currentMaxIndex + ".bmp";
+                saveImageToCharacterFolder(context, bitmap, character, filename);
+            }
+        }
+
+        Log.d("ImageSavingManager", "Selected images saved to character folder: " + character);
     }
 
     public void saveImageToCharacterFolder(Context context, Bitmap bitmap, String character, String filename) {
@@ -55,10 +79,9 @@ public class ImageSavingManager {
         }
 
         String directoryPath = Environment.DIRECTORY_PICTURES + "/TrainingImages/" + character;
-        String fileName = character + "_" + System.currentTimeMillis() + ".bmp";
 
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, filename);
         values.put(MediaStore.Images.Media.MIME_TYPE, "image/bmp");
         values.put(MediaStore.Images.Media.RELATIVE_PATH, directoryPath);
 
@@ -78,6 +101,34 @@ public class ImageSavingManager {
         }
     }
 
+    public void saveImageUsingDocumentIntent(Bitmap bitmap) {
+        if (bitmap == null) {
+            Log.e("ImageSavingManager", "Bitmap is null, cannot save");
+            return;
+        }
+
+        Log.d("ImageSavingManager", "Saving image using document intent");
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/bmp");
+        intent.putExtra(Intent.EXTRA_TITLE, "image_" + System.currentTimeMillis() + ".bmp");
+
+        documentLauncher.launch(intent);
+    }
+
+    public void saveImageToDevice(Context context, Bitmap bitmap, String character) {
+        if (bitmap == null) {
+            Log.e("ImageSavingManager", "Bitmap is null, cannot save");
+            return;
+        }
+
+
+        int currentMaxIndex = getMaxImageIndex(context, character);
+        String filename = character + "_" + (currentMaxIndex + 1) + ".bmp";
+
+        saveImageToCharacterFolder(context, bitmap, character, filename);
+    }
 
     public void saveBitmapToCache(Context context, Bitmap bitmap, String fileName) {
         if (bitmap == null) {
@@ -96,36 +147,6 @@ public class ImageSavingManager {
         }
     }
 
-
-
-    public void saveImageToPublicStorage(Context context, Bitmap bitmap) {
-        if (bitmap == null) {
-            Log.e("ImageSavingManager", "Bitmap is null, cannot save");
-            return;
-        }
-
-        String fileName = "image_" + System.currentTimeMillis() + ".bmp";
-
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/bmp");
-        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/TrainingImages");
-
-        try {
-            OutputStream fos = context.getContentResolver()
-                    .openOutputStream(context.getContentResolver()
-                            .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values));
-
-            if (fos != null) {
-                saveBitmapAsBMP(bitmap, fos);  // Save the bitmap as BMP
-                fos.flush();
-                fos.close();
-                Log.d("ImageSavingManager", "Image saved and added to MediaStore.");
-            }
-        } catch (IOException e) {
-            Log.e("ImageSavingManager", "Error saving image to public storage", e);
-        }
-    }
 
     public void deleteAllImages(Context context) {
         File cacheDir = context.getCacheDir();
@@ -151,6 +172,19 @@ public class ImageSavingManager {
 
         Log.d("ImageSavingManager", "All images deleted from cache and external storage");
     }
+
+    public void clearImageCache(Context context) {
+        File cacheDir = context.getCacheDir();
+        if (cacheDir.isDirectory()) {
+            for (File file : cacheDir.listFiles()) {
+                if (file.getName().endsWith(".bmp")) {
+                    file.delete();
+                }
+            }
+        }
+        Log.d("ImageSavingManager", "Cache cleared.");
+    }
+
 
 
 

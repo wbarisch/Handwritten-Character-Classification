@@ -59,27 +59,11 @@ public class ReviewActivity extends AppCompatActivity {
         keepButton.setOnClickListener(v -> {
             if (!selectedBitmaps.isEmpty()) {
                 dialogManager.showKeepSelectedDialog(() -> {
-                    ArrayList<String> selectedPaths = new ArrayList<>();
-                    for (Bitmap selectedBitmap : selectedBitmaps) {
-                        int index = bitmaps.indexOf(selectedBitmap);
-                        if (index >= 0 && index < imagePaths.size()) {
-                            String path = imagePaths.get(index);
-                            if (!selectedPaths.contains(path)) {
-                                selectedPaths.add(path);
-                            }
-                        }
-                    }
-
-                    for (String path : selectedPaths) {
-                        Bitmap bitmap = BitmapFactory.decodeFile(path);
-                        String character = selectedCharacter;
-                        imageSavingManager.saveImageToCharacterFolder(this, bitmap, character, "image_" + System.currentTimeMillis() + ".bmp");
-                    }
-
+                    imageSavingManager.saveSelectedImages(this, selectedBitmaps, selectedCharacter);
+                    imageSavingManager.clearImageCache(this);
                     selectedBitmaps.clear();
-
                     Intent resultIntent = new Intent();
-                    resultIntent.putStringArrayListExtra("selected_paths", selectedPaths);
+                    resultIntent.putExtra("operation", "keep_selected");
                     setResult(RESULT_OK, resultIntent);
                     finish();
                 }, () -> {});
@@ -89,6 +73,7 @@ public class ReviewActivity extends AppCompatActivity {
         discardButton.setOnClickListener(v -> {
             dialogManager.showDiscardAllDialog(() -> {
                 imageSavingManager.deleteAllImages(this);
+                imageSavingManager.clearImageCache(this);
                 finish();
             }, () -> {
             });
