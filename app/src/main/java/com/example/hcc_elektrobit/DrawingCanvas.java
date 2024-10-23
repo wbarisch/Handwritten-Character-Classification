@@ -78,6 +78,8 @@ public class DrawingCanvas extends View {
 
     }
 
+    /*TODO: Implement a boolean that disables centering and matrix operations for testing.
+    Have it be a toggle one the main screen.*/
     public Bitmap getBitmap(int dims) {
 
         int margin = 2;
