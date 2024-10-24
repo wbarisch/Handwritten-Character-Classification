@@ -26,10 +26,10 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
-    private CNNonnxModel model;
+    private CNNonnxModel model;                         // Must go to MainViewModel
     private Bitmap bitmap;
-    private AudioPlayer audioPlayer;
-    CanvasTimer canvasTimer;
+    private AudioPlayerManager audioPlayerManager;                    // Must go to MainViewModel
+    CanvasTimer canvasTimer;                            // Must go to MainViewModel
     boolean timerStarted = false;
 
     @Override
@@ -54,7 +54,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
 
         model = new CNNonnxModel(this);
-        audioPlayer = new AudioPlayer(this);
+        audioPlayerManager = new AudioPlayerManager(this);
 
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,7 +159,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         history.saveItem(historyItem, this);
 
         bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
-        audioPlayer.PlayAudio(String.valueOf(result));
+        audioPlayerManager.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
 
             recognizedCharTextView.setText(String.valueOf(result));

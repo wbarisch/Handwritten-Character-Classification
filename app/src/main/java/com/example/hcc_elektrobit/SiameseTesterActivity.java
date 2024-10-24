@@ -1,23 +1,13 @@
 package com.example.hcc_elektrobit;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 public class SiameseTesterActivity extends AppCompatActivity implements TimeoutActivity {
 
@@ -28,7 +18,7 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
     private SMSonnxModel model;
     private Bitmap bitmap;
     private Bitmap bitmap2;
-    private AudioPlayer audioPlayer;
+    private AudioPlayerManager audioPlayerManager;
     private CanvasTimer canvasTimer;
     private boolean timerStarted = false;
     int bitmapState = 0;
