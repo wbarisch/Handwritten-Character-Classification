@@ -36,7 +36,6 @@ public class ReviewActivity extends AppCompatActivity {
 
         gridView = findViewById(R.id.grid_view);
         Button keepButton = findViewById(R.id.keep_button);
-        Button discardButton = findViewById(R.id.discard_button);
         selectAllCheckBox = findViewById(R.id.select_all_checkbox);
         trashButton = findViewById(R.id.trash_button);
 
@@ -76,15 +75,6 @@ public class ReviewActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "No images selected to keep.", Toast.LENGTH_SHORT).show();
             }
-        });
-
-        discardButton.setOnClickListener(v -> {
-            dialogManager.showDiscardAllDialog(() -> {
-                imageSavingManager.deleteAllImages(this);
-                imageSavingManager.clearImageCache(this);
-                finish();
-            }, () -> {
-            });
         });
 
         selectAllCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {

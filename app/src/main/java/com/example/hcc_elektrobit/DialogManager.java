@@ -93,15 +93,6 @@ public class DialogManager {
         builder.show();
     }
 
-    public void showDiscardAllDialog(Runnable onConfirmDiscard, Runnable onCancelDiscard) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle("Discard All Images")
-                .setMessage("Do you want to discard all the images?")
-                .setPositiveButton("Yes", (dialog, which) -> onConfirmDiscard.run())
-                .setNegativeButton("No", (dialog, which) -> onCancelDiscard.run())
-                .show();
-    }
-
     public void showNoImagesDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("No Images")

@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -101,6 +102,10 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
                 int id = Integer.parseInt(characterId);
                 selectedCharacter = characterMapping.getCharacterForId(id);
                 if (!selectedCharacter.isEmpty()) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(characterIdInput.getWindowToken(), 0);
+                    }
                     chatboxContainer.setVisibility(View.GONE);
                     exitButton.setVisibility(View.GONE);
                     leaveButton.setVisibility(View.VISIBLE);
