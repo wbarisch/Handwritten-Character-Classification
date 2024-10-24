@@ -2,18 +2,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center">
 
     <ImageView
         android:id="@+id/bmp"
-        android:layout_width="220dp"
-        android:layout_height="220dp"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
         android:contentDescription="image"
         android:padding="16dp" />
 
     <TextView
         android:id="@+id/pred"
-        android:layout_width="220dp"
+        android:layout_width="54dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:text="TextView"

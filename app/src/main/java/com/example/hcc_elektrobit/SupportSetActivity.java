@@ -44,6 +44,14 @@ public class SupportSetActivity extends AppCompatActivity {
         SupportSetAdapter adapter = new SupportSetAdapter(this, R.layout.support_set_item, SupportSet.getInstance().getItems());
         gridView.setAdapter(adapter);
 
+        createImgButton.setOnClickListener(new  View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SupportSetActivity.this, SupportSetDrawingActivity.class);
+                startActivity(intent);
+            }
+        });
+
         clearHistory.setOnClickListener(new  View.OnClickListener() {
             @Override
             public void onClick(View v) {

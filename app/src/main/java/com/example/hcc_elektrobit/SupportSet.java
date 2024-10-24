@@ -10,10 +10,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class SupportSet {
 
@@ -21,7 +24,22 @@ public class SupportSet {
     private static volatile SupportSet INSTANCE = null;
 
 
-    private Set<SupportSetItem> SupportSetItems = new HashSet<>();
+    private Set<SupportSetItem> SupportSetItems = new TreeSet<>(new Comparator<SupportSetItem>() {
+        @Override
+        public int compare(SupportSetItem o1, SupportSetItem o2) {
+            int labelComparison = Integer.compare(o1.labelId, o2.labelId);
+            if (labelComparison != 0) {
+                return labelComparison;
+            }
+
+
+            labelComparison = Integer.compare(o1.getBitmap().getByteCount(), o2.getBitmap().getByteCount());
+            if (labelComparison == 0) {
+                return 1;
+            }
+            return labelComparison;
+        }
+    });
     private SupportSet() {
     }
 
@@ -80,7 +98,7 @@ public class SupportSet {
         }
     }
     public void clearSet(Context context) {
-        File bitmapDir = new File(context.getFilesDir(), "saved_bitmaps");
+        File bitmapDir = new File(context.getFilesDir(), "support_set");
         if (bitmapDir.exists()) {
             for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
                 if (file.delete()) {
