@@ -2,7 +2,6 @@ package com.example.hcc_elektrobit;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.util.Log;
 
@@ -11,8 +10,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ai.onnxruntime.OnnxTensor;
@@ -57,7 +57,7 @@ public class SMSonnxModel {
         }
         return modelFile.getAbsolutePath();
     }
-    public float[][] classify(Bitmap bitmap,Bitmap bitmap2) {
+    public float[][] findSimilarity(Bitmap bitmap, Bitmap bitmap2) {
         try {
 
             float[] input1TensorData = preprocessBitmap(bitmap);
@@ -90,10 +90,62 @@ public class SMSonnxModel {
     }
 
     public float classify_similarity(Bitmap bitmap1,Bitmap bitmap2){
-        float[][] result = this.classify(bitmap1,bitmap2);
+        float[][] result = this.findSimilarity(bitmap1,bitmap2);
+        classify_id(bitmap1);
         //float[] result = {2.0f};
         return result[0][0];
 
+    }
+
+    public int classify_id(Bitmap bitmap1){
+
+        List<SupportSetItem> supportSet = SupportSet.getInstance().getItems();
+
+        Map<Integer, List<Float>> similarityMap = new HashMap<>();
+
+        for (SupportSetItem item : supportSet) {
+            int labelId = item.getlabelId();
+            Bitmap bitmap2 = item.getBitmap();
+
+            float[][] result = findSimilarity(bitmap1, bitmap2);
+            float similarity = result[0][0];
+
+            similarityMap.putIfAbsent(labelId, new ArrayList<>());
+            similarityMap.get(labelId).add(similarity);
+
+
+        }
+
+        Map<Integer, Float> averageSimilarityMap = new HashMap<>();
+        for (Map.Entry<Integer, List<Float>> entry : similarityMap.entrySet()) {
+            int labelId = entry.getKey();
+            List<Float> similarities = entry.getValue();
+
+            float sum = 0;
+            for (Float similarity : similarities) {
+                sum += similarity;
+            }
+            float average = sum / similarities.size();
+            averageSimilarityMap.put(labelId, average);
+        }
+
+        int maxLabelId = -1;
+        float maxAverage = Float.MIN_VALUE;
+        for (Map.Entry<Integer, Float> entry : averageSimilarityMap.entrySet()) {
+            int labelId = entry.getKey();
+            float average = entry.getValue();
+
+            if (average > maxAverage) {
+                maxAverage = average;
+                maxLabelId = labelId;
+            }
+        }
+
+        // Log the results (optional)
+        Log.e(TAG, "Maximum Average Similarity: " + maxAverage + " for Label ID: " + maxLabelId);
+
+        // Return the labelId with the highest average similarity
+        return maxLabelId;
     }
 
     public float[] preprocessBitmap(Bitmap bitmap) {
