@@ -4,16 +4,21 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.InputType;
 import android.view.inputmethod.InputMethodManager;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,9 +29,10 @@ import java.util.List;
 public class TrainingActivity extends AppCompatActivity implements TimeoutActivity {
     private static final int REVIEW_IMAGES_REQUEST = 1;
 
+    private int bitmapSize = 28;
+
     private Bitmap bitmap;
     private CanvasTimer canvasTimer;
-    private CNNonnxModel model;
     private DialogManager dialogManager;
     
     private DrawingCanvas drawingCanvas;
@@ -58,7 +64,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
         drawingCanvas = findViewById(R.id.fullscreen_canvas);
         imageSavingManager = new ImageSavingManager(null);
-        model = new CNNonnxModel(this);
 
         leaveButton = findViewById(R.id.leave_button);
         chatboxContainer = findViewById(R.id.chatbox_container);
@@ -67,7 +72,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         cancelButton = findViewById(R.id.cancel_button);
         exitButton = findViewById(R.id.exit_button);
         characterIdInput = findViewById(R.id.character_id_input);
-
 
         chatboxContainer.setVisibility(View.VISIBLE);
         exitButton.setVisibility(View.VISIBLE);
@@ -154,9 +158,10 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     }
 
     private void addBitmapToSaveList(Bitmap bitmap) {
+        Bitmap invertedBitmap = invertBitmapColors(bitmap);
         String fileName = "temp_image_" + System.currentTimeMillis();
-        imageSavingManager.saveBitmapToCache(this, bitmap, fileName);
-        bitmapsToSave.add(bitmap);
+        imageSavingManager.saveBitmapToCache(this, invertedBitmap, fileName);
+        bitmapsToSave.add(invertedBitmap);
     }
 
 
@@ -206,46 +211,94 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
     @Override
     public void onTimeout() {
-        bitmap = drawingCanvas.getBitmap(28);
-        float[] processedBitmapData = model.preprocessBitmap(bitmap);
-        Bitmap preprocessedBitmap = createBitmapFromFloatArray(processedBitmapData, 28, 28);
+        bitmap = drawingCanvas.getBitmap(bitmapSize);
 
         runOnUiThread(() -> {
-            //Uncomment line to show preview and set visiblity of ImageView in activity_training.xml from "gone" to "visible"
-            //trainingBitmapDisplay.setImageBitmap(preprocessedBitmap);
-            addBitmapToSaveList(preprocessedBitmap);
+
+            addBitmapToSaveList(bitmap);
             drawingCanvas.clear();
         });
 
         timerStarted = false;
     }
 
-
-
-    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
-        if (floatArray.length != width * height) {
-            throw new IllegalArgumentException("Float array length must match width * height");
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        int[] pixels = new int[width * height];
-
-        for (int i = 0; i < floatArray.length; i++) {
-            float value = floatArray[i];
-            value = Math.max(0, Math.min(1, value));
-            int grayscale = (int) (value * 255);
-            int color = android.graphics.Color.argb(255, grayscale, grayscale, grayscale);
-            pixels[i] = color;
-        }
-
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-        return bitmap;
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.training_activity_menu, menu);
+        return true;
     }
 
-    /*TODO: create dialog to manually input bitmap dimensions. Delete plus button. Options button in corner of training view.
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_bitmap_size) {
+            showBitmapSizeDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showBitmapSizeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Set Bitmap Image Size");
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setHint("Enter bitmap size (e.g., 28)");
+
+        builder.setView(input);
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String inputText = input.getText().toString().trim();
+            if (!inputText.isEmpty()) {
+                try {
+                    int size = Integer.parseInt(inputText);
+                    if (size > 0) {
+                        bitmapSize = size;
+                        Toast.makeText(this, "Bitmap size set to " + bitmapSize, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Please enter a positive number.", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (NumberFormatException e) {
+                    Toast.makeText(this, "Invalid number format.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Input cannot be empty.", Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    public Bitmap invertBitmapColors(Bitmap originalBitmap) {
+        Bitmap invertedBitmap = Bitmap.createBitmap(
+                originalBitmap.getWidth(),
+                originalBitmap.getHeight(),
+                originalBitmap.getConfig()
+        );
+
+        int width = originalBitmap.getWidth();
+        int height = originalBitmap.getHeight();
+        int[] pixels = new int[width * height];
+        originalBitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+        for (int i = 0; i < pixels.length; i++) {
+            int color = pixels[i];
+            int alpha = Color.alpha(color);
+            int red = 255 - Color.red(color);
+            int green = 255 - Color.green(color);
+            int blue = 255 - Color.blue(color);
+            pixels[i] = Color.argb(alpha, red, green, blue);
+        }
+
+        invertedBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        return invertedBitmap;
+    }
+
+    /*TODO:
     Various options: size of the bitmap and id of the saved image. Introduce sequence. 1-9 for number, 10-36 for alphabet, any additional characters will start at 37. When adding a new support set
     , it should automatically go on from the last used number, in our case atm 36 for z.
-    In review mode view, add a select all button in top corner and change functionality, where the images you select then can be deleted and then all images that are can be selected and saved
+
      */
 
 }
