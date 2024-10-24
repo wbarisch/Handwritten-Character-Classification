@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.GridView;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,6 +22,7 @@ public class ReviewActivity extends AppCompatActivity {
     private ReviewAdapter reviewAdapter;
     private GridView gridView;
     private CheckBox selectAllCheckBox;
+    private ImageButton trashButton;
     private DialogManager dialogManager;
     private ImageSavingManager imageSavingManager;
 
@@ -35,6 +38,7 @@ public class ReviewActivity extends AppCompatActivity {
         Button keepButton = findViewById(R.id.keep_button);
         Button discardButton = findViewById(R.id.discard_button);
         selectAllCheckBox = findViewById(R.id.select_all_checkbox);
+        trashButton = findViewById(R.id.trash_button);
 
         Intent intent = getIntent();
 
@@ -69,6 +73,8 @@ public class ReviewActivity extends AppCompatActivity {
                     setResult(RESULT_OK, resultIntent);
                     finish();
                 }, () -> {});
+            } else {
+                Toast.makeText(this, "No images selected to keep.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -88,5 +94,36 @@ public class ReviewActivity extends AppCompatActivity {
                 reviewAdapter.deselectAll();
             }
         });
+
+        trashButton.setOnClickListener(v -> {
+            if (selectedBitmaps.isEmpty()) {
+                Toast.makeText(this, "No images selected to delete.", Toast.LENGTH_SHORT).show();
+            } else {
+                dialogManager.showDeleteSelectedDialog(() -> {
+                    imageSavingManager.deleteSelectedImages(this, selectedBitmaps, bitmaps, imagePaths);
+                    reviewAdapter.notifyDataSetChanged();
+                    resetSelectAllCheckBox();
+                    if (bitmaps.isEmpty()) {
+                        Toast.makeText(this, "No images left.", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }, () -> {
+                });
+            }
+        });
     }
+
+    private void resetSelectAllCheckBox() {
+        selectAllCheckBox.setOnCheckedChangeListener(null);
+        selectAllCheckBox.setChecked(false);
+        selectAllCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                reviewAdapter.selectAll();
+            } else {
+                reviewAdapter.deselectAll();
+            }
+        });
+    }
+
+
 }

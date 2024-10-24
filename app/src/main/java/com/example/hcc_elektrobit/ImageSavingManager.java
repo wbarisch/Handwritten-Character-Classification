@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ImageSavingManager {
@@ -70,6 +71,30 @@ public class ImageSavingManager {
         }
 
         Log.d("ImageSavingManager", "Selected images saved to character folder: " + character);
+    }
+
+    public void deleteSelectedImages(Context context, List<Bitmap> selectedBitmaps, List<Bitmap> bitmaps, List<String> imagePaths) {
+        if (selectedBitmaps == null || selectedBitmaps.isEmpty()) {
+            Log.e("ImageSavingManager", "No images selected to delete.");
+            return;
+        }
+        for (Bitmap bitmap : new ArrayList<>(selectedBitmaps)) {
+            int index = bitmaps.indexOf(bitmap);
+            if (index != -1) {
+                bitmaps.remove(index);
+                String path = imagePaths.get(index);
+                File file = new File(path);
+                if (file.exists()) {
+                    if (file.delete()) {
+                        Log.d("ImageSavingManager", "Deleted file: " + path);
+                    } else {
+                        Log.e("ImageSavingManager", "Failed to delete file: " + path);
+                    }
+                }
+                imagePaths.remove(index);
+            }
+        }
+        selectedBitmaps.clear();
     }
 
     public void saveImageToCharacterFolder(Context context, Bitmap bitmap, String character, String filename) {
@@ -149,21 +174,19 @@ public class ImageSavingManager {
 
 
     public void deleteAllImages(Context context) {
-        File cacheDir = context.getCacheDir();
-        if (cacheDir.isDirectory()) {
-            for (File file : cacheDir.listFiles()) {
-                if (file.getName().endsWith(".bmp")) {
-                    file.delete();
-                }
-            }
-        }
-        File externalDir = new File(context.getExternalFilesDir(null), "TrainingImages");
+        clearImageCache(context);
+        File externalDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES + "/TrainingImages").toString());
         if (externalDir.isDirectory()) {
             for (File characterDir : externalDir.listFiles()) {
                 if (characterDir.isDirectory()) {
                     for (File file : characterDir.listFiles()) {
                         if (file.getName().endsWith(".bmp")) {
-                            file.delete();
+                            if (file.delete()) {
+                                Log.d("ImageSavingManager", "Deleted file: " + file.getPath());
+                            } else {
+                                Log.e("ImageSavingManager", "Failed to delete file: " + file.getPath());
+                            }
                         }
                     }
                 }
@@ -178,7 +201,11 @@ public class ImageSavingManager {
         if (cacheDir.isDirectory()) {
             for (File file : cacheDir.listFiles()) {
                 if (file.getName().endsWith(".bmp")) {
-                    file.delete();
+                    if (file.delete()) {
+                        Log.d("ImageSavingManager", "Deleted cache file: " + file.getPath());
+                    } else {
+                        Log.e("ImageSavingManager", "Failed to delete cache file: " + file.getPath());
+                    }
                 }
             }
         }

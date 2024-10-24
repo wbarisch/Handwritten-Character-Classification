@@ -119,6 +119,15 @@ public class DialogManager {
                 .show();
     }
 
+    public void showDeleteSelectedDialog(Runnable onConfirmDelete, Runnable onCancelDelete) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Delete Selected Images")
+                .setMessage("Are you sure you want to delete the selected images?")
+                .setPositiveButton("Yes", (dialog, which) -> onConfirmDelete.run())
+                .setNegativeButton("No", (dialog, which) -> onCancelDelete.run())
+                .show();
+    }
+
 
 }
 

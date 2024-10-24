@@ -195,7 +195,9 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         chatboxContainer.setVisibility(View.VISIBLE);
         bitmapsToSave.clear();
         selectedCharacter = "";
+        imageSavingManager.clearImageCache(this);
     }
+
 
     @Override
     public void onTimeout() {
