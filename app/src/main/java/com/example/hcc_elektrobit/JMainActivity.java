@@ -26,7 +26,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
-    private CNNonnxModel model;
+    private SMSonnxModel model;
     private Bitmap bitmap;
     private AudioPlayer audioPlayer;
     CanvasTimer canvasTimer;
@@ -54,8 +54,9 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
 
 
-        model = new CNNonnxModel(this);
+        model = new SMSonnxModel(this);
         audioPlayer = new AudioPlayer(this);
+        SupportSet.getInstance().updateSet(this);
 
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,7 +151,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     private void classifyCharacter(){
 
-        bitmap = drawingCanvas.getBitmap(28);
+        bitmap = drawingCanvas.getBitmap(105);
 
         if (bitmap == null) {
             Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
@@ -161,14 +162,14 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         // - Call CharacterClassifier class
         // - To display the output character, set it to "recognizedCharTextView".
 
-        int result = model.classifyAndReturnDigit(bitmap);
+        String result = model.classify_id(bitmap);
 
         History history = History.getInstance();
         HistoryItem historyItem = new HistoryItem(bitmap, result);
 
         history.saveItem(historyItem, this);
 
-        bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
+        //bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
         audioPlayer.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
 
