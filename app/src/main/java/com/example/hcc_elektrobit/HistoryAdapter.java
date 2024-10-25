@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -82,6 +83,35 @@ public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
                 } else if (Objects.equals(item.getModel(), "CNN")) {
                     tensor.setText(Arrays.deepToString(((CNNHistoryItem) item).getOutputCollection()));
                 }
+
+                // Set up close button functionality
+                Button closeButton = dialogView.findViewById(R.id.closeButton);
+                closeButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss(); // Close the dialog
+                    }
+                });
+            }
+        });
+
+        v.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                View dialogView = LayoutInflater.from(ctx).inflate(R.layout.tensor_output, null);
+
+                // Build the AlertDialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+                builder.setView(dialogView);
+
+                // Create and show the AlertDialog
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+
+                TextView tensor = dialogView.findViewById(R.id.tensor);
+                tensor.setText(Arrays.deepToString(item.pred_tensor));
 
                 // Set up close button functionality
                 Button closeButton = dialogView.findViewById(R.id.closeButton);
