@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -28,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
 
     //
     // private ImageView bitmapDisplay;
-    private CNNonnxModel model;
+    private SMSonnxModel model;
     private Bitmap bitmap;
     private AudioPlayer audioPlayer;
 
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
         // FOR EXPERIMENT ONLY!
         //bitmapDisplay = findViewById(R.id.bitmap_display);
 
-        model = new CNNonnxModel(this);
+        model = new SMSonnxModel(this);
         audioPlayer = new AudioPlayer(this);
 
         drawingCanvas.setOnTouchListener((v, event) -> {
@@ -217,26 +218,35 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
 
         bitmap = drawingCanvas.getBitmap(105);
 
+        if (bitmap == null) {
+            Log.e("MainActivity", "Bitmap is null in classifyCharacter");
+            return;
+        }
+
         // TO DO:
         // - Call CharacterClassifier class
         // - To display the output character, set it to "recognizedCharTextView".
 
-        int result = model.classifyAndReturnDigit(bitmap);
+        String result = model.classify_id(bitmap);
 
-        bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
+        History history = History.getInstance();
+        HistoryItem historyItem = new HistoryItem(bitmap, result);
+
+        history.saveItem(historyItem, this);
+
+        //bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
         audioPlayer.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
 
             charTextView.setText(String.valueOf(result));
             outputView.setVisibility(View.VISIBLE); // Show result
 
-            //Display the image for testing
             //bitmapDisplay.setImageBitmap(bitmap);
 
         });
-
     }
 
+    /*
     public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
         // Ensure that the float array length matches width * height
         if (floatArray.length != width * height) {
@@ -271,5 +281,6 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
 
         return bitmap;
     }
+     */
 
 }
