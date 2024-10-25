@@ -54,7 +54,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
 
 
-        model = new SMSonnxModel(this);
+        model = SMSonnxModel.getInstance(this);
         audioPlayer = new AudioPlayer(this);
         SupportSet.getInstance().updateSet(this);
 

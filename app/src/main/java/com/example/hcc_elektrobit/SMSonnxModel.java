@@ -21,12 +21,14 @@ import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
 public class SMSonnxModel {
+    private static SMSonnxModel INSTANCE = null;
+
     private OrtEnvironment env;
     private OrtSession session;
     private final Context context;
     private static final String TAG = "SMSonnxModel";
 
-    public SMSonnxModel(Context context) {
+    private SMSonnxModel(Context context) {
         this.context = context;
         try {
             String modelPath = copyModelToCache();
@@ -38,6 +40,17 @@ public class SMSonnxModel {
         } catch (IOException e) {
             Log.e(TAG, "Error reading ONNX model from assets", e);
         }
+    }
+
+    public static SMSonnxModel getInstance(Context context) {
+        if (INSTANCE == null) {
+            synchronized (SMSonnxModel.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new SMSonnxModel(context.getApplicationContext());
+                }
+            }
+        }
+        return INSTANCE;
     }
 
     private String copyModelToCache() throws IOException {

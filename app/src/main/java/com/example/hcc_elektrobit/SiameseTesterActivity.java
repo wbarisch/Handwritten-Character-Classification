@@ -45,7 +45,7 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
 
 
 
-        model = new SMSonnxModel(this);
+        model = SMSonnxModel.getInstance(this);
 
         SupportSet.getInstance().updateSet(this);
 
