@@ -155,7 +155,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Map<String, Object> result_map = model.classifyAndReturnIntAndTensor(bitmap);
 
         History history = History.getInstance();
-        HistoryItem historyItem = new HistoryItem(bitmap, (int)result_map.get("int"), (float[][]) result_map.get("tensor"));
+        HistoryItem historyItem = new HistoryItem(bitmap, (int)result_map.get("int"),(String)result_map.get("tensor"));
 
         history.saveItem(historyItem, this);
         int result = (int)result_map.get("int");
