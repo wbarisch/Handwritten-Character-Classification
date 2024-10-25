@@ -7,7 +7,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -83,21 +82,11 @@ public class History {
         }
 
         JSONObject mainJsonObject = getJsonObject(json_file);
-
-        JSONArray tensorArray = new JSONArray();
         String jsonString;
 
         try {
 
-            for (float[] row: historyItem.pred_tensor) {
-                JSONArray rowArray = new JSONArray();
-                for (float value: row) {
-                    rowArray.put(value);
-                }
-                tensorArray.put(rowArray);
-            }
-
-            mainJsonObject.put(imgFileName, tensorArray);;
+            mainJsonObject.put(imgFileName, historyItem.pred_tensor);
             jsonString = mainJsonObject.toString(4);
         } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -145,7 +134,7 @@ public class History {
             try(FileInputStream in = new FileInputStream(file)){
                 Bitmap bmp = BitmapFactory.decodeStream(in);
                 int pred = Integer.parseInt(file.getName().charAt(0)+"");
-                float[][] tensor = getTensorFromJSON(file, jsonFile);
+                String tensor = getTensorFromJSON(file, jsonFile);
                 HistoryItem _hi = new HistoryItem(bmp, pred, tensor);
                 historyItems.add(_hi);
             } catch (IOException e) {
@@ -155,8 +144,7 @@ public class History {
     }
 
 
-    private float[][] getTensorFromJSON(File file, File source) {
-        float[][] result;
+    private String getTensorFromJSON(File file, File source) {
         String jsonContent;
         try(FileInputStream in = new FileInputStream(source)){
             int size = in.available();
@@ -168,26 +156,15 @@ public class History {
             throw new RuntimeException(e);
         }
 
-
+        String tensor;
         try {
             JSONObject jsonFile = new JSONObject(jsonContent);
-            JSONArray tensor = jsonFile.getJSONArray(file.getName());
-            int rows = tensor.length();
-            int cols = tensor.getJSONArray(0).length();
-
-            result = new float[rows][cols];
-
-            for (int i = 0; i < rows; i++) {
-                JSONArray row = tensor.getJSONArray(i);
-                for (int j = 0; j < cols; j++) {
-                    result[i][j] = (float)(row.getDouble(j));
-                }
-            }
+            tensor = jsonFile.getString(file.getName());
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
 
-        return result;
+        return tensor;
     }
 
     public void clearHistory(Context context) {

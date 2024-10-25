@@ -111,7 +111,7 @@ public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
 
 
                 TextView tensor = dialogView.findViewById(R.id.tensor);
-                tensor.setText(Arrays.deepToString(item.pred_tensor));
+                tensor.setText(item.pred_tensor);
 
                 // Set up close button functionality
                 Button closeButton = dialogView.findViewById(R.id.closeButton);
