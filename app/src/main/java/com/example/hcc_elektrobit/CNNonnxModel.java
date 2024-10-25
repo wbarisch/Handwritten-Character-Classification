@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -94,7 +95,7 @@ public class CNNonnxModel {
         float[][] result = this.classify(bitmap);
         Map<String, Object> res_map= new HashMap<>();
         res_map.put("int", argmax(result[0]));
-        res_map.put("tensor", result);
+        res_map.put("tensor", Arrays.deepToString(result));
         return res_map;
     }
 
