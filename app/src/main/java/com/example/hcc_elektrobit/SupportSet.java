@@ -27,7 +27,7 @@ public class SupportSet {
     private Set<SupportSetItem> SupportSetItems = new TreeSet<>(new Comparator<SupportSetItem>() {
         @Override
         public int compare(SupportSetItem o1, SupportSetItem o2) {
-            int labelComparison = Integer.compare(o1.labelId, o2.labelId);
+            int labelComparison = CharSequence.compare(o1.labelId, o2.labelId);
             if (labelComparison != 0) {
                 return labelComparison;
             }
@@ -89,7 +89,7 @@ public class SupportSet {
         for (File file: Objects.requireNonNull(bitmapDir.listFiles())) {
             try(FileInputStream in = new FileInputStream(file)){
                 Bitmap bmp = BitmapFactory.decodeStream(in);
-                int labelId = Integer.parseInt(file.getName().substring(0,file.getName().indexOf("_")));
+                String labelId = file.getName().substring(0,file.getName().indexOf("_"));
                 SupportSetItem _hi = new SupportSetItem(bmp, labelId);
                 SupportSetItems.add(_hi);
             } catch (IOException e) {

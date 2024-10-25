@@ -20,6 +20,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Objects;
+
 public class SupportSetDrawingActivity extends AppCompatActivity implements TimeoutActivity {
 
     private DrawingCanvas drawingCanvas;
@@ -28,7 +30,7 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
 
     private Bitmap bitmap;
 
-    private int labelId = -1;
+    private String labelId = "";
     private int bitmapSize = 105;
     CanvasTimer canvasTimer;
     boolean timerStarted = false;
@@ -84,7 +86,7 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
                         String bitmapSizeStr = bitmapSizeInput.getText().toString();
 
                         if (!imageId.isEmpty()) {
-                            labelId = Integer.parseInt(imageId); // Convert imageId to integer and set labelId
+                            labelId = imageId; // Convert imageId to integer and set labelId
                         }
 
                         if (!bitmapSizeStr.isEmpty()) {
@@ -149,7 +151,7 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
 
     private void saveItem(){
 
-        if (labelId == -1) {
+        if (Objects.equals(labelId, "")) {
             runOnUiThread(() -> {
 
                 Toast.makeText(this, "Please set the label Id before drawing", Toast.LENGTH_SHORT).show();

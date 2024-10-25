@@ -4,11 +4,11 @@ import android.graphics.Bitmap;
 
 public class SupportSetItem {
     Bitmap bitmap;
-    int labelId;
-    String label = "Test";
+    String labelId;
 
 
-    SupportSetItem(Bitmap bmp, int labelId){
+
+    SupportSetItem(Bitmap bmp, String labelId){
         this.bitmap = bmp;
         this.labelId = labelId;
     }
@@ -17,10 +17,10 @@ public class SupportSetItem {
         return bitmap;
     }
 
-    public int getlabelId(){
+    public String getlabelId(){
         return labelId;
     }
 
-    public String getlabel(){ return label; }
+
 
 }

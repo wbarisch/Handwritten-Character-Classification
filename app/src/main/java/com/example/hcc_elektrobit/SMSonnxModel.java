@@ -97,14 +97,14 @@ public class SMSonnxModel {
 
     }
 
-    public int classify_id(Bitmap bitmap1){
+    public String classify_id(Bitmap bitmap1){
 
         List<SupportSetItem> supportSet = SupportSet.getInstance().getItems();
 
-        Map<Integer, List<Float>> similarityMap = new HashMap<>();
+        Map<String, List<Float>> similarityMap = new HashMap<>();
 
         for (SupportSetItem item : supportSet) {
-            int labelId = item.getlabelId();
+            String labelId = item.getlabelId();
             Bitmap bitmap2 = item.getBitmap();
 
             float[][] result = findSimilarity(bitmap1, bitmap2);
@@ -116,9 +116,9 @@ public class SMSonnxModel {
 
         }
 
-        Map<Integer, Float> averageSimilarityMap = new HashMap<>();
-        for (Map.Entry<Integer, List<Float>> entry : similarityMap.entrySet()) {
-            int labelId = entry.getKey();
+        Map<String, Float> averageSimilarityMap = new HashMap<>();
+        for (Map.Entry<String, List<Float>> entry : similarityMap.entrySet()) {
+            String labelId = entry.getKey();
             List<Float> similarities = entry.getValue();
 
             float sum = 0;
@@ -129,10 +129,10 @@ public class SMSonnxModel {
             averageSimilarityMap.put(labelId, average);
         }
 
-        int maxLabelId = -1;
+        String maxLabelId = "";
         float maxAverage = Float.MIN_VALUE;
-        for (Map.Entry<Integer, Float> entry : averageSimilarityMap.entrySet()) {
-            int labelId = entry.getKey();
+        for (Map.Entry<String, Float> entry : averageSimilarityMap.entrySet()) {
+            String labelId = entry.getKey();
             float average = entry.getValue();
 
             if (average > maxAverage) {
