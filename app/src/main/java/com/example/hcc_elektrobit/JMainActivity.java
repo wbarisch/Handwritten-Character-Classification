@@ -17,6 +17,9 @@ import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
+
+import com.example.hcc_elektrobit.databinding.ActivityMainBinding;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,6 +34,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private AudioPlayerManager audioPlayerManager;                    // Must go to MainViewModel
     CanvasTimer canvasTimer;                            // Must go to MainViewModel
     boolean timerStarted = false;
+    private MainViewModel viewModel;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
@@ -43,7 +47,12 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        viewModel = new MainViewModel(this.getApplication());
         setContentView(R.layout.activity_jmain);
+
+        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_jmain);
+        binding.setViewModel(viewModel);
+        binding.setLifecycleOwner(this);
 
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
@@ -51,10 +60,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button shareButton = findViewById(R.id.share_button);
         Button trainingModeButton = findViewById(R.id.training_mode_button);
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
-
-
-        model = new CNNonnxModel(this);
-        audioPlayerManager = new AudioPlayerManager(this);
 
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,65 +137,62 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     public void onTimeout(){
 
-        classifyCharacter();
+        bitmap = drawingCanvas.getBitmap(28);
+        viewModel.mainAppFunction(bitmap);
         drawingCanvas.clear();
         timerStarted = false;
 
     }
 
-    private void classifyCharacter(){
+//    private void classifyCharacter(){
+//
+//        bitmap = drawingCanvas.getBitmap(28);
+//
+//        if (bitmap == null) {
+//            Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
+//            return;
+//        }
+//
+//        int result = model.classifyAndReturnDigit(bitmap);
+//
+//        History history = History.getInstance();
+//        HistoryItem historyItem = new HistoryItem(bitmap, result);
+//        history.saveItem(historyItem, this);
+//
+//        bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
+//
+//        audioPlayerManager.setDataSource(String.valueOf(result));
+//        audioPlayerManager.play();
+//
+//        runOnUiThread(() -> {
+//            recognizedCharTextView.setText(String.valueOf(result));
+//            bitmapDisplay.setImageBitmap(bitmap);
+//        });
+//    }
 
-        bitmap = drawingCanvas.getBitmap(28);
-
-        if (bitmap == null) {
-            Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
-            return;
-        }
-
-        // TO DO:
-        // - Call CharacterClassifier class
-        // - To display the output character, set it to "recognizedCharTextView".
-
-        int result = model.classifyAndReturnDigit(bitmap);
-
-        History history = History.getInstance();
-        HistoryItem historyItem = new HistoryItem(bitmap, result);
-
-        history.saveItem(historyItem, this);
-
-        bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
-        audioPlayerManager.PlayAudio(String.valueOf(result));
-        runOnUiThread(() -> {
-
-            recognizedCharTextView.setText(String.valueOf(result));
-            bitmapDisplay.setImageBitmap(bitmap);
-
-        });
-    }
-
-    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
-
-        if (floatArray.length != width * height) {
-            throw new IllegalArgumentException("Float array length must match width * height");
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        int[] pixels = new int[width * height];
-
-        for (int i = 0; i < floatArray.length; i++) {
-
-            float value = floatArray[i];
-            value = Math.max(0, Math.min(1, value));
-            int grayscale = (int) (value * 255);
-            int color = Color.argb(255, grayscale, grayscale, grayscale);
-            pixels[i] = color;
-        }
-
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-
-        return bitmap;
-    }
+//    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
+//
+//        if (floatArray.length != width * height) {
+//            throw new IllegalArgumentException("Float array length must match width * height");
+//        }
+//
+//        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//
+//        int[] pixels = new int[width * height];
+//
+//        for (int i = 0; i < floatArray.length; i++) {
+//
+//            float value = floatArray[i];
+//            value = Math.max(0, Math.min(1, value));
+//            int grayscale = (int) (value * 255);
+//            int color = Color.argb(255, grayscale, grayscale, grayscale);
+//            pixels[i] = color;
+//        }
+//
+//        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+//
+//        return bitmap;
+//    }
 
     public Bitmap getBitmap() {
         return bitmap;

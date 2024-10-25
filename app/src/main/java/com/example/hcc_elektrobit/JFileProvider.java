@@ -36,6 +36,7 @@ public class JFileProvider extends FileProvider {
     }
 
     protected static AssetManager getAssets(){
+
         return getFileProviderContext().getAssets();
     }
 
