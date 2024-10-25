@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 public class SupportSetItem {
     Bitmap bitmap;
     String labelId;
+    String fileName;
 
 
 
@@ -20,6 +21,19 @@ public class SupportSetItem {
     public String getlabelId(){
         return labelId;
     }
+
+    public void setLabelId(String newLabelId) {
+        this.labelId = newLabelId;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
 
 
 

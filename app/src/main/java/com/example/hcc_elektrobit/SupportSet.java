@@ -67,7 +67,8 @@ public class SupportSet {
         if(!file.exists()){
             file.mkdir();
         }
-        String fileName = setItem.labelId + "_" +Integer.toString(setItem.bitmap.getGenerationId()) + ".png";
+        String fileName = setItem.labelId + "_" + Integer.toString(setItem.bitmap.getGenerationId()) + ".png";
+        setItem.setFileName(fileName);
         file = new File(file, fileName);
         try(FileOutputStream out = new FileOutputStream(file)){
             setItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
@@ -91,6 +92,7 @@ public class SupportSet {
                 Bitmap bmp = BitmapFactory.decodeStream(in);
                 String labelId = file.getName().substring(0,file.getName().indexOf("_"));
                 SupportSetItem _hi = new SupportSetItem(bmp, labelId);
+                _hi.setFileName(file.getName());
                 SupportSetItems.add(_hi);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -111,6 +113,22 @@ public class SupportSet {
             Log.i("History Cleared", "All history items have been deleted and memory cleared.");
         } else {
             Log.i("No History Found", "No history to delete.");
+        }
+    }
+
+    public void removeItem(SupportSetItem item, Context context) {
+        SupportSetItems.remove(item);
+
+        // Delete the corresponding file
+        File fileDir = new File(context.getFilesDir(), "support_set");
+        String fileName = item.getFileName();
+        Log.i("File Name", fileName);
+        File file = new File(fileDir, fileName);
+
+        if (file.exists() && file.delete()) {
+            Log.i("Image Deleted", "Deleted file: " + fileName);
+        } else {
+            Log.e("Image Deletion Failed", "Could not delete file: " + fileName);
         }
     }
 }
