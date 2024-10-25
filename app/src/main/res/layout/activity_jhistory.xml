@@ -4,11 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <Button
         android:id="@+id/clear_history"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Clear History" />
+        android:text="Clear History"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/export_history"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Export History"
+        app:layout_constraintStart_toEndOf="@+id/clear_history"
+        app:layout_constraintTop_toTopOf="parent" />
     <GridView
         android:id="@+id/grid_view"
         android:layout_width="match_parent"
