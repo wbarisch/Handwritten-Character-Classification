@@ -89,7 +89,7 @@ public class History {
 
         try {
 
-            for (float[] row: historyItem.pred_tensor) {
+            /*for (float[] row: historyItem.pred_tensor) {
                 JSONArray rowArray = new JSONArray();
                 for (float value: row) {
                     rowArray.put(value);
@@ -97,7 +97,7 @@ public class History {
                 tensorArray.put(rowArray);
             }
 
-            mainJsonObject.put(imgFileName, tensorArray);;
+            mainJsonObject.put(imgFileName, tensorArray);;*/
             jsonString = mainJsonObject.toString(4);
         } catch (JSONException e) {
             throw new RuntimeException(e);
@@ -144,8 +144,12 @@ public class History {
             if(file.getName().equals("tensors.json")) continue;
             try(FileInputStream in = new FileInputStream(file)){
                 Bitmap bmp = BitmapFactory.decodeStream(in);
-                String pred = (file.getName().charAt(0)+"");
-                HistoryItem _hi = new HistoryItem(bmp, pred);
+                int pred = Integer.parseInt(file.getName().charAt(0)+"");
+                float[][] tensor = getTensorFromJSON(file, jsonFile);
+                HistoryItem _hi = new HistoryItem(bmp, pred, tensor);
+                /*int pred = Integer.parseInt(file.getName().charAt(0)+"");
+                String tensor = getTensorFromJSON(file, jsonFile);
+                HistoryItem _hi = new HistoryItem(bmp, pred, tensor);*/
                 historyItems.add(_hi);
             } catch (IOException e) {
                 throw new RuntimeException(e);
