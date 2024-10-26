@@ -55,7 +55,7 @@ public class SMSonnxModel {
     }
 
     private String copyModelToCache() throws IOException {
-        String modelFileName = "siamese_model.onnx";
+        String modelFileName = "siamese_model_mine_245.onnx";
         File cacheDir = context.getCacheDir();
         File modelFile = new File(cacheDir, modelFileName);
 
