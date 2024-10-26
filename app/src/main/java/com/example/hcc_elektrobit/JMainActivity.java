@@ -2,7 +2,6 @@ package com.example.hcc_elektrobit;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,10 +28,8 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
-    private CNNonnxModel model;                         // Must go to MainViewModel
     private Bitmap bitmap;
-    private AudioPlayerManager audioPlayerManager;                    // Must go to MainViewModel
-    CanvasTimer canvasTimer;                            // Must go to MainViewModel
+    Timer canvasTimer;                            // Must go to MainViewModel
     boolean timerStarted = false;
     private MainViewModel viewModel;
 
@@ -110,7 +107,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 bitmap = drawingCanvas.getBitmap(28);
-                canvasTimer = new CanvasTimer(this);
+                canvasTimer = new Timer(this, 1000);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
             }
@@ -143,56 +140,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         timerStarted = false;
 
     }
-
-//    private void classifyCharacter(){
-//
-//        bitmap = drawingCanvas.getBitmap(28);
-//
-//        if (bitmap == null) {
-//            Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
-//            return;
-//        }
-//
-//        int result = model.classifyAndReturnDigit(bitmap);
-//
-//        History history = History.getInstance();
-//        HistoryItem historyItem = new HistoryItem(bitmap, result);
-//        history.saveItem(historyItem, this);
-//
-//        bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
-//
-//        audioPlayerManager.setDataSource(String.valueOf(result));
-//        audioPlayerManager.play();
-//
-//        runOnUiThread(() -> {
-//            recognizedCharTextView.setText(String.valueOf(result));
-//            bitmapDisplay.setImageBitmap(bitmap);
-//        });
-//    }
-
-//    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
-//
-//        if (floatArray.length != width * height) {
-//            throw new IllegalArgumentException("Float array length must match width * height");
-//        }
-//
-//        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-//
-//        int[] pixels = new int[width * height];
-//
-//        for (int i = 0; i < floatArray.length; i++) {
-//
-//            float value = floatArray[i];
-//            value = Math.max(0, Math.min(1, value));
-//            int grayscale = (int) (value * 255);
-//            int color = Color.argb(255, grayscale, grayscale, grayscale);
-//            pixels[i] = color;
-//        }
-//
-//        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-//
-//        return bitmap;
-//    }
 
     public Bitmap getBitmap() {
         return bitmap;

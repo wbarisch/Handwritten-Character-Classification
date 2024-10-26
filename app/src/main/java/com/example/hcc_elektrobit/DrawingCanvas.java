@@ -18,7 +18,6 @@ public class DrawingCanvas extends View {
     Path path;
 
     public DrawingCanvas(Context context, AttributeSet attributeSet){
-
         super(context, attributeSet);
         paint = new Paint();
         path = new Path();
@@ -27,7 +26,6 @@ public class DrawingCanvas extends View {
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(100f);
-
     }
 
     @Override
@@ -65,15 +63,12 @@ public class DrawingCanvas extends View {
 
     @Override
     public boolean performClick() {
-
         return super.performClick();
     }
 
     public void clear(){
-
         path.reset();
         invalidate();
-
     }
 
     public Bitmap getBitmap(int dims){
@@ -83,5 +78,4 @@ public class DrawingCanvas extends View {
         this.draw(canvas);
         return Bitmap.createScaledBitmap(bitmap, dims, dims, true);
     }
-
 }

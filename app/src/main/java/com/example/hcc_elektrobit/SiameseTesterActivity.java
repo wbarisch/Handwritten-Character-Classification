@@ -19,7 +19,7 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
     private Bitmap bitmap;
     private Bitmap bitmap2;
     private AudioPlayerManager audioPlayerManager;
-    private CanvasTimer canvasTimer;
+    private Timer canvasTimer;
     private boolean timerStarted = false;
     int bitmapState = 0;
 
@@ -50,7 +50,7 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                canvasTimer = new CanvasTimer(this);
+                canvasTimer = new Timer(this, 1000);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
             }

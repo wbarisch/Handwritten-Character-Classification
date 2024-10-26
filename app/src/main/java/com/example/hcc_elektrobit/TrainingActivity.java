@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class TrainingActivity extends AppCompatActivity implements TimeoutActivity {
     private Bitmap bitmap;
-    private CanvasTimer canvasTimer;
+    private Timer canvasTimer;
     private CNNonnxModel model;
     private DrawingCanvas drawingCanvas;
     private ImageSavingManager imageSavingManager;
@@ -46,7 +46,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
                 Bitmap preprocessedBitmap = createBitmapFromFloatArray(processedBitmapData, 28, 28);
                 trainingBitmapDisplay.setImageBitmap(preprocessedBitmap);
 
-                canvasTimer = new CanvasTimer(this);
+                canvasTimer = new Timer(this, 1000);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
             }

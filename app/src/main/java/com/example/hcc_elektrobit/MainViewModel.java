@@ -10,8 +10,9 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-public class MainViewModel extends AndroidViewModel {
+public class MainViewModel extends AndroidViewModel{
 
+    Timer canvasTimer;
     private MutableLiveData<String> _classifiedCharacter = new MutableLiveData<>("Classified character: ");
     public LiveData<String> classifiedCharacter = _classifiedCharacter;
     private MutableLiveData<Bitmap> _drawingBitmap = new MutableLiveData<Bitmap>();
@@ -98,5 +99,4 @@ public class MainViewModel extends AndroidViewModel {
 
         return bitmap;
     }
-
 }
