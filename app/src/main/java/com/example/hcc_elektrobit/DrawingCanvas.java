@@ -114,9 +114,6 @@ public class DrawingCanvas extends View {
         invalidate();
 
     }
-
-    /*TODO: Implement a boolean that disables centering and matrix operations for testing.
-    ,adding a toggle for setting Antialias to true or false. Add a toggle for different stroke widths*/
     public Bitmap getBitmap(int dims) {
         if (useOldBitmapMethod) {
             // Old method
