@@ -77,7 +77,7 @@ public class History {
         for (File file: Objects.requireNonNull(bitmapDir.listFiles())) {
             try(FileInputStream in = new FileInputStream(file)){
                 Bitmap bmp = BitmapFactory.decodeStream(in);
-                int pred = Integer.parseInt(file.getName().charAt(0)+"");
+                String pred = (file.getName().charAt(0)+"");
                 HistoryItem _hi = new HistoryItem(bmp, pred);
                 historyItems.add(_hi);
             } catch (IOException e) {

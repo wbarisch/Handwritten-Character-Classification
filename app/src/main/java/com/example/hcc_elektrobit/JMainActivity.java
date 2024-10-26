@@ -27,7 +27,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
-    private CNNonnxModel model;
+    private SMSonnxModel model;
     private Bitmap bitmap;
     private AudioPlayer audioPlayer;
     CanvasTimer canvasTimer;
@@ -79,16 +79,27 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button shareButton = findViewById(R.id.share_button);
         Button trainingModeButton = findViewById(R.id.training_mode_button);
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
+        Button supportsetActivityButton = findViewById(R.id.support_set_gen);
 
 
-        model = new CNNonnxModel(this);
+        model = SMSonnxModel.getInstance(this);
         audioPlayer = new AudioPlayer(this);
+        SupportSet.getInstance().updateSet(this);
 
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Switch to SiameseTesterActivity
                 Intent intent = new Intent(JMainActivity.this, SiameseTesterActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        supportsetActivityButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Switch to SiameseTesterActivity
+                Intent intent = new Intent(JMainActivity.this, SupportSetActivity.class);
                 startActivity(intent);
             }
         });
@@ -194,7 +205,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     private void classifyCharacter(){
 
-        bitmap = drawingCanvas.getBitmap(28);
+        bitmap = drawingCanvas.getBitmap(105);
 
         if (bitmap == null) {
             Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
@@ -205,14 +216,14 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         // - Call CharacterClassifier class
         // - To display the output character, set it to "recognizedCharTextView".
 
-        int result = model.classifyAndReturnDigit(bitmap);
+        String result = model.classify_id(bitmap);
 
         History history = History.getInstance();
         HistoryItem historyItem = new HistoryItem(bitmap, result);
 
         history.saveItem(historyItem, this);
 
-        bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
+        //bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
         audioPlayer.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
 

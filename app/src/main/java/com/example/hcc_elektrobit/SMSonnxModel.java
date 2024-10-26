@@ -2,7 +2,6 @@ package com.example.hcc_elektrobit;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.util.Log;
 
@@ -11,8 +10,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ai.onnxruntime.OnnxTensor;
@@ -21,12 +21,14 @@ import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
 public class SMSonnxModel {
+    private static SMSonnxModel INSTANCE = null;
+
     private OrtEnvironment env;
     private OrtSession session;
     private final Context context;
     private static final String TAG = "SMSonnxModel";
 
-    public SMSonnxModel(Context context) {
+    private SMSonnxModel(Context context) {
         this.context = context;
         try {
             String modelPath = copyModelToCache();
@@ -38,6 +40,17 @@ public class SMSonnxModel {
         } catch (IOException e) {
             Log.e(TAG, "Error reading ONNX model from assets", e);
         }
+    }
+
+    public static SMSonnxModel getInstance(Context context) {
+        if (INSTANCE == null) {
+            synchronized (SMSonnxModel.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new SMSonnxModel(context.getApplicationContext());
+                }
+            }
+        }
+        return INSTANCE;
     }
 
     private String copyModelToCache() throws IOException {
@@ -57,7 +70,7 @@ public class SMSonnxModel {
         }
         return modelFile.getAbsolutePath();
     }
-    public float[][] classify(Bitmap bitmap,Bitmap bitmap2) {
+    public float[][] findSimilarity(Bitmap bitmap, Bitmap bitmap2) {
         try {
 
             float[] input1TensorData = preprocessBitmap(bitmap);
@@ -90,49 +103,93 @@ public class SMSonnxModel {
     }
 
     public float classify_similarity(Bitmap bitmap1,Bitmap bitmap2){
-        float[][] result = this.classify(bitmap1,bitmap2);
-        //float[] result = {2.0f};
+        float[][] result = this.findSimilarity(bitmap1,bitmap2);
         return result[0][0];
+    }
 
+    public String classify_id(Bitmap bitmap1){
+
+        SupportSet.getInstance().updateSet(context);
+
+        List<SupportSetItem> supportSet = SupportSet.getInstance().getItems();
+
+        Map<String, List<Float>> similarityMap = new HashMap<>();
+
+        for (SupportSetItem item : supportSet) {
+            String labelId = item.getlabelId();
+            Bitmap bitmap2 = item.getBitmap();
+
+            float[][] result = findSimilarity(bitmap1, bitmap2);
+            float similarity = result[0][0];
+
+            similarityMap.putIfAbsent(labelId, new ArrayList<>());
+            similarityMap.get(labelId).add(similarity);
+
+
+        }
+
+        Map<String, Float> averageSimilarityMap = new HashMap<>();
+        for (Map.Entry<String, List<Float>> entry : similarityMap.entrySet()) {
+            String labelId = entry.getKey();
+            List<Float> similarities = entry.getValue();
+
+            float sum = 0;
+            for (Float similarity : similarities) {
+                sum += similarity;
+            }
+            float average = sum / similarities.size();
+            averageSimilarityMap.put(labelId, average);
+        }
+
+        String maxLabelId = "";
+        float maxAverage = Float.MIN_VALUE;
+        for (Map.Entry<String, Float> entry : averageSimilarityMap.entrySet()) {
+            String labelId = entry.getKey();
+            float average = entry.getValue();
+
+            if (average > maxAverage) {
+                maxAverage = average;
+                maxLabelId = labelId;
+            }
+        }
+
+        // Log the results (optional)
+        Log.e(TAG, "Maximum Average Similarity: " + maxAverage + " for Label ID: " + maxLabelId);
+
+        // Return the labelId with the highest average similarity
+        return maxLabelId;
     }
 
     public float[] preprocessBitmap(Bitmap bitmap) {
-        // Step 1: Resize the bitmap to 105x105
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 105, 105, true);
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
 
-        // Step 2: Create a float array to hold the binary image data (1, 1, 105, 105)
-        float[] inputTensorData = new float[1 * 1 * 105 * 105]; // total size is 1*1*105*105 = 11025
+        Matrix matrix = new Matrix();
+        matrix.postRotate(90);
+        matrix.postScale(-1, 1, width / 2f, height / 2f);
 
-        // Step 3: Loop through each pixel, invert the colors, and normalize
-        for (int i = 0; i < 105; i++) {
-            for (int j = 0; j < 105; j++) {
-                // Get the pixel value at (i, j)
-                int pixel = resizedBitmap.getPixel(i, j);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
 
-                // Since the image is black and white, just grab the red channel (all channels are the same in grayscale)
-                int red = Color.red(pixel);  // Extract the red channel, which is enough for a grayscale image
+        float[] data = new float[105 * 105];
+        int index = 0;
 
-                // Invert the pixel (white becomes black and vice versa)
-                float invertedValue = (255 - red) / 255.0f; // Normalizing to range [0, 1] and inverting
+        //attempt to normalize correctly, i dont think its working right
+        for (int i = 0; i < rotatedBitmap.getWidth(); i++) {
+            for (int j = 0; j < rotatedBitmap.getHeight(); j++) {
+                int pixel = rotatedBitmap.getPixel(i, j);
 
-                // Assign the inverted and normalized pixel value to the float array
-                inputTensorData[i * 105 + j] = invertedValue;
+                int r = (pixel >> 16) & 0xff;
+                int g = (pixel >> 8) & 0xff;
+                int b = pixel & 0xff;
+
+                float grayscale = (r + g + b) / 3.0f / 255.0f;
+                data[index++] = grayscale;
             }
         }
 
-        // Return the preprocessed tensor data in the correct format
-        return inputTensorData;
+        return data;
     }
 
-    private int argmax(float[] array) {
-        int maxIndex = 0;
-        for (int i = 1; i < array.length; i++) {
-            if (array[i] > array[maxIndex]) {
-                maxIndex = i;
-            }
-        }
-        return maxIndex;
-    }
 
     public void close() {
         try {

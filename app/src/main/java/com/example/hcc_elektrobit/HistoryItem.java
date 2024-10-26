@@ -4,9 +4,9 @@ import android.graphics.Bitmap;
 
 public class HistoryItem {
     Bitmap bitmap;
-    int pred;
+    String pred;
 
-    HistoryItem(Bitmap bmp, int prediction){
+    HistoryItem(Bitmap bmp, String prediction){
         this.bitmap = bmp;
         this.pred = prediction;
     }
@@ -15,7 +15,7 @@ public class HistoryItem {
         return bitmap;
     }
 
-    public int getPred(){
+    public String getPred(){
         return pred;
     }
 }

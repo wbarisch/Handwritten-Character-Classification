@@ -45,9 +45,9 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
 
 
 
-        model = new SMSonnxModel(this);
+        model = SMSonnxModel.getInstance(this);
 
-
+        SupportSet.getInstance().updateSet(this);
 
 
         drawingCanvas.setOnTouchListener((v, event) -> {
@@ -60,7 +60,6 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap(105);
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;

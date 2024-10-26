@@ -14,20 +14,20 @@ import androidx.annotation.Nullable;
 import java.util.List;
 
 // Adapter class for the history grid view
-public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
+public class SupportSetAdapter extends ArrayAdapter<SupportSetItem> {
 
-    List<HistoryItem> hist_list;
+    List<SupportSetItem> sup_list;
     int custom_layout_id;
-    public HistoryAdapter(@NonNull Context context, int resource, @NonNull List<HistoryItem> objects){
+    public SupportSetAdapter(@NonNull Context context, int resource, @NonNull List<SupportSetItem> objects){
         super(context, resource, objects);
-        hist_list = objects;
+        sup_list = objects;
         custom_layout_id = resource;
 
     }
 
     @Override
     public int getCount(){
-        return hist_list.size();
+        return sup_list.size();
     }
 
     @NonNull
@@ -42,10 +42,10 @@ public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
         ImageView imageView = v.findViewById(R.id.bmp);
         TextView textView = v.findViewById(R.id.pred);
 
-        HistoryItem item = hist_list.get(position);
+        SupportSetItem item = sup_list.get(position);
 
         imageView.setImageBitmap(item.getBitmap());
-        String predictionStr = item.getPred();
+        String predictionStr = item.getlabelId();
         textView.setText(predictionStr);
 
         return v;
