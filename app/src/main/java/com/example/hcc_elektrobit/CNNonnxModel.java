@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.util.Log;
+import android.util.Pair;
 
 
 import java.io.File;
@@ -11,7 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.FloatBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -91,12 +91,9 @@ public class CNNonnxModel {
 
     }
 
-    public Map<String, Object> classifyAndReturnIntAndTensor(Bitmap bitmap){
+    public Pair<Integer, float[][]> classifyAndReturnIntAndTensor(Bitmap bitmap){
         float[][] result = this.classify(bitmap);
-        Map<String, Object> res_map= new HashMap<>();
-        res_map.put("int", argmax(result[0]));
-        res_map.put("tensor", Arrays.deepToString(result));
-        return res_map;
+        return new Pair<>(argmax(result[0]), result);
     }
 
     public float[] preprocessBitmap(Bitmap bitmap) {

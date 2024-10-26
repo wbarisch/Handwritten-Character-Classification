@@ -3,21 +3,29 @@ package com.example.hcc_elektrobit;
 import android.graphics.Bitmap;
 
 public class HistoryItem {
-    String pred_tensor;
+    Object model_tensor;
     Bitmap bitmap;
-    int pred;
+    String pred;
 
-    HistoryItem(Bitmap bmp, int prediction, String prediction_tensor){
+    HistoryItem(Bitmap bmp, String prediction, Object prediction_tensor){
         this.bitmap = bmp;
         this.pred = prediction;
-        this.pred_tensor = prediction_tensor;
+        this.model_tensor = prediction_tensor;
     }
 
     public Bitmap getBitmap(){
         return bitmap;
     }
 
-    public int getPred(){
+    public Object getPred(){
         return pred;
+    }
+
+    public Object getOutputCollection(){
+        return model_tensor;
+    }
+
+    public String getModel(){
+        return null;
     }
 }
