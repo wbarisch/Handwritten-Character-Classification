@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.util.Log;
+import android.util.Pair;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -203,4 +204,60 @@ public class SMSonnxModel {
             Log.e(TAG, "Error closing ONNX environment or session", e);
         }
     }
+
+    public Pair<String, Map<String, Float>> classifyAndReturnPredAndSimilarityMap(Bitmap bitmap) {
+        List<SupportSetItem> supportSet = SupportSet.getInstance().getItems();
+
+        Pair<String, Map<String, Float>> resultMap;
+
+        Map<String, List<Float>> similarityMap = new HashMap<>();
+
+        for (SupportSetItem item : supportSet) {
+            String labelId = item.getlabelId();
+            Bitmap bitmap2 = item.getBitmap();
+
+            float[][] result = findSimilarity(bitmap, bitmap2);
+            float similarity = result[0][0];
+
+            similarityMap.putIfAbsent(labelId, new ArrayList<>());
+            similarityMap.get(labelId).add(similarity);
+
+
+        }
+
+        Map<String, Float> averageSimilarityMap = new HashMap<>();
+        for (Map.Entry<String, List<Float>> entry : similarityMap.entrySet()) {
+            String labelId = entry.getKey();
+            List<Float> similarities = entry.getValue();
+
+            float sum = 0;
+            for (Float similarity : similarities) {
+                sum += similarity;
+            }
+            float average = sum / similarities.size();
+            averageSimilarityMap.put(labelId, average);
+        }
+
+        String maxLabelId = "";
+        float maxAverage = Float.MIN_VALUE;
+        for (Map.Entry<String, Float> entry : averageSimilarityMap.entrySet()) {
+            String labelId = entry.getKey();
+            float average = entry.getValue();
+
+            if (average > maxAverage) {
+                maxAverage = average;
+                maxLabelId = labelId;
+            }
+        }
+
+        // Log the results (optional)
+        Log.e(TAG, "Maximum Average Similarity: " + maxAverage + " for Label ID: " + maxLabelId);
+
+        resultMap = new Pair<>(maxLabelId, averageSimilarityMap);
+
+
+        // Return the labelId with the highest average similarity
+        return resultMap;
+    }
+
 }
