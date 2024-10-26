@@ -23,6 +23,7 @@ import java.io.OutputStream;
 
 public class JMainActivity extends AppCompatActivity implements TimeoutActivity {
 
+    private DialogManager dialogManager;
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
@@ -30,13 +31,39 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private Bitmap bitmap;
     private AudioPlayer audioPlayer;
     CanvasTimer canvasTimer;
+    private CharacterMapping characterMapping;
     boolean timerStarted = false;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        MenuItem item = menu.findItem(R.id.menuButton);
-        item.setTitle("History");
+        MenuItem historyItem = menu.findItem(R.id.menuButton);
+        if (historyItem != null) {
+            historyItem.setTitle("History");
+        }
+
+        MenuItem toggleBitmapMethodItem = menu.findItem(R.id.action_toggle_bitmap_method);
+        MenuItem toggleAntiAliasItem = menu.findItem(R.id.action_toggle_antialias);
+        MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
+
+
+        if (drawingCanvas != null) {
+            boolean useOldBitmapMethod = drawingCanvas.isUseOldBitmapMethod();
+            if (toggleBitmapMethodItem != null) {
+                toggleBitmapMethodItem.setChecked(useOldBitmapMethod);
+            }
+
+            if (toggleAntiAliasItem != null) {
+                toggleAntiAliasItem.setChecked(!useOldBitmapMethod && drawingCanvas.getPaint().isAntiAlias());
+                toggleAntiAliasItem.setEnabled(!useOldBitmapMethod);
+            }
+
+            if (selectStrokeWidthItem != null) {
+                selectStrokeWidthItem.setEnabled(!useOldBitmapMethod);
+            }
+        }
+
+
         return true;
     }
 
@@ -45,6 +72,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jmain);
 
+        characterMapping = new CharacterMapping();
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
@@ -98,9 +126,10 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         );
 
         ImageSharingManager imageSharingManager = new ImageSharingManager(this);
-        ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher);
+        ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher, characterMapping);
 
-        DialogManager dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
+
+        dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
 
         shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
         trainingModeButton.setOnClickListener(v -> dialogManager.showTrainingModeDialog());
@@ -132,13 +161,38 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
+
         if(id == R.id.menuButton) {
             Intent intent = new Intent(JMainActivity.this, JHistoryActivity.class);
             startActivity(intent);
             return true;
+        } else if (id == R.id.action_toggle_bitmap_method) {
+            item.setChecked(!item.isChecked());
+
+            if (drawingCanvas != null) {
+                drawingCanvas.setUseOldBitmapMethod(item.isChecked());
+            }
+
+            invalidateOptionsMenu();
+
+            Log.d("JMainActivity", "Use Old Bitmap Method set to: " + item.isChecked());
+            return true;
+        } else if (id == R.id.action_toggle_antialias) {
+            if (!drawingCanvas.isUseOldBitmapMethod()) {
+                item.setChecked(!item.isChecked());
+                if (drawingCanvas != null) {
+                    drawingCanvas.setAntiAlias(item.isChecked());
+                }
+                Log.d("JMainActivity", "Anti-Alias set to: " + item.isChecked());
+            }
+            return true;
+        } else if (id == R.id.action_select_stroke_width) {
+            if (!drawingCanvas.isUseOldBitmapMethod()) {
+                dialogManager.showStrokeWidthInputDialog(drawingCanvas);
+            }
+            return true;
         }
         return super.onOptionsItemSelected(item);
-
     }
 
     public void onTimeout(){
@@ -205,10 +259,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     public Bitmap getBitmap() {
         return bitmap;
-    }
-
-    public void enterTrainingMode() {
-        Log.d("JMainActivity", "Training mode enabled");
     }
 
 }

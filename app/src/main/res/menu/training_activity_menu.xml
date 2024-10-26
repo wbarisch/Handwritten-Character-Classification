@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_bitmap_size"
+        android:title="Bitmap Image Size"/>
 
     <item
-        android:id="@+id/menuButton"
-        android:orderInCategory="100"
-        app:showAsAction="always"
-        android:title="" />
+        android:id="@+id/menu_toggle_bitmap_mode"
+        android:title="Toggle Bitmap Color Mode" />
 
     <item
         android:id="@+id/action_toggle_bitmap_method"
@@ -29,7 +29,5 @@
         android:id="@+id/action_select_stroke_width"
         android:title="Select Stroke Width"
         android:orderInCategory="103"
-        app:showAsAction="never">
-    </item>
-
+        app:showAsAction="never"/>
 </menu>
