@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -159,23 +160,20 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             return;
         }
 
-        // TO DO:
-        // - Call CharacterClassifier class
-        // - To display the output character, set it to "recognizedCharTextView".
-
-        Map<String, Object> result_map = model.classifyAndReturnIntAndTensor(bitmap);
-        //String result = model.classify_id(bitmap); TODO from osama branch
+        Pair<String, Map<String, Float>> result_pair = model.classifyAndReturnPredAndSimilarityMap(bitmap);
 
         History history = History.getInstance();
-        HistoryItem historyItem = new HistoryItem(bitmap, (int)result_map.get("int"),(String)result_map.get("tensor"));
+        SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first, result_pair.second);
 
         history.saveItem(historyItem, this);
-        String result = (String)result_map.get("int");
+        String result = result_pair.first;
+        Log.e("MAIN", result);
+        Log.e("Main", result_pair.second.toString());
         //bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
-        audioPlayer.PlayAudio(String.valueOf(result));
+        audioPlayer.PlayAudio(result);
         runOnUiThread(() -> {
 
-            recognizedCharTextView.setText(String.valueOf(result));
+            recognizedCharTextView.setText(result);
             bitmapDisplay.setImageBitmap(bitmap);
 
         });
