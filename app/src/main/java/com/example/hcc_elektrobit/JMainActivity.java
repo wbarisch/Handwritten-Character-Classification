@@ -12,18 +12,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-
 import com.example.hcc_elektrobit.databinding.ActivityMainBinding;
-
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class JMainActivity extends AppCompatActivity implements TimeoutActivity {
+public class JMainActivity extends AppCompatActivity {
 
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
@@ -96,20 +93,22 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
         trainingModeButton.setOnClickListener(v -> dialogManager.showTrainingModeDialog());
 
-        drawingCanvas.setOnTouchListener((v, event) -> {
-
-            if(timerStarted){
-                canvasTimer.cancel();
-                timerStarted = false;
+        viewModel.clearCanvasEvent.observe(this, shouldClear -> {
+            if (shouldClear) {
+                bitmap = drawingCanvas.getBitmap(28);
+                viewModel.mainAppFunction(bitmap);
+                drawingCanvas.clear();
+                viewModel.clearCanvasHandled(); // Reset the event state in the ViewModel
             }
+        });
+
+        drawingCanvas.setOnTouchListener((v, event) -> {
 
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 bitmap = drawingCanvas.getBitmap(28);
-                canvasTimer = new Timer(this, 1000);
-                new Thread(canvasTimer).start();
-                timerStarted = true;
+                viewModel.startTimer(1000);
             }
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 v.performClick();
@@ -117,7 +116,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
             return true;
         });
-
     }
 
     @Override
@@ -129,15 +127,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             return true;
         }
         return super.onOptionsItemSelected(item);
-
-    }
-
-    public void onTimeout(){
-
-        bitmap = drawingCanvas.getBitmap(28);
-        viewModel.mainAppFunction(bitmap);
-        drawingCanvas.clear();
-        timerStarted = false;
 
     }
 

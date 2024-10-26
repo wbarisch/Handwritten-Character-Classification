@@ -15,11 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public class History {
-
-
     private static volatile History INSTANCE = null;
-
-
     private Set<HistoryItem> historyItems = new HashSet<>();
     private History() {
     }
@@ -77,7 +73,7 @@ public class History {
         for (File file: Objects.requireNonNull(bitmapDir.listFiles())) {
             try(FileInputStream in = new FileInputStream(file)){
                 Bitmap bmp = BitmapFactory.decodeStream(in);
-                int pred = Integer.parseInt(file.getName().charAt(0)+"");
+                String pred = file.getName();
                 HistoryItem _hi = new HistoryItem(bmp, pred);
                 historyItems.add(_hi);
             } catch (IOException e) {

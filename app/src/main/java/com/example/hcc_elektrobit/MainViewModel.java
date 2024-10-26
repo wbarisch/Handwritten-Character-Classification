@@ -10,9 +10,11 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-public class MainViewModel extends AndroidViewModel{
+public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
 
     Timer canvasTimer;
+    private MutableLiveData<Boolean> _clearCanvasEvent = new MutableLiveData<Boolean>(false);
+    public LiveData<Boolean> clearCanvasEvent = _clearCanvasEvent;
     private MutableLiveData<String> _classifiedCharacter = new MutableLiveData<>("Classified character: ");
     public LiveData<String> classifiedCharacter = _classifiedCharacter;
     private MutableLiveData<Bitmap> _drawingBitmap = new MutableLiveData<Bitmap>();
@@ -27,6 +29,7 @@ public class MainViewModel extends AndroidViewModel{
         mainContext = application.getApplicationContext();
         audioPlayerManager = new AudioPlayerManager(mainContext);
         model = new CNNonnxModel(mainContext);
+        canvasTimer = new Timer(this, 1000);
     }
 
     /**
@@ -37,7 +40,7 @@ public class MainViewModel extends AndroidViewModel{
 
         int result = classifyCharacter(firstBitmap);
         String resultString = "Classified character: " + result;
-        _classifiedCharacter.postValue(resultString);
+        _classifiedCharacter.setValue(resultString);
 
         String fileName = String.valueOf(result);
 
@@ -48,7 +51,7 @@ public class MainViewModel extends AndroidViewModel{
             Log.e("MainViewModel", "Error starting audio player manager");
         }
 
-        _drawingBitmap.postValue(createBitmapFromFloatArray(model.preprocessBitmap(firstBitmap), 28, 28));
+        _drawingBitmap.setValue(createBitmapFromFloatArray(model.preprocessBitmap(firstBitmap), 28, 28));
         saveResult();
     }
 
@@ -72,7 +75,10 @@ public class MainViewModel extends AndroidViewModel{
      */
     private void saveResult(){
         History history = History.getInstance();
-        HistoryItem historyItem = new HistoryItem(drawingBitmap.getValue(), classifiedCharacter.getValue().charAt(0));
+        String classifiedDigit = _classifiedCharacter.getValue();
+        int helperLength = classifiedDigit.length();
+        classifiedDigit = classifiedDigit.substring(helperLength - 1);
+        HistoryItem historyItem = new HistoryItem(drawingBitmap.getValue(), classifiedDigit);
         history.saveItem(historyItem, mainContext);
     }
 
@@ -98,5 +104,30 @@ public class MainViewModel extends AndroidViewModel{
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
         return bitmap;
+    }
+
+    // Method to start the custom Timer
+    public void startTimer(int durationMillis) {
+        if (canvasTimer != null) {
+            canvasTimer.cancel(); // Cancel any existing timer
+        }
+
+        // Create a new Timer instance and start it in a separate thread
+        canvasTimer = new Timer(this, durationMillis);
+        new Thread(canvasTimer).start();
+    }
+
+    // Method to cancel the Timer
+    public void cancelTimer() {
+        if (canvasTimer != null) {
+            canvasTimer.cancel();
+        }
+    }
+    public void onTimeout() {
+        _clearCanvasEvent.postValue(true); // Notify that the canvas should be cleared
+    }
+
+    public void clearCanvasHandled() {
+        _clearCanvasEvent.postValue(false);
     }
 }

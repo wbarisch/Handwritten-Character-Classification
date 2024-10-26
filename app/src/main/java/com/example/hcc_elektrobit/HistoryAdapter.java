@@ -45,7 +45,7 @@ public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
         HistoryItem item = hist_list.get(position);
 
         imageView.setImageBitmap(item.getBitmap());
-        String predictionStr = Integer.toString(item.getPred());
+        String predictionStr = (item.getPred());
         textView.setText(predictionStr);
 
         return v;
