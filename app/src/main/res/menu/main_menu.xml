@@ -16,4 +16,13 @@
         android:checked="false"
         android:orderInCategory="101"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_toggle_antialias"
+        android:title="Anti-Alias"
+        android:checkable="true"
+        android:checked="true"
+        android:orderInCategory="102"
+        app:showAsAction="never" />
+
 </menu>

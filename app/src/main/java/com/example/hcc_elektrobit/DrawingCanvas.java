@@ -19,7 +19,7 @@ public class DrawingCanvas extends View {
     Paint paint;
     Path path;
 
-    private boolean useOldBitmapMethod = false;
+    private boolean useOldBitmapMethod = true;
 
     public DrawingCanvas(Context context, AttributeSet attributeSet){
 
@@ -41,6 +41,15 @@ public class DrawingCanvas extends View {
 
     public void setUseOldBitmapMethod(boolean useOldBitmapMethod) {
         this.useOldBitmapMethod = useOldBitmapMethod;
+    }
+
+    public Paint getPaint() {
+        return paint;
+    }
+
+    public void setAntiAlias(boolean antiAlias) {
+        paint.setAntiAlias(antiAlias);
+        invalidate();
     }
 
     @Override
@@ -139,7 +148,7 @@ public class DrawingCanvas extends View {
             Paint scaledPaint = new Paint(paint);
             float desiredStrokeWidth = dims * 0.08f; //Default 0.07f
             scaledPaint.setStrokeWidth(desiredStrokeWidth);
-            scaledPaint.setAntiAlias(false);
+            scaledPaint.setAntiAlias(paint.isAntiAlias());
 
             finalCanvas.drawPath(scaledPath, scaledPaint);
 
