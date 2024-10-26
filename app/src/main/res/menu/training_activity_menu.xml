@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_bitmap_size"
         android:title="Bitmap Image Size"/>
@@ -7,4 +8,26 @@
     <item
         android:id="@+id/menu_toggle_bitmap_mode"
         android:title="Toggle Bitmap Color Mode" />
+
+    <item
+        android:id="@+id/action_toggle_bitmap_method"
+        android:title="Use Old Bitmap Method"
+        android:checkable="true"
+        android:checked="false"
+        android:orderInCategory="101"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_toggle_antialias"
+        android:title="Anti-Alias"
+        android:checkable="true"
+        android:checked="true"
+        android:orderInCategory="102"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_select_stroke_width"
+        android:title="Select Stroke Width"
+        android:orderInCategory="103"
+        app:showAsAction="never"/>
 </menu>
