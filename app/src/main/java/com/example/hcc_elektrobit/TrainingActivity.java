@@ -152,6 +152,14 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
 
         drawingCanvas.setOnTouchListener((v, event) -> {
+
+            if (chatboxContainer.getVisibility() == View.VISIBLE) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    Toast.makeText(this, "Please enter a Character ID before drawing.", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            }
+
             if (timerStarted) {
                 canvasTimer.cancel();
                 timerStarted = false;
@@ -160,6 +168,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
+                bitmap = drawingCanvas.getBitmap(bitmapSize);
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
