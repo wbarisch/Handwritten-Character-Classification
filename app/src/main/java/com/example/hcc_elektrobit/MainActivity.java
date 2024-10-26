@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
 
         model = new SMSonnxModel(this);
         audioPlayer = new AudioPlayer(this);
+        SupportSet.getInstance().updateSet(this);
 
         drawingCanvas.setOnTouchListener((v, event) -> {
 
@@ -171,8 +172,7 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
         // NOTE: Further implementation by the customer (i.e. Elektrobit) is required here to discard the character
         // from the particular application to which the output of this character recognition app is fed into.
 
-        // FOR TESTING ONLY!
-        Toast.makeText(this, "Double Tap Detected", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Character Deleted", Toast.LENGTH_SHORT).show();
 
     }
 
