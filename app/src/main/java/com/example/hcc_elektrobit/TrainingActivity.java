@@ -299,6 +299,16 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     Various options: size of the bitmap and id of the saved image. Introduce sequence. 1-9 for number, 10-36 for alphabet, any additional characters will start at 37. When adding a new support set
     , it should automatically go on from the last used number, in our case atm 36 for z.
 
+
+    images should be saved 001, 002_1 -- first image of class 2, 003, 004 and so on.. not a_1, a_2, a_3.
+    also, it shouldn't be saved in folder 'a' it should be saved in folder '010_1, 010_2, 010_3'. Use character id as folder
+
+    Add an option to change how the bitmap is saved. Right now its white character on black. Implement switch toggle for black character on white background
+
+    Change the keep selected button functionality. Example, save as training set or save as support set. Support set is saved to elektrobit/files/supportset.
+
      */
+
+
 
 }

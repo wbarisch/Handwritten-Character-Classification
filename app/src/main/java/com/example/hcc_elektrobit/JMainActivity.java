@@ -35,8 +35,16 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        MenuItem item = menu.findItem(R.id.menuButton);
-        item.setTitle("History");
+        MenuItem historyItem = menu.findItem(R.id.menuButton);
+        if (historyItem != null) {
+            historyItem.setTitle("History");
+        }
+
+        MenuItem toggleItem = menu.findItem(R.id.action_toggle_bitmap_method);
+        if (toggleItem != null && drawingCanvas != null) {
+            toggleItem.setChecked(drawingCanvas.isUseOldBitmapMethod());
+        }
+
         return true;
     }
 
@@ -121,13 +129,23 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
+
         if(id == R.id.menuButton) {
             Intent intent = new Intent(JMainActivity.this, JHistoryActivity.class);
             startActivity(intent);
             return true;
+        } else if (id == R.id.action_toggle_bitmap_method) {
+            item.setChecked(!item.isChecked());
+
+            if (drawingCanvas != null) {
+                drawingCanvas.setUseOldBitmapMethod(item.isChecked());
+            }
+
+            Log.d("JMainActivity", "Use Old Bitmap Method set to: " + item.isChecked());
+
+            return true;
         }
         return super.onOptionsItemSelected(item);
-
     }
 
     public void onTimeout(){

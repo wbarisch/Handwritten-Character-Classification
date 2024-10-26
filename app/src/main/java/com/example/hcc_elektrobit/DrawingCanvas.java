@@ -19,6 +19,8 @@ public class DrawingCanvas extends View {
     Paint paint;
     Path path;
 
+    private boolean useOldBitmapMethod = false;
+
     public DrawingCanvas(Context context, AttributeSet attributeSet){
 
         super(context, attributeSet);
@@ -28,8 +30,17 @@ public class DrawingCanvas extends View {
         paint.setColor(Color.BLACK);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(30f);
+        paint.setStrokeWidth(30f); //original was 100f
 
+    }
+
+    public boolean isUseOldBitmapMethod() {
+        return this.useOldBitmapMethod;
+    }
+
+
+    public void setUseOldBitmapMethod(boolean useOldBitmapMethod) {
+        this.useOldBitmapMethod = useOldBitmapMethod;
     }
 
     @Override
@@ -79,49 +90,62 @@ public class DrawingCanvas extends View {
     }
 
     /*TODO: Implement a boolean that disables centering and matrix operations for testing.
-    Have it be a toggle one the main screen.*/
+    Have it be a toggle one the main screen to toggle between original method of getBitmap and my method of getBitmap
+    ,adding a toggle for setting Antialias to true or false. Add a toggle for different stroke widths*/
     public Bitmap getBitmap(int dims) {
+        if (useOldBitmapMethod) {
+            // Old method
+            Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            this.draw(canvas);
+            return Bitmap.createScaledBitmap(bitmap, dims, dims, true);
+        } else {
 
-        int margin = 2;
+            int margin = 2;
+            RectF bounds = new RectF();
+            path.computeBounds(bounds, true);
 
-        RectF bounds = new RectF();
-        path.computeBounds(bounds, true);
+            if (bounds.isEmpty() || bounds.width() <= 0 || bounds.height() <= 0) {
+                Bitmap emptyBitmap = Bitmap.createBitmap(dims, dims, Bitmap.Config.ARGB_8888);
+                Canvas emptyCanvas = new Canvas(emptyBitmap);
+                emptyCanvas.drawColor(Color.WHITE);
+                return emptyBitmap;
+            }
 
-        if (bounds.isEmpty() || bounds.width() <= 0 || bounds.height() <= 0) {
+            float strokeWidth = paint.getStrokeWidth();
+            float halfStrokeWidth = strokeWidth / 2f;
+            bounds.inset(-halfStrokeWidth, -halfStrokeWidth);
 
-            Bitmap emptyBitmap = Bitmap.createBitmap(dims, dims, Bitmap.Config.ARGB_8888);
-            Canvas emptyCanvas = new Canvas(emptyBitmap);
-            emptyCanvas.drawColor(Color.WHITE);
-            return emptyBitmap;
+            float contentWidth = bounds.width();
+            float contentHeight = bounds.height();
+
+            float targetSize = dims - 2 * margin;
+            float scale = Math.min(targetSize / contentWidth, targetSize / contentHeight);
+
+            Bitmap finalBitmap = Bitmap.createBitmap(dims, dims, Bitmap.Config.ARGB_8888);
+            Canvas finalCanvas = new Canvas(finalBitmap);
+            finalCanvas.drawColor(Color.WHITE);
+
+            Matrix matrix = new Matrix();
+            matrix.postTranslate(-bounds.left, -bounds.top);
+            matrix.postScale(scale, scale);
+
+            float dx = (dims - contentWidth * scale) / 2f;
+            float dy = (dims - contentHeight * scale) / 2f;
+            matrix.postTranslate(dx, dy);
+
+            Path scaledPath = new Path();
+            path.transform(matrix, scaledPath);
+
+            Paint scaledPaint = new Paint(paint);
+            float desiredStrokeWidth = dims * 0.08f; //Default 0.07f
+            scaledPaint.setStrokeWidth(desiredStrokeWidth);
+            scaledPaint.setAntiAlias(false);
+
+            finalCanvas.drawPath(scaledPath, scaledPaint);
+
+            return finalBitmap;
         }
-
-        float strokeWidth = paint.getStrokeWidth();
-        float halfStrokeWidth = strokeWidth / 2f;
-        bounds.inset(-halfStrokeWidth, -halfStrokeWidth);
-
-        float contentWidth = bounds.width();
-        float contentHeight = bounds.height();
-
-        float targetSize = dims - 2 * margin;
-        float scale = Math.min(targetSize / contentWidth, targetSize / contentHeight);
-
-        Bitmap finalBitmap = Bitmap.createBitmap(dims, dims, Bitmap.Config.ARGB_8888);
-        Canvas finalCanvas = new Canvas(finalBitmap);
-        finalCanvas.drawColor(Color.WHITE);
-        Matrix matrix = new Matrix();
-        matrix.postTranslate(-bounds.left, -bounds.top);
-        matrix.postScale(scale, scale);
-        float dx = (dims - contentWidth * scale) / 2f;
-        float dy = (dims - contentHeight * scale) / 2f;
-        matrix.postTranslate(dx, dy);
-        Path scaledPath = new Path();
-        path.transform(matrix, scaledPath);
-        Paint scaledPaint = new Paint(paint);
-        float desiredStrokeWidth = dims * 0.07f; // Bigger bitmap sizes, this value may need to be increased
-        scaledPaint.setStrokeWidth(desiredStrokeWidth);
-        scaledPaint.setAntiAlias(true);
-        finalCanvas.drawPath(scaledPath, scaledPaint);
-        return finalBitmap;
     }
 
 }
