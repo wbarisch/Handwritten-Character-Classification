@@ -90,7 +90,6 @@ public class DrawingCanvas extends View {
     }
 
     /*TODO: Implement a boolean that disables centering and matrix operations for testing.
-    Have it be a toggle one the main screen to toggle between original method of getBitmap and my method of getBitmap
     ,adding a toggle for setting Antialias to true or false. Add a toggle for different stroke widths*/
     public Bitmap getBitmap(int dims) {
         if (useOldBitmapMethod) {
