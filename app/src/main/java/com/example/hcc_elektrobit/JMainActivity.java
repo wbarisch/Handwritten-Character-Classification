@@ -220,30 +220,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         });
     }
 
-    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
-
-        if (floatArray.length != width * height) {
-            throw new IllegalArgumentException("Float array length must match width * height");
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        int[] pixels = new int[width * height];
-
-        for (int i = 0; i < floatArray.length; i++) {
-
-            float value = floatArray[i];
-            value = Math.max(0, Math.min(1, value));
-            int grayscale = (int) (value * 255);
-            int color = Color.argb(255, grayscale, grayscale, grayscale);
-            pixels[i] = color;
-        }
-
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-
-        return bitmap;
-    }
-
     public Bitmap getBitmap() {
         return bitmap;
     }
