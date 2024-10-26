@@ -247,8 +247,4 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         return bitmap;
     }
 
-    public void enterTrainingMode() {
-        Log.d("JMainActivity", "Training mode enabled");
-    }
-
 }
