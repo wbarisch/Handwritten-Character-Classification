@@ -100,7 +100,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             }
         });
 
-        model = SMSonnxModel.getInstance(this);
         audioPlayer = new AudioPlayer(this);
         SupportSet.getInstance().updateSet(this);
 
@@ -232,7 +231,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
                 return;
             }
 
-            sms_model = new SMSonnxModel(this);
+            sms_model = SMSonnxModel.getInstance(this);
             Pair<String, Map<String, Float>> result_pair = sms_model.classifyAndReturnPredAndSimilarityMap(bitmap);
 
             History history = History.getInstance();
@@ -250,7 +249,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
                 Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
                 return;
             }
-            cnn_model = new CNNonnxModel(this);
+            cnn_model = CNNonnxModel.getInstance(this);
             Pair<Integer, float[][]> result_pair = cnn_model.classifyAndReturnIntAndTensor(bitmap);
 
             History history = History.getInstance();
