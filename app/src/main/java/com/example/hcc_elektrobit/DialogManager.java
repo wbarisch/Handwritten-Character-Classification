@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.text.InputType;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.Toast;
 
 public class DialogManager {
@@ -117,6 +119,29 @@ public class DialogManager {
                 .setPositiveButton("Yes", (dialog, which) -> onConfirmDelete.run())
                 .setNegativeButton("No", (dialog, which) -> onCancelDelete.run())
                 .show();
+    }
+
+    public void showStrokeWidthInputDialog(DrawingCanvas drawingCanvas) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Enter Stroke Width");
+
+        final EditText input = new EditText(activity);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            try {
+                float strokeWidth = Float.parseFloat(input.getText().toString());
+                drawingCanvas.setStrokeWidth(strokeWidth);
+                Log.d("DialogManager", "Stroke width set to: " + strokeWidth);
+            } catch (NumberFormatException e) {
+                Toast.makeText(activity, "Invalid input. Please enter a valid number.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
     }
 
 

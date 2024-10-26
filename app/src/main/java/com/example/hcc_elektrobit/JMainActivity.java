@@ -23,6 +23,7 @@ import java.io.OutputStream;
 
 public class JMainActivity extends AppCompatActivity implements TimeoutActivity {
 
+    private DialogManager dialogManager;
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
@@ -42,6 +43,8 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
         MenuItem toggleBitmapMethodItem = menu.findItem(R.id.action_toggle_bitmap_method);
         MenuItem toggleAntiAliasItem = menu.findItem(R.id.action_toggle_antialias);
+        MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
+
 
         if (drawingCanvas != null) {
             boolean useOldBitmapMethod = drawingCanvas.isUseOldBitmapMethod();
@@ -52,6 +55,10 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             if (toggleAntiAliasItem != null) {
                 toggleAntiAliasItem.setChecked(!useOldBitmapMethod && drawingCanvas.getPaint().isAntiAlias());
                 toggleAntiAliasItem.setEnabled(!useOldBitmapMethod);
+            }
+
+            if (selectStrokeWidthItem != null) {
+                selectStrokeWidthItem.setEnabled(!useOldBitmapMethod);
             }
         }
 
@@ -108,7 +115,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         ImageSharingManager imageSharingManager = new ImageSharingManager(this);
         ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher);
 
-        DialogManager dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
+        dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
 
         shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
         trainingModeButton.setOnClickListener(v -> dialogManager.showTrainingModeDialog());
@@ -163,6 +170,11 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
                     drawingCanvas.setAntiAlias(item.isChecked());
                 }
                 Log.d("JMainActivity", "Anti-Alias set to: " + item.isChecked());
+            }
+            return true;
+        } else if (id == R.id.action_select_stroke_width) {
+            if (!drawingCanvas.isUseOldBitmapMethod()) {
+                dialogManager.showStrokeWidthInputDialog(drawingCanvas);
             }
             return true;
         }

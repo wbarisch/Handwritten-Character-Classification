@@ -30,7 +30,7 @@ public class DrawingCanvas extends View {
         paint.setColor(Color.BLACK);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(30f); //original was 100f
+        setDynamicStrokeWidth();
 
     }
 
@@ -41,6 +41,23 @@ public class DrawingCanvas extends View {
 
     public void setUseOldBitmapMethod(boolean useOldBitmapMethod) {
         this.useOldBitmapMethod = useOldBitmapMethod;
+        setDynamicStrokeWidth();
+    }
+
+    public void setStrokeWidth(float strokeWidth) {
+        if (!useOldBitmapMethod) {
+            paint.setStrokeWidth(strokeWidth);
+            invalidate();
+        }
+    }
+
+    private void setDynamicStrokeWidth() {
+        if (useOldBitmapMethod) {
+            paint.setStrokeWidth(100f);
+        } else {
+            paint.setStrokeWidth(30f);
+        }
+        invalidate();
     }
 
     public Paint getPaint() {
