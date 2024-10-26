@@ -89,20 +89,31 @@ public class History {
         JSONObject mainJsonObject = getJsonObject(json_file);
 
         JSONObject similarityMap = new JSONObject();
+        JSONArray cnnTensor = new JSONArray();
         String jsonString;
 
         try {
+            if(historyItem instanceof SMSHistoryItem) {
 
-            for (String key: ((Map<String, Float>)historyItem.model_tensor).keySet()) {
-                similarityMap.put(key, ((Map<String, Float>) historyItem.model_tensor).get(key));
+                for (String key : (((SMSHistoryItem) historyItem).getOutputCollection()).keySet()) {
+                    similarityMap.put(key, ((SMSHistoryItem) historyItem).getOutputCollection().get(key));
+                }
+
+                mainJsonObject.put(imgFileName, similarityMap);
+            } else if (historyItem instanceof CNNHistoryItem) {
+                for(float[] row: ((CNNHistoryItem) historyItem).getOutputCollection()) {
+                    JSONArray rowJson = new JSONArray();
+                    for (float value : row){
+                        rowJson.put(value);
+                    }
+                    cnnTensor.put(rowJson);
+                }
+                mainJsonObject.put(imgFileName, cnnTensor);
             }
-
-            mainJsonObject.put(imgFileName, similarityMap);;
             jsonString = mainJsonObject.toString(4);
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-
 
         try(FileOutputStream out = new FileOutputStream(json_file)){
             out.write(jsonString.getBytes(StandardCharsets.UTF_8));
