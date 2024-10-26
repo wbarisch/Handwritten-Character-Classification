@@ -20,13 +20,16 @@ import java.util.List;
 public class ImageSavingManager {
 
     private final ActivityResultLauncher<Intent> documentLauncher;
+    private final CharacterMapping characterMapping;
 
-    public ImageSavingManager(ActivityResultLauncher<Intent> documentLauncher) {
+    public ImageSavingManager(ActivityResultLauncher<Intent> documentLauncher, CharacterMapping characterMapping) {
         this.documentLauncher = documentLauncher;
+        this.characterMapping = characterMapping;
     }
 
-    private int getMaxImageIndex(Context context, String character) {
-        String directoryPath = Environment.DIRECTORY_PICTURES + "/TrainingImages/" + character;
+    private int getMaxImageIndex(Context context, int characterId) {
+        String characterFolderName = characterMapping.getPaddedId(characterId);
+        String directoryPath = Environment.DIRECTORY_PICTURES + "/TrainingImages/" + characterFolderName;
         File directory = new File(Environment.getExternalStoragePublicDirectory(directoryPath).toString());
         if (!directory.exists() || !directory.isDirectory()) {
             return 0;
@@ -38,8 +41,8 @@ public class ImageSavingManager {
         if (files != null) {
             for (File file : files) {
                 String fileName = file.getName();
-                if (fileName.startsWith(character + "_") && fileName.endsWith(".bmp")) {
-                    String indexPart = fileName.substring(fileName.indexOf("_") + 1, fileName.lastIndexOf("."));
+                if (fileName.startsWith("") && fileName.endsWith(".bmp")) {
+                    String indexPart = fileName.substring(0, fileName.lastIndexOf("."));
                     try {
                         int index = Integer.parseInt(indexPart);
                         if (index > maxIndex) {
@@ -55,22 +58,22 @@ public class ImageSavingManager {
         return maxIndex;
     }
 
-    public void saveSelectedImages(Context context, List<Bitmap> selectedBitmaps, String character) {
+    public void saveSelectedImages(Context context, List<Bitmap> selectedBitmaps, int characterId) {
         if (selectedBitmaps == null || selectedBitmaps.isEmpty()) {
             Log.e("ImageSavingManager", "No images selected to save.");
             return;
         }
 
-        int currentMaxIndex = getMaxImageIndex(context, character);
+        int currentMaxIndex = getMaxImageIndex(context, characterId);
         for (Bitmap bitmap : selectedBitmaps) {
             if (bitmap != null) {
                 currentMaxIndex++;
-                String filename = character + "_" + currentMaxIndex + ".bmp";
-                saveImageToCharacterFolder(context, bitmap, character, filename);
+                String filename = String.format("%03d.bmp", currentMaxIndex);
+                saveImageToCharacterFolder(context, bitmap, characterId, filename);
             }
         }
 
-        Log.d("ImageSavingManager", "Selected images saved to character folder: " + character);
+        Log.d("ImageSavingManager", "Selected images saved to character folder: " + characterId);
     }
 
     public void deleteSelectedImages(Context context, List<Bitmap> selectedBitmaps, List<Bitmap> bitmaps, List<String> imagePaths) {
@@ -97,13 +100,14 @@ public class ImageSavingManager {
         selectedBitmaps.clear();
     }
 
-    public void saveImageToCharacterFolder(Context context, Bitmap bitmap, String character, String filename) {
-        if (bitmap == null || character == null || filename == null) {
+    public void saveImageToCharacterFolder(Context context, Bitmap bitmap, int characterId, String filename) {
+        if (bitmap == null || filename == null) {
             Log.e("ImageSavingManager", "Invalid input for saving image to character folder");
             return;
         }
 
-        String directoryPath = Environment.DIRECTORY_PICTURES + "/TrainingImages/" + character;
+        String characterFolderName = characterMapping.getPaddedId(characterId);
+        String directoryPath = Environment.DIRECTORY_PICTURES + "/TrainingImages/" + characterFolderName;
 
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.DISPLAY_NAME, filename);

@@ -25,6 +25,8 @@ public class ReviewActivity extends AppCompatActivity {
     private ImageButton trashButton;
     private DialogManager dialogManager;
     private ImageSavingManager imageSavingManager;
+    private CharacterMapping characterMapping;
+    private int selectedCharacterId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +34,8 @@ public class ReviewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_review);
 
         dialogManager = new DialogManager(this);
-        imageSavingManager = new ImageSavingManager(null);
+        characterMapping = new CharacterMapping();
+        imageSavingManager = new ImageSavingManager(null, characterMapping);
 
         gridView = findViewById(R.id.grid_view);
         Button keepButton = findViewById(R.id.keep_button);
@@ -44,7 +47,7 @@ public class ReviewActivity extends AppCompatActivity {
         bitmaps = new ArrayList<>();
         selectedBitmaps = new ArrayList<>();
 
-        String selectedCharacter = intent.getStringExtra("selectedCharacter");
+        selectedCharacterId = intent.getIntExtra("selectedCharacterId", -1);
 
         if (intent != null) {
             imagePaths = intent.getStringArrayListExtra("image_paths");
@@ -64,7 +67,7 @@ public class ReviewActivity extends AppCompatActivity {
         keepButton.setOnClickListener(v -> {
             if (!selectedBitmaps.isEmpty()) {
                 dialogManager.showKeepSelectedDialog(() -> {
-                    imageSavingManager.saveSelectedImages(this, selectedBitmaps, selectedCharacter);
+                    imageSavingManager.saveSelectedImages(this, selectedBitmaps, selectedCharacterId);
                     imageSavingManager.clearImageCache(this);
                     selectedBitmaps.clear();
                     Intent resultIntent = new Intent();

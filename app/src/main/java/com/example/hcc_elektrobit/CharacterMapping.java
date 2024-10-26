@@ -20,6 +20,11 @@ public class CharacterMapping {
     }
 
     public String getCharacterForId(int id) {
+
         return idToCharacterMap.getOrDefault(id, "");
+    }
+
+    public String getPaddedId(int id) {
+        return String.format("%03d", id);
     }
 }

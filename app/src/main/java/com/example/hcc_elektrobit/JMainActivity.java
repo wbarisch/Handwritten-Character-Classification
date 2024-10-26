@@ -31,6 +31,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     private Bitmap bitmap;
     private AudioPlayer audioPlayer;
     CanvasTimer canvasTimer;
+    private CharacterMapping characterMapping;
     boolean timerStarted = false;
 
     @Override
@@ -71,6 +72,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jmain);
 
+        characterMapping = new CharacterMapping();
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
@@ -113,7 +115,8 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         );
 
         ImageSharingManager imageSharingManager = new ImageSharingManager(this);
-        ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher);
+        ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher, characterMapping);
+
 
         dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
 

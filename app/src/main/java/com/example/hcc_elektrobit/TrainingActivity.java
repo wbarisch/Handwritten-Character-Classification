@@ -52,6 +52,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private CharacterMapping characterMapping;
     private List<Bitmap> bitmapsToSave;
     private String selectedCharacter = "";
+    private int selectedCharacterId = -1;
 
 
     @Override
@@ -65,7 +66,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         bitmapsToSave = new ArrayList<>();
 
         drawingCanvas = findViewById(R.id.fullscreen_canvas);
-        imageSavingManager = new ImageSavingManager(null);
+        imageSavingManager = new ImageSavingManager(null, characterMapping);
 
         leaveButton = findViewById(R.id.leave_button);
         chatboxContainer = findViewById(R.id.chatbox_container);
@@ -103,22 +104,33 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         });
 
         okButton.setOnClickListener(v -> {
-            String characterId = characterIdInput.getText().toString().trim();
-            if (!characterId.isEmpty()) {
-                int id = Integer.parseInt(characterId);
-                selectedCharacter = characterMapping.getCharacterForId(id);
-                if (!selectedCharacter.isEmpty()) {
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    if (imm != null) {
-                        imm.hideSoftInputFromWindow(characterIdInput.getWindowToken(), 0);
+            String characterIdStr = characterIdInput.getText().toString().trim();
+            if (!characterIdStr.isEmpty()) {
+                try {
+                    int id = Integer.parseInt(characterIdStr);
+                    selectedCharacterId = id; // Assign to the class-level variable
+                    selectedCharacter = characterMapping.getCharacterForId(id);
+                    if (!selectedCharacter.isEmpty()) {
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        if (imm != null) {
+                            imm.hideSoftInputFromWindow(characterIdInput.getWindowToken(), 0);
+                        }
+                        chatboxContainer.setVisibility(View.GONE);
+                        exitButton.setVisibility(View.GONE);
+                        leaveButton.setVisibility(View.VISIBLE);
+                        reviewButton.setVisibility(View.VISIBLE);
+                    } else {
+                        Toast.makeText(this, "Invalid character ID.", Toast.LENGTH_SHORT).show();
                     }
-                    chatboxContainer.setVisibility(View.GONE);
-                    exitButton.setVisibility(View.GONE);
-                    leaveButton.setVisibility(View.VISIBLE);
-                    reviewButton.setVisibility(View.VISIBLE);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(this, "Please enter a valid number.", Toast.LENGTH_SHORT).show();
+                    Log.e("TrainingActivity", "Invalid number format for character ID.", e);
                 }
+            } else {
+                Toast.makeText(this, "Character ID cannot be empty.", Toast.LENGTH_SHORT).show();
             }
         });
+
 
         reviewButton.setOnClickListener(v -> {
             if (!bitmapsToSave.isEmpty() && !selectedCharacter.isEmpty()) {
@@ -170,7 +182,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private void launchReviewActivity() {
         Intent intent = new Intent(this, ReviewActivity.class);
         intent.putStringArrayListExtra("image_paths", getCachedImagePaths());
-        intent.putExtra("selectedCharacter", selectedCharacter);
+        intent.putExtra("selectedCharacterId", selectedCharacterId);
         startActivityForResult(intent, REVIEW_IMAGES_REQUEST);
     }
 
@@ -353,20 +365,5 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         adjustedBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
         return adjustedBitmap;
     }
-
-
-    /*TODO:
-
-
-    images should be saved 001, 002_1 -- first image of class 2, 003, 004 and so on.. not a_1, a_2, a_3.
-    also, it shouldn't be saved in folder 'a' it should be saved in folder '010_1, 010_2, 010_3'. Use character id as folder
-
-    Add an option to change how the bitmap is saved. Right now its white character on black. Implement switch toggle for black character on white background
-
-    Change the keep selected button functionality. Example, save as training set or save as support set. Support set is saved to elektrobit/files/supportset.
-
-     */
-
-
 
 }
