@@ -104,13 +104,12 @@ public class SMSonnxModel {
 
     public float classify_similarity(Bitmap bitmap1,Bitmap bitmap2){
         float[][] result = this.findSimilarity(bitmap1,bitmap2);
-        classify_id(bitmap1);
-        //float[] result = {2.0f};
         return result[0][0];
-
     }
 
     public String classify_id(Bitmap bitmap1){
+
+        SupportSet.getInstance().updateSet(context);
 
         List<SupportSetItem> supportSet = SupportSet.getInstance().getItems();
 
@@ -184,7 +183,6 @@ public class SMSonnxModel {
                 int b = pixel & 0xff;
 
                 float grayscale = (r + g + b) / 3.0f / 255.0f;
-                grayscale = grayscale;
                 data[index++] = grayscale;
             }
         }
@@ -192,15 +190,6 @@ public class SMSonnxModel {
         return data;
     }
 
-    private int argmax(float[] array) {
-        int maxIndex = 0;
-        for (int i = 1; i < array.length; i++) {
-            if (array[i] > array[maxIndex]) {
-                maxIndex = i;
-            }
-        }
-        return maxIndex;
-    }
 
     public void close() {
         try {
