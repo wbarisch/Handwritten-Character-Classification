@@ -104,7 +104,7 @@ public class History {
                 for(float[] row: ((CNNHistoryItem) historyItem).getOutputCollection()) {
                     JSONArray rowJson = new JSONArray();
                     for (float value : row){
-                        rowJson.put(value);
+                        rowJson.put(value+"");
                     }
                     cnnTensor.put(rowJson);
                 }
@@ -226,7 +226,7 @@ public class History {
             JSONObject similarityMap = jsonFile.getJSONObject(file.getName());
             for (Iterator<String> it = similarityMap.keys(); it.hasNext(); ) {
                 String key = it.next();
-                resultMap.put(key, (float)similarityMap.getLong(key));
+                resultMap.put(key, Float.parseFloat(similarityMap.getString(key)));
             }
         }catch (JSONException e) {
             throw new RuntimeException(e);
