@@ -9,6 +9,8 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.core.util.Consumer;
+
 public class DialogManager {
 
     private final Activity activity;
@@ -141,6 +143,23 @@ public class DialogManager {
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
+        builder.show();
+    }
+
+    public void showToggleBitmapModeDialog(boolean currentMode, Consumer<Boolean> onModeChanged) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Select Bitmap Mode");
+
+        String[] options = {"White Character on Black", "Black Character on White"};
+        int currentIndex = currentMode ? 0 : 1;
+
+        builder.setSingleChoiceItems(options, currentIndex, (dialog, which) -> {
+            boolean newMode = which == 0; // 0 for White on Black, 1 for Black on White
+            onModeChanged.accept(newMode);
+            dialog.dismiss();
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
         builder.show();
     }
 

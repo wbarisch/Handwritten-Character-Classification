@@ -142,19 +142,6 @@ public class ImageSavingManager {
         documentLauncher.launch(intent);
     }
 
-    public void saveImageToDevice(Context context, Bitmap bitmap, String character) {
-        if (bitmap == null) {
-            Log.e("ImageSavingManager", "Bitmap is null, cannot save");
-            return;
-        }
-
-
-        int currentMaxIndex = getMaxImageIndex(context, character);
-        String filename = character + "_" + (currentMaxIndex + 1) + ".bmp";
-
-        saveImageToCharacterFolder(context, bitmap, character, filename);
-    }
-
     public void saveBitmapToCache(Context context, Bitmap bitmap, String fileName) {
         if (bitmap == null) {
             Log.e("ImageSavingManager", "Bitmap is null, cannot save");
@@ -172,29 +159,6 @@ public class ImageSavingManager {
         }
     }
 
-
-    public void deleteAllImages(Context context) {
-        clearImageCache(context);
-        File externalDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES + "/TrainingImages").toString());
-        if (externalDir.isDirectory()) {
-            for (File characterDir : externalDir.listFiles()) {
-                if (characterDir.isDirectory()) {
-                    for (File file : characterDir.listFiles()) {
-                        if (file.getName().endsWith(".bmp")) {
-                            if (file.delete()) {
-                                Log.d("ImageSavingManager", "Deleted file: " + file.getPath());
-                            } else {
-                                Log.e("ImageSavingManager", "Failed to delete file: " + file.getPath());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Log.d("ImageSavingManager", "All images deleted from cache and external storage");
-    }
 
     public void clearImageCache(Context context) {
         File cacheDir = context.getCacheDir();

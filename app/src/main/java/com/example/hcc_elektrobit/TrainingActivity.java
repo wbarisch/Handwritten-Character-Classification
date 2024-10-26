@@ -38,6 +38,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private DrawingCanvas drawingCanvas;
     private ImageSavingManager imageSavingManager;
     private boolean timerStarted = false;
+    private boolean saveAsWhiteCharacterOnBlack = true;
 
     private ImageButton leaveButton;
     private View chatboxContainer;
@@ -158,7 +159,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     }
 
     private void addBitmapToSaveList(Bitmap bitmap) {
-        Bitmap invertedBitmap = invertBitmapColors(bitmap);
+        Bitmap invertedBitmap = adjustBitmapColors(bitmap);
         String fileName = "temp_image_" + System.currentTimeMillis();
         imageSavingManager.saveBitmapToCache(this, invertedBitmap, fileName);
         bitmapsToSave.add(invertedBitmap);
@@ -235,6 +236,13 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         if (id == R.id.menu_bitmap_size) {
             showBitmapSizeDialog();
             return true;
+        } else if (id == R.id.menu_toggle_bitmap_mode) {
+            dialogManager.showToggleBitmapModeDialog(saveAsWhiteCharacterOnBlack, newMode -> {
+                saveAsWhiteCharacterOnBlack = newMode;
+                String mode = saveAsWhiteCharacterOnBlack ? "White Character on Black" : "Black Character on White";
+                Toast.makeText(this, "Bitmap mode set to: " + mode, Toast.LENGTH_SHORT).show();
+            });
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -270,8 +278,8 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         builder.show();
     }
 
-    public Bitmap invertBitmapColors(Bitmap originalBitmap) {
-        Bitmap invertedBitmap = Bitmap.createBitmap(
+    public Bitmap adjustBitmapColors(Bitmap originalBitmap) {
+        Bitmap adjustedBitmap = Bitmap.createBitmap(
                 originalBitmap.getWidth(),
                 originalBitmap.getHeight(),
                 originalBitmap.getConfig()
@@ -284,20 +292,23 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
         for (int i = 0; i < pixels.length; i++) {
             int color = pixels[i];
-            int alpha = Color.alpha(color);
-            int red = 255 - Color.red(color);
-            int green = 255 - Color.green(color);
-            int blue = 255 - Color.blue(color);
-            pixels[i] = Color.argb(alpha, red, green, blue);
+            if (saveAsWhiteCharacterOnBlack) {
+                int alpha = Color.alpha(color);
+                int red = 255 - Color.red(color);
+                int green = 255 - Color.green(color);
+                int blue = 255 - Color.blue(color);
+                pixels[i] = Color.argb(alpha, red, green, blue);
+            } else {
+                pixels[i] = color;
+            }
         }
 
-        invertedBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-        return invertedBitmap;
+        adjustedBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+        return adjustedBitmap;
     }
 
+
     /*TODO:
-    Various options: size of the bitmap and id of the saved image. Introduce sequence. 1-9 for number, 10-36 for alphabet, any additional characters will start at 37. When adding a new support set
-    , it should automatically go on from the last used number, in our case atm 36 for z.
 
 
     images should be saved 001, 002_1 -- first image of class 2, 003, 004 and so on.. not a_1, a_2, a_3.

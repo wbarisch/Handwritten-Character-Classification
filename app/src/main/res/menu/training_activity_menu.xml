@@ -3,4 +3,8 @@
     <item
         android:id="@+id/menu_bitmap_size"
         android:title="Bitmap Image Size"/>
+
+    <item
+        android:id="@+id/menu_toggle_bitmap_mode"
+        android:title="Toggle Bitmap Color Mode" />
 </menu>
