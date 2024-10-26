@@ -9,13 +9,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 // Adapter class for the history grid view
 public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
@@ -51,8 +51,15 @@ public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
         HistoryItem item = hist_list.get(position);
 
         imageView.setImageBitmap(item.getBitmap());
-        String predictionStr = item.getPred();
-        textView.setText(predictionStr);
+        String predictionStr;
+        if(item instanceof SMSHistoryItem){
+            predictionStr = ((SMSHistoryItem)item).getPred();
+            textView.setText(predictionStr);
+        } else if (item instanceof CNNHistoryItem) {
+            predictionStr = ((CNNHistoryItem)item).getPred();
+            textView.setText(predictionStr);
+        }
+
 
         v.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,7 +77,11 @@ public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
 
 
                 TextView tensor = dialogView.findViewById(R.id.tensor);
-                tensor.setText(item.pred_tensor);
+                if (Objects.equals(item.getModel(), "SMS")) {
+                    tensor.setText(((SMSHistoryItem)item).getOutputCollection().toString());
+                } else if (Objects.equals(item.getModel(), "CNN")) {
+                    tensor.setText(Arrays.deepToString(((CNNHistoryItem) item).getOutputCollection()));
+                }
 
                 // Set up close button functionality
                 Button closeButton = dialogView.findViewById(R.id.closeButton);
