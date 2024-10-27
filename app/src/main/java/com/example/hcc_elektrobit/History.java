@@ -155,7 +155,7 @@ public class History {
             if(file.getName().equals("model_outputs.json")) continue;
             try(FileInputStream in = new FileInputStream(file)){
                 Bitmap bmp = BitmapFactory.decodeStream(in);
-                String pred = file.getName().charAt(0)+"";
+                String pred = new String(Character.toChars(file.getName().codePointAt(0)));;
                 if(file.getName().contains("SMS")){
                     Map<String, Float> similarityMap = getSimilarityMapFromJSON(file, jsonFile);
                     SMSHistoryItem _hi = new SMSHistoryItem(bmp, pred, similarityMap);
