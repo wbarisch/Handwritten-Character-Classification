@@ -38,7 +38,13 @@ public class SupportSetActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
 
     }
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SupportSet.getInstance().updateSet(this);
+        SupportSetAdapter adapter = new SupportSetAdapter(this, R.layout.support_set_item, SupportSet.getInstance().getItems());
+        gridView.setAdapter(adapter);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);

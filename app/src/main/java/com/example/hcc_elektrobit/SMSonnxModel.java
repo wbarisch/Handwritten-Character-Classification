@@ -55,7 +55,7 @@ public class SMSonnxModel {
     }
 
     private String copyModelToCache() throws IOException {
-        String modelFileName = "siamese_model.onnx";
+        String modelFileName = "siamese_model_mine_245.onnx";
         File cacheDir = context.getCacheDir();
         File modelFile = new File(cacheDir, modelFileName);
 
@@ -121,7 +121,7 @@ public class SMSonnxModel {
             Bitmap bitmap2 = item.getBitmap();
 
             float[][] result = findSimilarity(bitmap1, bitmap2);
-            float similarity = result[0][0];
+            float similarity = result[0][0] + 100f;
 
             similarityMap.putIfAbsent(labelId, new ArrayList<>());
             similarityMap.get(labelId).add(similarity);
@@ -140,6 +140,8 @@ public class SMSonnxModel {
             }
             float average = sum / similarities.size();
             averageSimilarityMap.put(labelId, average);
+
+            Log.e(TAG, "Average Similarity: " + average + " for Label ID: " + labelId);
         }
 
         String maxLabelId = "";
@@ -217,7 +219,7 @@ public class SMSonnxModel {
             Bitmap bitmap2 = item.getBitmap();
 
             float[][] result = findSimilarity(bitmap, bitmap2);
-            float similarity = result[0][0];
+            float similarity = result[0][0] + 100f;
 
             similarityMap.putIfAbsent(labelId, new ArrayList<>());
             similarityMap.get(labelId).add(similarity);
@@ -236,6 +238,8 @@ public class SMSonnxModel {
             }
             float average = sum / similarities.size();
             averageSimilarityMap.put(labelId, average);
+
+            Log.e(TAG, "Average Similarity: " + average + " for Label ID: " + labelId);
         }
 
         String maxLabelId = "";
