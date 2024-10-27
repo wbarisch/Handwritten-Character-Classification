@@ -78,7 +78,33 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Support Set"
-        app:layout_constraintTop_toBottomOf="@id/siamese_test_button"
-        app:layout_constraintLeft_toLeftOf="@+id/share_button"/>
+        app:layout_constraintLeft_toLeftOf="@+id/share_button"
+        app:layout_constraintTop_toBottomOf="@id/siamese_test_button" />
+
+    <Switch
+        android:id="@+id/cnn_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="192dp"
+        android:scaleX="1.2"
+        android:scaleY="1.2"
+        android:text="CNN Toggle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <Switch
+        android:id="@+id/quan_toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="192dp"
+        android:scaleX="1.2"
+        android:scaleY="1.2"
+        android:text="Quantized"
+        android:paddingTop="15dp"
+        app:layout_constraintStart_toStartOf="@+id/cnn_toggle"
+        app:layout_constraintTop_toBottomOf="@+id/cnn_toggle" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

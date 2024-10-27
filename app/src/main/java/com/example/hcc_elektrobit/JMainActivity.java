@@ -6,12 +6,14 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,23 +22,56 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Map;
 
 public class JMainActivity extends AppCompatActivity implements TimeoutActivity {
 
+    private DialogManager dialogManager;
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
     private ImageView bitmapDisplay;
-    private SMSonnxModel model;
+    private SMSonnxModel sms_model;
+    private CNNonnxModel cnn_model;
     private Bitmap bitmap;
     private AudioPlayer audioPlayer;
     CanvasTimer canvasTimer;
+    private CharacterMapping characterMapping;
     boolean timerStarted = false;
+    private boolean quantizedModel = false;
+
+    String model_name = "SMS";
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        MenuItem item = menu.findItem(R.id.menuButton);
-        item.setTitle("History");
+        MenuItem historyItem = menu.findItem(R.id.menuButton);
+        if (historyItem != null) {
+            historyItem.setTitle("History");
+        }
+
+        MenuItem toggleBitmapMethodItem = menu.findItem(R.id.action_toggle_bitmap_method);
+        MenuItem toggleAntiAliasItem = menu.findItem(R.id.action_toggle_antialias);
+        MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
+
+
+        if (drawingCanvas != null) {
+            boolean useOldBitmapMethod = drawingCanvas.isUseOldBitmapMethod();
+            if (toggleBitmapMethodItem != null) {
+                toggleBitmapMethodItem.setChecked(useOldBitmapMethod);
+            }
+
+            if (toggleAntiAliasItem != null) {
+                toggleAntiAliasItem.setChecked(!useOldBitmapMethod && drawingCanvas.getPaint().isAntiAlias());
+                toggleAntiAliasItem.setEnabled(!useOldBitmapMethod);
+            }
+
+            if (selectStrokeWidthItem != null) {
+                selectStrokeWidthItem.setEnabled(!useOldBitmapMethod);
+            }
+        }
+
+
         return true;
     }
 
@@ -45,6 +80,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jmain);
 
+        characterMapping = new CharacterMapping();
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
@@ -52,9 +88,29 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button trainingModeButton = findViewById(R.id.training_mode_button);
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
+        Switch CNNToggle = findViewById(R.id.cnn_toggle);
+        Switch quanToggle = findViewById(R.id.quan_toggle);
+
+        quanToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                quantizedModel = !quantizedModel;
 
 
-        model = new SMSonnxModel(this);
+            }
+        });
+
+        CNNToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(model_name.equals("SMS")){
+                    model_name = "CNN";
+                }else if(model_name.equals("CNN")){
+                    model_name = "SMS";
+                }
+            }
+        });
+
         audioPlayer = new AudioPlayer(this);
         SupportSet.getInstance().updateSet(this);
 
@@ -98,9 +154,10 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         );
 
         ImageSharingManager imageSharingManager = new ImageSharingManager(this);
-        ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher);
+        ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher, characterMapping);
 
-        DialogManager dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
+
+        dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
 
         shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
         trainingModeButton.setOnClickListener(v -> dialogManager.showTrainingModeDialog());
@@ -132,13 +189,38 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
+
         if(id == R.id.menuButton) {
             Intent intent = new Intent(JMainActivity.this, JHistoryActivity.class);
             startActivity(intent);
             return true;
+        } else if (id == R.id.action_toggle_bitmap_method) {
+            item.setChecked(!item.isChecked());
+
+            if (drawingCanvas != null) {
+                drawingCanvas.setUseOldBitmapMethod(item.isChecked());
+            }
+
+            invalidateOptionsMenu();
+
+            Log.d("JMainActivity", "Use Old Bitmap Method set to: " + item.isChecked());
+            return true;
+        } else if (id == R.id.action_toggle_antialias) {
+            if (!drawingCanvas.isUseOldBitmapMethod()) {
+                item.setChecked(!item.isChecked());
+                if (drawingCanvas != null) {
+                    drawingCanvas.setAntiAlias(item.isChecked());
+                }
+                Log.d("JMainActivity", "Anti-Alias set to: " + item.isChecked());
+            }
+            return true;
+        } else if (id == R.id.action_select_stroke_width) {
+            if (!drawingCanvas.isUseOldBitmapMethod()) {
+                dialogManager.showStrokeWidthInputDialog(drawingCanvas);
+            }
+            return true;
         }
         return super.onOptionsItemSelected(item);
-
     }
 
     public void onTimeout(){
@@ -151,56 +233,61 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     private void classifyCharacter(){
 
-        bitmap = drawingCanvas.getBitmap(105);
+        String result;
+        if (model_name.equals("SMS")){
+            bitmap = drawingCanvas.getBitmap(105);
 
-        if (bitmap == null) {
-            Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
-            return;
+            if (bitmap == null) {
+                Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
+                return;
+            }
+            Pair<String, Map<String, Float>> result_pair;
+            if(quantizedModel){
+
+                result_pair= SMSonnxQuantisedModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
+            } else {
+                result_pair = SMSonnxModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
+            }
+
+
+            History history = History.getInstance();
+            SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first, result_pair.second);
+
+            history.saveItem(historyItem, this);
+
+            result = result_pair.first;
+            Log.i("SMS", result);
+            Log.i("SMS", result_pair.second.toString());
+        }else if(model_name.equals("CNN")){
+            bitmap = drawingCanvas.getBitmap(28);
+
+            if (bitmap == null) {
+                Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
+                return;
+            }
+            cnn_model = CNNonnxModel.getInstance(this);
+            Pair<Integer, float[][]> result_pair = cnn_model.classifyAndReturnIntAndTensor(bitmap);
+
+            History history = History.getInstance();
+            CNNHistoryItem historyItem = new CNNHistoryItem(bitmap, result_pair.first.toString(), result_pair.second);
+
+            history.saveItem(historyItem, this);
+
+            result = result_pair.first.toString();
+            Log.i("CNN", result);
+            Log.i("CNN", Arrays.deepToString(result_pair.second));
+        } else {
+            result = "";
+            Log.e("MAIN_ACTIVITY", "NO MODEL SELECTED!");
         }
 
-        // TO DO:
-        // - Call CharacterClassifier class
-        // - To display the output character, set it to "recognizedCharTextView".
-
-        String result = model.classify_id(bitmap);
-
-        History history = History.getInstance();
-        HistoryItem historyItem = new HistoryItem(bitmap, result);
-
-        history.saveItem(historyItem, this);
-
-        //bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
-        audioPlayer.PlayAudio(String.valueOf(result));
+        audioPlayer.PlayAudio(result);
         runOnUiThread(() -> {
 
-            recognizedCharTextView.setText(String.valueOf(result));
+            recognizedCharTextView.setText(result);
             bitmapDisplay.setImageBitmap(bitmap);
 
         });
-    }
-
-    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
-
-        if (floatArray.length != width * height) {
-            throw new IllegalArgumentException("Float array length must match width * height");
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        int[] pixels = new int[width * height];
-
-        for (int i = 0; i < floatArray.length; i++) {
-
-            float value = floatArray[i];
-            value = Math.max(0, Math.min(1, value));
-            int grayscale = (int) (value * 255);
-            int color = Color.argb(255, grayscale, grayscale, grayscale);
-            pixels[i] = color;
-        }
-
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-
-        return bitmap;
     }
 
     public Bitmap getBitmap() {
