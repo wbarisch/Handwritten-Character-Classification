@@ -5,7 +5,6 @@ package com.example.hcc_elektrobit;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -20,7 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.GestureDetector;
 
-public class MainActivity extends AppCompatActivity implements TimeoutActivity {
+public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     // UI components
     private DrawingCanvas drawingCanvas;
@@ -29,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
 
     //
     // private ImageView bitmapDisplay;
-    private SMSonnxModel model;
+    private SMSonnxQuantisedModel model;
     private Bitmap bitmap;
     private AudioPlayer audioPlayer;
 
@@ -55,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
         // FOR EXPERIMENT ONLY!
         //bitmapDisplay = findViewById(R.id.bitmap_display);
 
-        model = new SMSonnxModel(this);
+        model = SMSonnxQuantisedModel.getInstance(this);
         audioPlayer = new AudioPlayer(this);
         SupportSet.getInstance().updateSet(this);
 
@@ -191,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
 
         if(SelectedItemId == R.id.developer_mode) {
             // Switch to developer mode.
-            startActivity(new Intent(MainActivity.this, JMainActivity.class));
+            startActivity(new Intent(DrivingMode.this, JMainActivity.class));
             return true;
 
         } else{
@@ -229,12 +228,6 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
 
         String result = model.classify_id(bitmap);
 
-        History history = History.getInstance();
-        HistoryItem historyItem = new HistoryItem(bitmap, result);
-
-        history.saveItem(historyItem, this);
-
-        //bitmap = createBitmapFromFloatArray(model.preprocessBitmap(bitmap), 28, 28);
         audioPlayer.PlayAudio(String.valueOf(result));
         runOnUiThread(() -> {
 
@@ -246,41 +239,5 @@ public class MainActivity extends AppCompatActivity implements TimeoutActivity {
         });
     }
 
-    /*
-    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
-        // Ensure that the float array length matches width * height
-        if (floatArray.length != width * height) {
-            throw new IllegalArgumentException("Float array length must match width * height");
-        }
-
-        // Create a bitmap with the specified width and height
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        // Create an array to hold the pixel colors
-        int[] pixels = new int[width * height];
-
-        // Iterate over the float array and convert each value to a grayscale color
-        for (int i = 0; i < floatArray.length; i++) {
-            float value = floatArray[i];  // Get the float value
-
-            // Ensure the value is clamped between 0 and 1
-            value = Math.max(0, Math.min(1, value));
-
-            // Convert the float value to an integer between 0 and 255
-            int grayscale = (int) (value * 255);
-
-            // Create a grayscale color (same value for R, G, and B, and full alpha)
-            int color = Color.argb(255, grayscale, grayscale, grayscale);
-
-            // Set the color in the pixel array
-            pixels[i] = color;
-        }
-
-        // Set the pixel data to the bitmap
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-
-        return bitmap;
-    }
-     */
 
 }

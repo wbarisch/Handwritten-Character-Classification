@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
@@ -53,8 +54,17 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         MenuItem toggleBitmapMethodItem = menu.findItem(R.id.action_toggle_bitmap_method);
         MenuItem toggleAntiAliasItem = menu.findItem(R.id.action_toggle_antialias);
         MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
+        MenuItem driverMode = menu.findItem(R.id.driver_mode);
 
 
+        driverMode.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
+                Intent intent = new Intent(JMainActivity.this, DrivingMode.class);
+                startActivity(intent);
+                return true;
+            }
+        });
         if (drawingCanvas != null) {
             boolean useOldBitmapMethod = drawingCanvas.isUseOldBitmapMethod();
             if (toggleBitmapMethodItem != null) {
