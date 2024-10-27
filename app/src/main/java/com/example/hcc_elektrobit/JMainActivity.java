@@ -38,6 +38,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     CanvasTimer canvasTimer;
     private CharacterMapping characterMapping;
     boolean timerStarted = false;
+    private boolean quantizedModel = false;
 
     String model_name = "SMS";
 
@@ -88,6 +89,16 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
         Switch CNNToggle = findViewById(R.id.cnn_toggle);
+        Switch quanToggle = findViewById(R.id.quan_toggle);
+
+        quanToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                quantizedModel = !quantizedModel;
+
+
+            }
+        });
 
         CNNToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -230,9 +241,14 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
                 Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
                 return;
             }
+            Pair<String, Map<String, Float>> result_pair;
+            if(quantizedModel){
 
-            sms_model = SMSonnxModel.getInstance(this);
-            Pair<String, Map<String, Float>> result_pair = sms_model.classifyAndReturnPredAndSimilarityMap(bitmap);
+                result_pair= SMSonnxQuantisedModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
+            } else {
+                result_pair = SMSonnxModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
+            }
+
 
             History history = History.getInstance();
             SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first, result_pair.second);
