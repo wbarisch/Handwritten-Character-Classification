@@ -96,6 +96,12 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             public void onClick(View v) {
                 quantizedModel = !quantizedModel;
 
+                if (CNNToggle.isChecked()){
+                    CNNToggle.setChecked(false);
+                    model_name = "SMS";
+                }
+                CNNToggle.setClickable(!quantizedModel);
+                CNNToggle.setAlpha(quantizedModel?0.5f:1.0f);
 
             }
         });
