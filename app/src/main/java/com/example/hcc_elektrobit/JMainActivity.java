@@ -41,6 +41,9 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     boolean timerStarted = false;
     private boolean quantizedModel = false;
 
+    private TextView timeTextView;
+
+
     String model_name = "SMS";
 
     @Override
@@ -100,6 +103,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
         Switch CNNToggle = findViewById(R.id.cnn_toggle);
         Switch quanToggle = findViewById(R.id.quan_toggle);
+        timeTextView = findViewById(R.id.time);
 
         quanToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -249,6 +253,10 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     private void classifyCharacter(){
 
+        double executionTime;
+
+        long startTime = System.nanoTime();
+
         String result;
         if (model_name.equals("SMS")){
             bitmap = drawingCanvas.getBitmap(105);
@@ -297,14 +305,21 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             Log.e("MAIN_ACTIVITY", "NO MODEL SELECTED!");
         }
 
+        long endTime = System.nanoTime();
+
+
+        executionTime = Math.round((endTime - startTime) / 1_000_000.0) / 1_000.0;
+
         audioPlayer.PlayAudio(result);
         runOnUiThread(() -> {
-
+            timeTextView.setText(String.valueOf(executionTime));
             recognizedCharTextView.setText(result);
             bitmapDisplay.setImageBitmap(bitmap);
 
+
         });
     }
+
 
     public Bitmap getBitmap() {
         return bitmap;
