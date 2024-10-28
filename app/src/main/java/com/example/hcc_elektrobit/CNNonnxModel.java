@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.util.Log;
+import android.util.Pair;
 
 
 import java.io.File;
@@ -23,9 +24,11 @@ public class CNNonnxModel {
     private OrtEnvironment env;
     private OrtSession session;
     private final Context context;
+
+    private static CNNonnxModel INSTANCE = null;
     private static final String TAG = "CNNonnxModel";
 
-    public CNNonnxModel(Context context) {
+    private CNNonnxModel(Context context) {
         this.context = context;
         try {
             String modelPath = copyModelToCache();
@@ -37,6 +40,17 @@ public class CNNonnxModel {
         } catch (IOException e) {
             Log.e("CNNonnxModel", "Error reading ONNX model from assets", e);
         }
+    }
+
+    public static CNNonnxModel getInstance(Context context) {
+        if (INSTANCE == null) {
+            synchronized (SMSonnxModel.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new CNNonnxModel(context.getApplicationContext());
+                }
+            }
+        }
+        return INSTANCE;
     }
 
     private String copyModelToCache() throws IOException {
@@ -88,6 +102,11 @@ public class CNNonnxModel {
         //float[] result = {2.0f};
         return argmax(result[0]);
 
+    }
+
+    public Pair<Integer, float[][]> classifyAndReturnIntAndTensor(Bitmap bitmap){
+        float[][] result = this.classify(bitmap);
+        return new Pair<>(argmax(result[0]), result);
     }
 
     public float[] preprocessBitmap(Bitmap bitmap) {

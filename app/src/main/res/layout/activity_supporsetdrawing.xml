@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/purple_200"
+    tools:context=".JMainActivity">
+
+    <com.example.hcc_elektrobit.DrawingCanvas
+        android:id="@+id/drawing_canvas"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="#FFFFFF"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/label_as"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="Label: "
+        android:textSize="30dp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/label"
+        app:layout_constraintTop_toBottomOf="@id/drawing_canvas" />
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="_"
+        android:textColor="#FF0000"
+        android:textSize="30dp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toRightOf="@+id/label_as"
+        app:layout_constraintTop_toBottomOf="@id/drawing_canvas" />
+
+    <ImageView
+        android:id="@+id/bitmap_display"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:contentDescription="Displayed Bitmap"
+        app:layout_constraintBottom_toBottomOf="@id/drawing_canvas"
+        app:layout_constraintLeft_toLeftOf="@+id/drawing_canvas" />
+
+    <Button
+        android:id="@+id/options_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="options"
+        app:layout_constraintLeft_toLeftOf="@+id/label_as"
+        app:layout_constraintTop_toBottomOf="@id/label_as" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

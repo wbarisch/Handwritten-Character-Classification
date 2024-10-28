@@ -2,11 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
@@ -20,8 +21,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat"
+        android:theme="@style/Theme.HCC_Elektrobit.NoActionBar"
         tools:targetApi="31">
+        <activity
+            android:name=".DrivingMode"
+            android:exported="true">
+        </activity>
 
         <provider
             android:name="com.example.hcc_elektrobit.JFileProvider"
@@ -35,18 +40,29 @@
 
         <activity
             android:name=".JMainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.HCC_Elektrobit.ActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".JHistoryActivity">
+        <activity android:name=".JHistoryActivity"
+            android:theme="@style/Theme.HCC_Elektrobit.ActionBar"
+            android:exported="true" >
 
         </activity>
-        <activity android:name=".TrainingActivity"
-                  android:exported="true" />
+        <activity
+            android:name=".TrainingActivity"
+            android:theme="@style/Theme.HCC_Elektrobit.ActionBar"
+            android:exported="true" />
         <activity android:name=".SiameseTesterActivity" />
+        <activity
+            android:name=".ReviewActivity"
+            android:theme="@style/Theme.HCC_Elektrobit.ActionBar"
+            android:exported="true" />
+        <activity android:name=".SupportSetActivity" />
+        <activity android:name=".SupportSetDrawingActivity" />
     </application>
 
 </manifest>
