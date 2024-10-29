@@ -201,7 +201,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
                     break;
                 case MotionEvent.ACTION_UP:
                     if (canvasTimer == null) {
-                        canvasTimer = new CanvasTimer(this, 500);
+                        canvasTimer = new CanvasTimer(this, 1000);
                     }
                     if (!timerStarted) {
                         canvasTimer.startTimer();
@@ -411,10 +411,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     }
 
     private void processAndSegmentWord(Bitmap bitmap) {
-
         Bitmap adjustedBitmap = adjustBitmapColors(bitmap);
-        int nonWhitePixels = countNonWhitePixels(adjustedBitmap);
-        Log.d("TrainingActivity", "Adjusted Bitmap - Non-white pixels: " + nonWhitePixels);
 
         Mat mat = new Mat();
         Utils.bitmapToMat(adjustedBitmap, mat);
@@ -422,12 +419,8 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         if (mat.channels() > 1) {
             Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
         }
-        Core.MinMaxLocResult mmr = Core.minMaxLoc(mat);
-        Log.d("TrainingActivity", "Grayscale Image - Min: " + mmr.minVal + " Max: " + mmr.maxVal);
 
         Imgproc.threshold(mat, mat, 0, 255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
-        int nonZeroPixelsAfterThreshold = Core.countNonZero(mat);
-        Log.d("TrainingActivity", "After Thresholding - Non-zero pixels: " + nonZeroPixelsAfterThreshold);
 
         Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
         Imgproc.morphologyEx(mat, mat, Imgproc.MORPH_OPEN, kernel);
@@ -435,7 +428,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(mat.clone(), contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-
         Log.d("TrainingActivity", "Contours found: " + contours.size());
 
         if (contours.isEmpty()) {
@@ -444,50 +436,58 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         }
 
         List<Rect> boundingRects = new ArrayList<>();
+        int minContourArea = 100; // Adjust as needed
+        int imageArea = mat.rows() * mat.cols();
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
-            Log.d("TrainingActivity", "Contour Rect - x: " + rect.x + " y: " + rect.y + " width: " + rect.width + " height: " + rect.height);
-
-            if (rect.width > 2 && rect.height > 2) {
+            double contourArea = Imgproc.contourArea(contour);
+            if (contourArea > minContourArea && contourArea < imageArea * 0.9) {
                 boundingRects.add(rect);
             }
         }
-
-        Log.d("TrainingActivity", "Bounding Rects after filtering: " + boundingRects.size());
 
         if (boundingRects.isEmpty()) {
             Toast.makeText(this, "No valid contours found after filtering.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Collections.sort(boundingRects, Comparator.comparingInt(rect -> rect.x));
+        int totalHeight = 0;
+        for (Rect rect : boundingRects) {
+            totalHeight += rect.height;
+        }
+        int avgCharHeight = totalHeight / boundingRects.size();
+        int verticalTolerance = avgCharHeight / 2;
+
+        Comparator<Rect> readingOrderComparator = new Comparator<Rect>() {
+            @Override
+            public int compare(Rect r1, Rect r2) {
+                int r1CenterY = r1.y + r1.height / 2;
+                int r2CenterY = r2.y + r2.height / 2;
+
+                if (Math.abs(r1CenterY - r2CenterY) < verticalTolerance) {
+                    return Integer.compare(r1.x, r2.x);
+                } else {
+                    return Integer.compare(r1.y, r2.y);
+                }
+            }
+        };
+
+        Collections.sort(boundingRects, readingOrderComparator);
 
         for (Rect rect : boundingRects) {
             Mat charMat = new Mat(mat, rect);
 
             Bitmap charBitmap = Bitmap.createBitmap(charMat.width(), charMat.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(charMat, charBitmap);
-            Bitmap finalCharBitmap = charBitmap;
-            Bitmap centeredBitmap = BitmapUtils.centerAndResizeBitmap(finalCharBitmap, bitmapSize);
+
+            Bitmap centeredBitmap = BitmapUtils.centerAndResizeBitmap(charBitmap, bitmapSize);
+
             addBitmapToSaveList(centeredBitmap);
         }
 
+        // Provide feedback
         Toast.makeText(this, "Extracted " + boundingRects.size() + " characters", Toast.LENGTH_SHORT).show();
     }
-    private int countNonWhitePixels(Bitmap bitmap) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-        int[] pixels = new int[width * height];
-        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-        int nonWhitePixels = 0;
-        for (int pixel : pixels) {
-            if (pixel != Color.WHITE) {
-                nonWhitePixels++;
-            }
-        }
-        return nonWhitePixels;
-    }
-
 
 
 }
