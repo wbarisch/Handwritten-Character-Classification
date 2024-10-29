@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -15,6 +17,7 @@ import android.view.MenuItem;
 
 import android.view.MotionEvent;
 import android.view.View;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -22,9 +25,22 @@ import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.compose.ui.graphics.Canvas;
+
+
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Rect;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class TrainingActivity extends AppCompatActivity implements TimeoutActivity {
@@ -55,10 +71,26 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private int selectedCharacterId = -1;
 
 
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            Log.e("OpenCV", "Unable to load OpenCV via OpenCVLoader.initDebug()");
+            // Try manually loading the library
+            try {
+                System.loadLibrary("opencv_java4");
+                Log.d("OpenCV", "OpenCV library loaded manually");
+            } catch (UnsatisfiedLinkError e) {
+                Log.e("OpenCV", "Failed to load OpenCV native library manually", e);
+            }
+        } else {
+            Log.d("OpenCV", "OpenCV loaded successfully using OpenCVLoader.initDebug()");
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_training);
+
 
         dialogManager = new DialogManager(this);
 
@@ -152,7 +184,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
 
         drawingCanvas.setOnTouchListener((v, event) -> {
-
             if (chatboxContainer.getVisibility() == View.VISIBLE) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     Toast.makeText(this, "Please enter a Character ID before drawing.", Toast.LENGTH_SHORT).show();
@@ -160,20 +191,31 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
                 return true;
             }
 
-            if (timerStarted) {
-                canvasTimer.cancel();
-                timerStarted = false;
-            }
-
             drawingCanvas.onTouchEvent(event);
 
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap(bitmapSize);
-                canvasTimer = new CanvasTimer(this);
-                new Thread(canvasTimer).start();
-                timerStarted = true;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    // User has started a new stroke; cancel the timer if it's running
+                    if (canvasTimer != null) {
+                        canvasTimer.stopTimer();
+                        timerStarted = false;
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                    // User has lifted their finger; start or reset the timer
+                    if (canvasTimer == null) {
+                        canvasTimer = new CanvasTimer(this, 1000); // Set timeout duration (e.g., 1000 milliseconds)
+                    }
+                    if (!timerStarted) {
+                        canvasTimer.startTimer();
+                        timerStarted = true;
+                    } else {
+                        canvasTimer.resetTimer();
+                    }
+                    break;
+                default:
+                    break;
             }
-
             return true;
         });
 
@@ -181,10 +223,10 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     }
 
     private void addBitmapToSaveList(Bitmap bitmap) {
-        Bitmap invertedBitmap = adjustBitmapColors(bitmap);
+        // Skip adjusting colors here since we've already done it
         String fileName = "temp_image_" + System.currentTimeMillis();
-        imageSavingManager.saveBitmapToCache(this, invertedBitmap, fileName);
-        bitmapsToSave.add(invertedBitmap);
+        imageSavingManager.saveBitmapToCache(this, bitmap, fileName);
+        bitmapsToSave.add(bitmap);
     }
 
 
@@ -234,14 +276,11 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
     @Override
     public void onTimeout() {
-        bitmap = drawingCanvas.getBitmap(bitmapSize);
-
+        bitmap = drawingCanvas.getBitmap(); // Get the full-size bitmap without specifying bitmapSize
         runOnUiThread(() -> {
-
-            addBitmapToSaveList(bitmap);
+            processAndSegmentWord(bitmap);
             drawingCanvas.clear();
         });
-
         timerStarted = false;
     }
 
@@ -374,5 +413,106 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         adjustedBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
         return adjustedBitmap;
     }
+
+    private void processAndSegmentWord(Bitmap bitmap) {
+        // Step 1: Adjust Bitmap Colors (if necessary)
+        Bitmap adjustedBitmap = adjustBitmapColors(bitmap);
+
+        // Debug: Check if adjustedBitmap has non-white pixels
+        int nonWhitePixels = countNonWhitePixels(adjustedBitmap);
+        Log.d("TrainingActivity", "Adjusted Bitmap - Non-white pixels: " + nonWhitePixels);
+
+        // Step 2: Convert Bitmap to Mat
+        Mat mat = new Mat();
+        Utils.bitmapToMat(adjustedBitmap, mat);
+
+        // Step 3: Convert to Grayscale (if not already)
+        if (mat.channels() > 1) {
+            Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
+        }
+
+        // Debug: Check min and max values in grayscale image
+        Core.MinMaxLocResult mmr = Core.minMaxLoc(mat);
+        Log.d("TrainingActivity", "Grayscale Image - Min: " + mmr.minVal + " Max: " + mmr.maxVal);
+
+        // Step 4: Apply Thresholding
+        Imgproc.threshold(mat, mat, 0, 255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
+
+        // Debug: Check number of non-zero pixels after thresholding
+        int nonZeroPixelsAfterThreshold = Core.countNonZero(mat);
+        Log.d("TrainingActivity", "After Thresholding - Non-zero pixels: " + nonZeroPixelsAfterThreshold);
+
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
+        Imgproc.morphologyEx(mat, mat, Imgproc.MORPH_OPEN, kernel);
+
+        // Step 6: Find Contours
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(mat.clone(), contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        Log.d("TrainingActivity", "Contours found: " + contours.size());
+
+        if (contours.isEmpty()) {
+            Toast.makeText(this, "No characters found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Step 7: Filter and Sort Contours
+        List<Rect> boundingRects = new ArrayList<>();
+        for (MatOfPoint contour : contours) {
+            Rect rect = Imgproc.boundingRect(contour);
+            Log.d("TrainingActivity", "Contour Rect - x: " + rect.x + " y: " + rect.y + " width: " + rect.width + " height: " + rect.height);
+
+            if (rect.width > 2 && rect.height > 2) {
+                boundingRects.add(rect);
+            }
+        }
+
+        Log.d("TrainingActivity", "Bounding Rects after filtering: " + boundingRects.size());
+
+        if (boundingRects.isEmpty()) {
+            Toast.makeText(this, "No valid contours found after filtering.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Sort from left to right
+        Collections.sort(boundingRects, Comparator.comparingInt(rect -> rect.x));
+
+        // Step 8: Extract and Save Characters
+        for (Rect rect : boundingRects) {
+            Mat charMat = new Mat(mat, rect);
+
+            // Convert Mat to Bitmap
+            Bitmap charBitmap = Bitmap.createBitmap(charMat.width(), charMat.height(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(charMat, charBitmap);
+
+            // Since we've already adjusted colors, no need to invert again
+            Bitmap finalCharBitmap = charBitmap;
+
+            // Resize and center the character
+            Bitmap centeredBitmap = BitmapUtils.centerAndResizeBitmap(finalCharBitmap, bitmapSize);
+
+            // Add to list
+            addBitmapToSaveList(centeredBitmap);
+        }
+
+        // Provide feedback
+        Toast.makeText(this, "Extracted " + boundingRects.size() + " characters", Toast.LENGTH_SHORT).show();
+    }
+    private int countNonWhitePixels(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int[] pixels = new int[width * height];
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+        int nonWhitePixels = 0;
+        for (int pixel : pixels) {
+            if (pixel != Color.WHITE) {
+                nonWhitePixels++;
+            }
+        }
+        return nonWhitePixels;
+    }
+
+
 
 }
