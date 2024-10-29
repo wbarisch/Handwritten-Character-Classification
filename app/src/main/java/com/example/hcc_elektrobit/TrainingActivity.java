@@ -33,7 +33,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private int bitmapSize = 28;
 
     private Bitmap bitmap;
-    private CanvasTimer canvasTimer;
+    private Timer canvasTimer;
     private DialogManager dialogManager;
     
     private DrawingCanvas drawingCanvas;
@@ -169,7 +169,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 bitmap = drawingCanvas.getBitmap(bitmapSize);
-                canvasTimer = new CanvasTimer(this);
+                canvasTimer = new Timer(this, 10000);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
             }

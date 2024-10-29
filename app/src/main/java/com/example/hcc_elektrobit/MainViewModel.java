@@ -5,30 +5,39 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
+import java.util.Arrays;
+import java.util.Map;
 
 public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
 
     Timer canvasTimer;
     private MutableLiveData<Boolean> _clearCanvasEvent = new MutableLiveData<Boolean>(false);
     public LiveData<Boolean> clearCanvasEvent = _clearCanvasEvent;
-    private MutableLiveData<String> _classifiedCharacter = new MutableLiveData<>("Classified character: ");
-    public LiveData<String> classifiedCharacter = _classifiedCharacter;
+    private String classifiedCharacter;
+    private MutableLiveData<String> _textMessageWithResult = new MutableLiveData<>("_");
+    public LiveData<String> textMessageWithResult = _textMessageWithResult;
     private MutableLiveData<Bitmap> _drawingBitmap = new MutableLiveData<Bitmap>();
     public LiveData<Bitmap> drawingBitmap = _drawingBitmap;
-    private final JFileProvider fileProvider = new JFileProvider();
+    private MutableLiveData<String> _executionTime = new MutableLiveData<>("0.000");
+    public LiveData<String> executionTime = _executionTime;
     private final AudioPlayerManager audioPlayerManager;
-    private final CNNonnxModel model;
+    private final CNNonnxModel cnn_model;
     private final Context mainContext;
+    private String modelName = "SMS";
+    private boolean isQuantizedModel = false;
 
     public MainViewModel(Application application){
+
         super(application);
         mainContext = application.getApplicationContext();
         audioPlayerManager = new AudioPlayerManager(mainContext);
-        model = new CNNonnxModel(mainContext);
+        cnn_model = CNNonnxModel.getInstance(mainContext);
         canvasTimer = new Timer(this, 1000);
     }
 
@@ -38,11 +47,11 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
      */
     public void mainAppFunction(Bitmap firstBitmap){
 
-        int result = classifyCharacter(firstBitmap);
-        String resultString = "Classified character: " + result;
-        _classifiedCharacter.setValue(resultString);
+        classifyCharacterDispatcher(firstBitmap);
+        String resultString = "Classified character: " + classifiedCharacter;
+        _textMessageWithResult.setValue(resultString);
 
-        String fileName = String.valueOf(result);
+        String fileName = String.valueOf(classifiedCharacter);
 
         try{
             audioPlayerManager.setDataSource(fileName);
@@ -51,31 +60,82 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
             Log.e("MainViewModel", "Error starting audio player manager");
         }
 
-        _drawingBitmap.setValue(createBitmapFromFloatArray(model.preprocessBitmap(firstBitmap), 28, 28));
-        saveResult();
+        saveResultBitmap();
+    }
+
+    /**
+     * Dispatches to the correct classify character function according to the model needed
+     * @param canvasBitmap
+     */
+    private void classifyCharacterDispatcher(Bitmap canvasBitmap){
+
+        if (canvasBitmap == null) {
+            Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
+            return;
+        }
+
+        long startTime = System.nanoTime();
+        switch(modelName){
+            case "SMS":
+                classifyCharacterSMS(canvasBitmap);
+                break;
+            case "CNN":
+                classifyCharacterCNN(canvasBitmap);
+                break;
+            default:
+                Log.e("MainViewModel", "Error in classifyCharacterDispatcher: No model");
+                classifiedCharacter = "";
+        }
+        long endTime = System.nanoTime();
+
+        Log.i(modelName, classifiedCharacter);
+        Double time = Math.round((endTime - startTime) / 1_000_000.0) / 1_000.0;
+        _executionTime.setValue(String.valueOf(time));
+
+        runOnUiThread(() -> {
+            bitmapDisplay.setImageBitmap(bitmap);
+        });
     }
 
     /**
      * Calls the necessary model methods to classify a character from the provided bitmap.
-     * @param firstBitmap
-     * @return Currently, it is a digit in the int Type
+     *
      */
-    public int classifyCharacter(Bitmap firstBitmap){
+    private void classifyCharacterSMS(Bitmap canvasBitmap){
 
-        if(firstBitmap == null){
-            Log.e("MainViewModel", "Bitmap is passed null to ClassifyCharacter.");
-            return 0;
+        History history = History.getInstance();
+        Pair<String, Map<String, Float>> result_pair;
+
+        if(isQuantizedModel){
+            result_pair = SMSonnxQuantisedModel.getInstance(mainContext).classifyAndReturnPredAndSimilarityMap(canvasBitmap);
         }
+        else {
+            result_pair = SMSonnxModel.getInstance(mainContext).classifyAndReturnPredAndSimilarityMap(canvasBitmap);
+        }
+        SMSHistoryItem historyItem = new SMSHistoryItem(canvasBitmap, result_pair.first.toString(), result_pair.second);
+        history.saveItem(historyItem, mainContext);
+        classifiedCharacter = result_pair.first.toString();
+        Log.i(modelName, result_pair.second.toString());
+    }
 
-        return model.classifyAndReturnDigit(firstBitmap);
+    private void classifyCharacterCNN(Bitmap canvasBitmap){
+
+        History history = History.getInstance();
+        Pair<Integer, float[][]> result_pair = cnn_model.classifyAndReturnIntAndTensor(canvasBitmap);
+
+        CNNHistoryItem historyItemCNN = new CNNHistoryItem(canvasBitmap, result_pair.first.toString(), result_pair.second);
+        history.saveItem(historyItemCNN, mainContext);
+        classifiedCharacter = result_pair.first.toString();
+        Log.i(modelName, Arrays.deepToString(result_pair.second));
     }
 
     /**
      * Stores the current bitmap in the history.
      */
-    private void saveResult(){
+    private void saveResultBitmap(){
+
         History history = History.getInstance();
-        String classifiedDigit = _classifiedCharacter.getValue();
+        String classifiedDigit = _textMessageWithResult.getValue();
         int helperLength = classifiedDigit.length();
         classifiedDigit = classifiedDigit.substring(helperLength - 1);
         HistoryItem historyItem = new HistoryItem(drawingBitmap.getValue(), classifiedDigit);

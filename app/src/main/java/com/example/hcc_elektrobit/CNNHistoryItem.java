@@ -9,10 +9,10 @@ public class CNNHistoryItem extends HistoryItem{
     float[][] outputTensor;
     String predictionID;
     CNNHistoryItem(Bitmap bmp, String prediction, float[][] prediction_tensor) {
+
         super(bmp, prediction, prediction_tensor);
         outputTensor = prediction_tensor;
         predictionID = prediction;
-
     }
 
     @Override

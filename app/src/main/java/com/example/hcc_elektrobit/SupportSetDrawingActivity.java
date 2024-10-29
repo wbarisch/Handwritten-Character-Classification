@@ -32,7 +32,7 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
 
     private String labelId = "";
     private int bitmapSize = 105;
-    CanvasTimer canvasTimer;
+    Timer canvasTimer;
     boolean timerStarted = false;
 
     public boolean onCreateOptionsMenu(Menu menu){
@@ -127,7 +127,7 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 bitmap = drawingCanvas.getBitmap(bitmapSize);
-                canvasTimer = new CanvasTimer(this);
+                canvasTimer = new Timer(this, 1000);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
             }

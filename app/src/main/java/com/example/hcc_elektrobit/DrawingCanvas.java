@@ -22,6 +22,7 @@ public class DrawingCanvas extends View {
     private boolean useOldBitmapMethod = true;
 
     public DrawingCanvas(Context context, AttributeSet attributeSet){
+
         super(context, attributeSet);
         paint = new Paint();
         path = new Path();
@@ -30,13 +31,11 @@ public class DrawingCanvas extends View {
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
         setDynamicStrokeWidth();
-
     }
 
     public boolean isUseOldBitmapMethod() {
         return this.useOldBitmapMethod;
     }
-
 
     public void setUseOldBitmapMethod(boolean useOldBitmapMethod) {
         this.useOldBitmapMethod = useOldBitmapMethod;
@@ -51,6 +50,7 @@ public class DrawingCanvas extends View {
     }
 
     private void setDynamicStrokeWidth() {
+
         if (useOldBitmapMethod) {
             paint.setStrokeWidth(100f);
         } else {
@@ -94,15 +94,12 @@ public class DrawingCanvas extends View {
 
             default:
                 return false;
-
         }
-
     }
 
     @Override
     public boolean performClick() {
         return super.performClick();
-
     }
 
     // Erase the current drawing
@@ -110,13 +107,16 @@ public class DrawingCanvas extends View {
         path.reset();
         invalidate();
     }
+
     public Bitmap getBitmap(int dims) {
+
         if (useOldBitmapMethod) {
             // Old method
             Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             this.draw(canvas);
             return Bitmap.createScaledBitmap(bitmap, dims, dims, true);
+
         } else {
 
             int margin = 2;

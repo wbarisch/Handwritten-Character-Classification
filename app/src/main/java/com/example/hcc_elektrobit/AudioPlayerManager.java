@@ -17,21 +17,28 @@ public class AudioPlayerManager {
     private static final String audioFilesPath = "digits_audio"+ File.separator;
     private String currentFileName;
     private AssetManager assetManager;
+
+    /**
+     * The class is responsible for Audio playing functions and managing which of the audio files to use.
+     * @param appContext Needed to access the resources of the project
+     */
     public AudioPlayerManager(Context appContext){
         this.mediaPlayer = new MediaPlayer();
         this.context = appContext;
         assetManager = context.getAssets();
     }
 
-    public void initializePlayer(int resourceId){
-        mediaPlayer = MediaPlayer.create(context, resourceId);
-    }
+    // Must go
+//    public void initializePlayer(int resourceId){
+//        mediaPlayer = MediaPlayer.create(context, resourceId);
+//    }
 
     /**
-     * This method changes the source audio file to a new one.
+     * This method changes the source audio file to a new one and prepares for the audio play.
      *
      */
     public void setDataSource(String fileName){
+
         if(fileName.equals(currentFileName))
             return;
 

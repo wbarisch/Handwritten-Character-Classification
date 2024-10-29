@@ -34,19 +34,17 @@ public class JMainActivity extends AppCompatActivity {
     private SMSonnxModel sms_model;
     private CNNonnxModel cnn_model;
     private Bitmap bitmap;
-    private AudioPlayer audioPlayer;
-    CanvasTimer canvasTimer;
+    private AudioPlayerManager audioPlayer;
     private CharacterMapping characterMapping;
+    private MainViewModel viewModel;
     boolean timerStarted = false;
     private boolean quantizedModel = false;
-
     private TextView timeTextView;
-
-
     String model_name = "SMS";
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
+
         getMenuInflater().inflate(R.menu.main_menu, menu);
         MenuItem historyItem = menu.findItem(R.id.menuButton);
         if (historyItem != null) {
@@ -58,7 +56,6 @@ public class JMainActivity extends AppCompatActivity {
         MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
         MenuItem driverMode = menu.findItem(R.id.driver_mode);
 
-
         driverMode.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
@@ -67,6 +64,7 @@ public class JMainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
         if (drawingCanvas != null) {
             boolean useOldBitmapMethod = drawingCanvas.isUseOldBitmapMethod();
             if (toggleBitmapMethodItem != null) {
@@ -83,12 +81,12 @@ public class JMainActivity extends AppCompatActivity {
             }
         }
 
-
         return true;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         viewModel = new MainViewModel(this.getApplication());
         setContentView(R.layout.activity_jmain);
@@ -108,9 +106,11 @@ public class JMainActivity extends AppCompatActivity {
         Switch quanToggle = findViewById(R.id.quan_toggle);
         timeTextView = findViewById(R.id.time);
 
+        // Logic must go to MainViewModel
         quanToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 quantizedModel = !quantizedModel;
 
                 if (CNNToggle.isChecked()){
@@ -119,10 +119,10 @@ public class JMainActivity extends AppCompatActivity {
                 }
                 CNNToggle.setClickable(!quantizedModel);
                 CNNToggle.setAlpha(quantizedModel?0.5f:1.0f);
-
             }
         });
 
+        // Logic must go to MainViewModel
         CNNToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -134,9 +134,12 @@ public class JMainActivity extends AppCompatActivity {
             }
         });
 
-        audioPlayer = new AudioPlayer(this);
+        audioPlayer = new AudioPlayerManager(this);
+
+        // Support set ?
         SupportSet.getInstance().updateSet(this);
 
+        // Is this logic?
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -146,6 +149,7 @@ public class JMainActivity extends AppCompatActivity {
             }
         });
 
+        // Is this also logic?
         supportsetActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -155,6 +159,7 @@ public class JMainActivity extends AppCompatActivity {
             }
         });
 
+        // No idea what this does
         ActivityResultLauncher<Intent> createDocumentLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -176,10 +181,11 @@ public class JMainActivity extends AppCompatActivity {
                 }
         );
 
+        // Check this ImageSavingManager
         ImageSharingManager imageSharingManager = new ImageSharingManager(this);
         ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher, characterMapping);
 
-
+        // Check DialogManager
         dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
 
         shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
@@ -194,6 +200,7 @@ public class JMainActivity extends AppCompatActivity {
             }
         });
 
+        // Must be maybe moved to MainViewModel
         drawingCanvas.setOnTouchListener((v, event) -> {
 
             drawingCanvas.onTouchEvent(event);
@@ -212,24 +219,29 @@ public class JMainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
+
         int id = item.getItemId();
 
         if(id == R.id.menuButton) {
+
             Intent intent = new Intent(JMainActivity.this, JHistoryActivity.class);
             startActivity(intent);
             return true;
-        } else if (id == R.id.action_toggle_bitmap_method) {
+        }
+        else if (id == R.id.action_toggle_bitmap_method) {
+
             item.setChecked(!item.isChecked());
 
             if (drawingCanvas != null) {
                 drawingCanvas.setUseOldBitmapMethod(item.isChecked());
             }
-
             invalidateOptionsMenu();
 
             Log.d("JMainActivity", "Use Old Bitmap Method set to: " + item.isChecked());
             return true;
-        } else if (id == R.id.action_toggle_antialias) {
+        }
+        else if (id == R.id.action_toggle_antialias) {
+
             if (!drawingCanvas.isUseOldBitmapMethod()) {
                 item.setChecked(!item.isChecked());
                 if (drawingCanvas != null) {
@@ -258,10 +270,9 @@ public class JMainActivity extends AppCompatActivity {
     private void classifyCharacter(){
 
         double executionTime;
-
         long startTime = System.nanoTime();
-
         String result;
+
         if (model_name.equals("SMS")){
             bitmap = drawingCanvas.getBitmap(105);
 
@@ -277,10 +288,8 @@ public class JMainActivity extends AppCompatActivity {
                 result_pair = SMSonnxModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
             }
 
-
             History history = History.getInstance();
-            SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first, result_pair.second);
-
+            SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first.toString(), result_pair.second);
             history.saveItem(historyItem, this);
 
             result = result_pair.first;
@@ -311,16 +320,14 @@ public class JMainActivity extends AppCompatActivity {
 
         long endTime = System.nanoTime();
 
-
         executionTime = Math.round((endTime - startTime) / 1_000_000.0) / 1_000.0;
 
-        audioPlayer.PlayAudio(result);
+        audioPlayer.setDataSource(result);
+        audioPlayer.play();
         runOnUiThread(() -> {
             timeTextView.setText(String.valueOf(executionTime));
             recognizedCharTextView.setText(result);
             bitmapDisplay.setImageBitmap(bitmap);
-
-
         });
     }
 

@@ -7,6 +7,7 @@ public class CharacterMapping {
     private final Map<Integer, String> idToCharacterMap;
 
     public CharacterMapping() {
+
         idToCharacterMap = new HashMap<>();
         for (int i = 0; i < 10; i++) {
             idToCharacterMap.put(i, String.valueOf(i));

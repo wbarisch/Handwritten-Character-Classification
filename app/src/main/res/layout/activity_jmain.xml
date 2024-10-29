@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:text="@{viewModel.classifiedCharacter}"
+        android:text="Recognized as: "
         android:textSize="30dp"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:text="_"
+        android:text="@{viewModel.textMessageWithResult}"
         android:textColor="#FF0000"
         android:textSize="30dp"
         android:textStyle="bold"
@@ -131,7 +131,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:text="0.000"
+        android:text="@{viewModel.executionTime}"
         android:textSize="30dp"
         android:textStyle="bold"
         android:textColor="@color/black"
@@ -139,3 +139,4 @@
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
