@@ -117,21 +117,15 @@ public class DrawingCanvas extends View {
     }
     public Bitmap getBitmap(int dims) {
         if (useOldBitmapMethod) {
-            // Old method
             Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             this.draw(canvas);
             return Bitmap.createScaledBitmap(bitmap, dims, dims, true);
         } else {
-            // New method using BitmapUtils
             Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             canvas.drawColor(Color.WHITE);
             this.draw(canvas);
-
-            // Convert to grayscale if necessary
-            // Perform any preprocessing if needed
-
             return BitmapUtils.centerAndResizeBitmap(bitmap, dims);
         }
     }

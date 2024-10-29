@@ -23,12 +23,10 @@ public class BitmapUtils {
         int right = -1;
         int bottom = -1;
 
-        // Find the bounding box of non-black pixels (white characters)
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int pixel = pixels[x + y * width];
 
-                // Since characters are white and background is black
                 if (pixel != Color.BLACK) {
                     if (x < left) left = x;
                     if (x > right) right = x;
@@ -39,7 +37,6 @@ public class BitmapUtils {
         }
 
         if (right < left || bottom < top) {
-            // No non-black pixels found, return an empty bitmap with a black background
             Bitmap emptyBitmap = Bitmap.createBitmap(desiredSize, desiredSize, Bitmap.Config.ARGB_8888);
             Canvas emptyCanvas = new Canvas(emptyBitmap);
             emptyCanvas.drawColor(Color.BLACK);
@@ -49,10 +46,8 @@ public class BitmapUtils {
         int contentWidth = right - left + 1;
         int contentHeight = bottom - top + 1;
 
-        // Crop the bitmap to the bounding box
         Bitmap croppedBitmap = Bitmap.createBitmap(bitmap, left, top, contentWidth, contentHeight);
 
-        // Now scale and center the cropped bitmap into the desired size
         float scale = Math.min(
                 (desiredSize - 2 * margin) / (float) contentWidth,
                 (desiredSize - 2 * margin) / (float) contentHeight
@@ -62,7 +57,7 @@ public class BitmapUtils {
 
         Bitmap outputBitmap = Bitmap.createBitmap(desiredSize, desiredSize, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(outputBitmap);
-        canvas.drawColor(Color.BLACK); // Set background color to black
+        canvas.drawColor(Color.BLACK);
 
         float dx = (desiredSize - scaledWidth) / 2f;
         float dy = (desiredSize - scaledHeight) / 2f;
@@ -71,7 +66,6 @@ public class BitmapUtils {
         Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
         paint.setAntiAlias(true);
 
-        // Draw the scaled character onto the output bitmap
         canvas.drawBitmap(croppedBitmap, null, destRect, paint);
 
         return outputBitmap;

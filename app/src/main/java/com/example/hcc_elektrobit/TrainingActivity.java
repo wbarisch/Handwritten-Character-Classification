@@ -74,7 +74,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     static {
         if (!OpenCVLoader.initDebug()) {
             Log.e("OpenCV", "Unable to load OpenCV via OpenCVLoader.initDebug()");
-            // Try manually loading the library
             try {
                 System.loadLibrary("opencv_java4");
                 Log.d("OpenCV", "OpenCV library loaded manually");
@@ -195,16 +194,14 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    // User has started a new stroke; cancel the timer if it's running
                     if (canvasTimer != null) {
                         canvasTimer.stopTimer();
                         timerStarted = false;
                     }
                     break;
                 case MotionEvent.ACTION_UP:
-                    // User has lifted their finger; start or reset the timer
                     if (canvasTimer == null) {
-                        canvasTimer = new CanvasTimer(this, 1000); // Set timeout duration (e.g., 1000 milliseconds)
+                        canvasTimer = new CanvasTimer(this, 500);
                     }
                     if (!timerStarted) {
                         canvasTimer.startTimer();
@@ -223,7 +220,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     }
 
     private void addBitmapToSaveList(Bitmap bitmap) {
-        // Skip adjusting colors here since we've already done it
         String fileName = "temp_image_" + System.currentTimeMillis();
         imageSavingManager.saveBitmapToCache(this, bitmap, fileName);
         bitmapsToSave.add(bitmap);
@@ -276,7 +272,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
     @Override
     public void onTimeout() {
-        bitmap = drawingCanvas.getBitmap(); // Get the full-size bitmap without specifying bitmapSize
+        bitmap = drawingCanvas.getBitmap();
         runOnUiThread(() -> {
             processAndSegmentWord(bitmap);
             drawingCanvas.clear();
@@ -415,37 +411,27 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     }
 
     private void processAndSegmentWord(Bitmap bitmap) {
-        // Step 1: Adjust Bitmap Colors (if necessary)
-        Bitmap adjustedBitmap = adjustBitmapColors(bitmap);
 
-        // Debug: Check if adjustedBitmap has non-white pixels
+        Bitmap adjustedBitmap = adjustBitmapColors(bitmap);
         int nonWhitePixels = countNonWhitePixels(adjustedBitmap);
         Log.d("TrainingActivity", "Adjusted Bitmap - Non-white pixels: " + nonWhitePixels);
 
-        // Step 2: Convert Bitmap to Mat
         Mat mat = new Mat();
         Utils.bitmapToMat(adjustedBitmap, mat);
 
-        // Step 3: Convert to Grayscale (if not already)
         if (mat.channels() > 1) {
             Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
         }
-
-        // Debug: Check min and max values in grayscale image
         Core.MinMaxLocResult mmr = Core.minMaxLoc(mat);
         Log.d("TrainingActivity", "Grayscale Image - Min: " + mmr.minVal + " Max: " + mmr.maxVal);
 
-        // Step 4: Apply Thresholding
         Imgproc.threshold(mat, mat, 0, 255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
-
-        // Debug: Check number of non-zero pixels after thresholding
         int nonZeroPixelsAfterThreshold = Core.countNonZero(mat);
         Log.d("TrainingActivity", "After Thresholding - Non-zero pixels: " + nonZeroPixelsAfterThreshold);
 
         Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
         Imgproc.morphologyEx(mat, mat, Imgproc.MORPH_OPEN, kernel);
 
-        // Step 6: Find Contours
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(mat.clone(), contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -457,7 +443,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
             return;
         }
 
-        // Step 7: Filter and Sort Contours
         List<Rect> boundingRects = new ArrayList<>();
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
@@ -475,28 +460,18 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
             return;
         }
 
-        // Sort from left to right
         Collections.sort(boundingRects, Comparator.comparingInt(rect -> rect.x));
 
-        // Step 8: Extract and Save Characters
         for (Rect rect : boundingRects) {
             Mat charMat = new Mat(mat, rect);
 
-            // Convert Mat to Bitmap
             Bitmap charBitmap = Bitmap.createBitmap(charMat.width(), charMat.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(charMat, charBitmap);
-
-            // Since we've already adjusted colors, no need to invert again
             Bitmap finalCharBitmap = charBitmap;
-
-            // Resize and center the character
             Bitmap centeredBitmap = BitmapUtils.centerAndResizeBitmap(finalCharBitmap, bitmapSize);
-
-            // Add to list
             addBitmapToSaveList(centeredBitmap);
         }
 
-        // Provide feedback
         Toast.makeText(this, "Extracted " + boundingRects.size() + " characters", Toast.LENGTH_SHORT).show();
     }
     private int countNonWhitePixels(Bitmap bitmap) {

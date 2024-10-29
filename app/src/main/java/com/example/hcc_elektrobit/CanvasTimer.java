@@ -10,17 +10,15 @@ public class CanvasTimer implements Runnable {
     private final long timeoutDuration;
     private final Handler handler;
 
-    // For the Runnable implementation
     private volatile boolean running = true;
 
-    // For the new timer control methods
     private Runnable timerRunnable;
     private boolean timerRunning = false;
 
     // Constructors
     public CanvasTimer(TimeoutActivity activity) {
         this.activity = activity;
-        this.timeoutDuration = 1000; // Default timeout duration
+        this.timeoutDuration = 1000;
         this.handler = new Handler();
     }
 
@@ -30,7 +28,6 @@ public class CanvasTimer implements Runnable {
         this.handler = new Handler();
     }
 
-    // Runnable implementation
     @Override
     public void run() {
         try {
@@ -46,14 +43,12 @@ public class CanvasTimer implements Runnable {
     public void cancel() {
         running = false;
     }
-
-    // Timer control methods
     public void startTimer() {
-        stopTimer(); // Ensure any existing timer is stopped
+        stopTimer();
         timerRunnable = () -> {
             Log.d(TAG, "Timer expired, calling onTimeout()");
             activity.onTimeout();
-            timerRunning = false; // Reset the flag
+            timerRunning = false;
         };
         handler.postDelayed(timerRunnable, timeoutDuration);
         timerRunning = true;
