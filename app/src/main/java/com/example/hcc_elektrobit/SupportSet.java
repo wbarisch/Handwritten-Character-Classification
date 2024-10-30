@@ -25,11 +25,11 @@ public class SupportSet {
             if (labelComparison != 0) {
                 return labelComparison;
             }
-            labelComparison = Integer.compare(o1.getBitmap().getByteCount(), o2.getBitmap().getByteCount());
-            if (labelComparison == 0) {
-                return 1;
+            int generationComparison = Integer.compare(o1.getBitmap().getGenerationId(), o2.getBitmap().getGenerationId());
+            if (generationComparison != 0) {
+                return generationComparison;
             }
-            return labelComparison;
+            return Integer.compare(o1.getBitmap().getByteCount(), o2.getBitmap().getByteCount());
         }
     });
 
@@ -56,13 +56,23 @@ public class SupportSet {
     }
 
     public void saveItem(SupportSetItem setItem) {
-        File file = new File(JFileProvider.getInternalDir(), "support_set");
-        if (!file.exists()) {
-            file.mkdir();
+        File dir  = new File(JFileProvider.getInternalDir(), "support_set");
+        if (!dir.exists()) {
+            dir.mkdir();
         }
-        String fileName = setItem.labelId + "_" + setItem.bitmap.getGenerationId() + ".png";
+        int genId = setItem.bitmap.getGenerationId();
+
+        String fileName = setItem.labelId + "_" + String.valueOf(genId) + ".png";
+        File file = new File(dir, fileName);
+
+
+        while (file.exists()) {
+            genId++;
+            fileName = setItem.labelId + "_" + genId + ".png";
+            file = new File(dir, fileName);
+        }
+
         setItem.setFileName(fileName);
-        file = new File(file, fileName);
         try (FileOutputStream out = new FileOutputStream(file)) {
             setItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             Log.i("Bitmap Saved!", "Bitmap saved in " + file);
@@ -77,18 +87,32 @@ public class SupportSet {
             return;
         }
 
-        SupportSetItems.clear();
+        //SupportSetItems.clear();
         for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
             try (FileInputStream in = new FileInputStream(file)) {
+                String fileName = file.getName();
+                if(checkItemLoaded(fileName)){
+                    continue;
+                }
+                Log.i("File Loaded", fileName);
                 Bitmap bmp = BitmapFactory.decodeStream(in);
                 String labelId = file.getName().substring(0, file.getName().indexOf("_"));
                 SupportSetItem _hi = new SupportSetItem(bmp, labelId);
-                _hi.setFileName(file.getName());
+                _hi.setFileName(fileName);
                 SupportSetItems.add(_hi);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private boolean checkItemLoaded(String fileName) {
+        for (SupportSetItem i: SupportSetItems ){
+            if (Objects.equals(i.getFileName(), fileName)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void clearSet() {
@@ -109,7 +133,14 @@ public class SupportSet {
     }
 
     public void removeItem(SupportSetItem item) {
-        SupportSetItems.remove(item);
+        Log.i("SupportSetItems Before Removal", item.getFileName());
+
+        boolean isRemoved = SupportSetItems.remove(item);
+        if (isRemoved) {
+            Log.i("Item Removal", "Item successfully removed from the SupportSetItems set.");
+        } else {
+            Log.e("Item Removal Failed", "Item was not found in the SupportSetItems set.");
+        }
 
         // Delete the corresponding file
         File fileDir = new File(JFileProvider.getInternalDir(), "support_set");
@@ -122,5 +153,20 @@ public class SupportSet {
         } else {
             Log.e("Image Deletion Failed", "Could not delete file: " + fileName);
         }
+    }
+
+    public void renameItem(SupportSetItem item, String newLabel) {
+        File dir  = new File(JFileProvider.getInternalDir(), "support_set");
+
+
+        String fileName = item.getFileName();
+        File file = new File(dir, fileName);
+        item.setLabelId(newLabel);
+        String newFileName = item.labelId  + fileName.substring(fileName.indexOf('_'));
+        File newFile = new File(dir, newFileName);
+        file.renameTo(newFile);
+        item.setFileName(newFileName);
+
+
     }
 }

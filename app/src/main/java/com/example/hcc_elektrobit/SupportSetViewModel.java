@@ -25,12 +25,10 @@ public class SupportSetViewModel extends ViewModel {
 
     public void removeItem(SupportSetItem item) {
         supportSet.removeItem(item);
+
     }
 
     public void renameItem(SupportSetItem item, String newLabel) {
-        SupportSetItem updatedItem = new SupportSetItem(item.getBitmap(), newLabel);
-        updatedItem.setFileName(item.getFileName());
-        saveItem(updatedItem);
-        removeItem(item);
+        supportSet.renameItem(item, newLabel);
     }
 }

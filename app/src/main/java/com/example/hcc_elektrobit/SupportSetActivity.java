@@ -3,6 +3,7 @@ package com.example.hcc_elektrobit;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -92,6 +93,7 @@ public class SupportSetActivity extends AppCompatActivity {
                     if (which == 0) {
                         showRenameDialog(item);
                     } else if (which == 1) {
+                        Log.i("test", String.valueOf(viewModel.getItems().size()));
                         viewModel.removeItem(item);
                         updateGridView();
                         Toast.makeText(this, "Image deleted!", Toast.LENGTH_SHORT).show();
@@ -122,6 +124,7 @@ public class SupportSetActivity extends AppCompatActivity {
     }
 
     private void updateGridView() {
+        Log.i("test2", String.valueOf(viewModel.getItems().size()));
         SupportSetAdapter adapter = new SupportSetAdapter(this, R.layout.support_set_item, viewModel.getItems());
         gridView.setAdapter(adapter);
     }
