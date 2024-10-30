@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:text="@{viewModel.textMessageWithResult}"
+        android:text="@{viewModel.classifiedCharacter}"
         android:textColor="#FF0000"
         android:textSize="30dp"
         android:textStyle="bold"
@@ -97,8 +97,11 @@
         android:scaleX="1.2"
         android:scaleY="1.2"
         android:text="CNN Toggle"
+        android:checked="@={viewModel.isCnnModel}"
+        android:enabled="@={viewModel.isCnnEnabled}"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:onCheckedChanged="@{(buttonView, isChecked) -> viewModel.onCnnSwitchChanged(isChecked)}"/>
 
 
     <Switch
@@ -111,8 +114,10 @@
         android:scaleY="1.2"
         android:text="Quantized"
         android:paddingTop="15dp"
+        android:checked="@={viewModel.isQuantizedModel}"
         app:layout_constraintStart_toStartOf="@+id/cnn_toggle"
-        app:layout_constraintTop_toBottomOf="@+id/cnn_toggle" />
+        app:layout_constraintTop_toBottomOf="@+id/cnn_toggle"
+        app:onCheckedChanged="@{(buttonView, isChecked) -> viewModel.onQuanSwitchToggled(isChecked)}"/>
 
     <TextView
         android:id="@+id/time_as"

@@ -29,18 +29,8 @@ public class JMainActivity extends AppCompatActivity {
 
     private DialogManager dialogManager;
     private DrawingCanvas drawingCanvas;
-    private TextView recognizedCharTextView;
-    private ImageView bitmapDisplay;
-    private SMSonnxModel sms_model;
-    private CNNonnxModel cnn_model;
     private Bitmap bitmap;
-    private AudioPlayerManager audioPlayer;
-    private CharacterMapping characterMapping;
     private MainViewModel viewModel;
-    boolean timerStarted = false;
-    private boolean quantizedModel = false;
-    private TextView timeTextView;
-    String model_name = "SMS";
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
@@ -96,45 +86,12 @@ public class JMainActivity extends AppCompatActivity {
         binding.setLifecycleOwner(this);
 
         drawingCanvas = findViewById(R.id.drawing_canvas);
-        recognizedCharTextView = findViewById(R.id.recognized_char);
-        bitmapDisplay = findViewById(R.id.bitmap_display);
         Button shareButton = findViewById(R.id.share_button);
         Button trainingModeButton = findViewById(R.id.training_mode_button);
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
         Switch CNNToggle = findViewById(R.id.cnn_toggle);
         Switch quanToggle = findViewById(R.id.quan_toggle);
-        timeTextView = findViewById(R.id.time);
-
-        // Logic must go to MainViewModel
-        quanToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                quantizedModel = !quantizedModel;
-
-                if (CNNToggle.isChecked()){
-                    CNNToggle.setChecked(false);
-                    model_name = "SMS";
-                }
-                CNNToggle.setClickable(!quantizedModel);
-                CNNToggle.setAlpha(quantizedModel?0.5f:1.0f);
-            }
-        });
-
-        // Logic must go to MainViewModel
-        CNNToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(model_name.equals("SMS")){
-                    model_name = "CNN";
-                }else if(model_name.equals("CNN")){
-                    model_name = "SMS";
-                }
-            }
-        });
-
-        audioPlayer = new AudioPlayerManager(this);
 
         // Support set ?
         SupportSet.getInstance().updateSet(this);
@@ -187,7 +144,6 @@ public class JMainActivity extends AppCompatActivity {
 
         // Check DialogManager
         dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
-
         shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
         trainingModeButton.setOnClickListener(v -> dialogManager.showTrainingModeDialog());
 
@@ -200,7 +156,6 @@ public class JMainActivity extends AppCompatActivity {
             }
         });
 
-        // Must be maybe moved to MainViewModel
         drawingCanvas.setOnTouchListener((v, event) -> {
 
             drawingCanvas.onTouchEvent(event);
@@ -258,79 +213,6 @@ public class JMainActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-    public void onTimeout(){
-
-        classifyCharacter();
-        drawingCanvas.clear();
-        timerStarted = false;
-
-    }
-
-    private void classifyCharacter(){
-
-        double executionTime;
-        long startTime = System.nanoTime();
-        String result;
-
-        if (model_name.equals("SMS")){
-            bitmap = drawingCanvas.getBitmap(105);
-
-            if (bitmap == null) {
-                Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
-                return;
-            }
-            Pair<String, Map<String, Float>> result_pair;
-            if(quantizedModel){
-
-                result_pair= SMSonnxQuantisedModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
-            } else {
-                result_pair = SMSonnxModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
-            }
-
-            History history = History.getInstance();
-            SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first.toString(), result_pair.second);
-            history.saveItem(historyItem, this);
-
-            result = result_pair.first;
-            Log.i("SMS", result);
-            Log.i("SMS", result_pair.second.toString());
-        }else if(model_name.equals("CNN")){
-            bitmap = drawingCanvas.getBitmap(28);
-
-            if (bitmap == null) {
-                Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
-                return;
-            }
-            cnn_model = CNNonnxModel.getInstance(this);
-            Pair<Integer, float[][]> result_pair = cnn_model.classifyAndReturnIntAndTensor(bitmap);
-
-            History history = History.getInstance();
-            CNNHistoryItem historyItem = new CNNHistoryItem(bitmap, result_pair.first.toString(), result_pair.second);
-
-            history.saveItem(historyItem, this);
-
-            result = result_pair.first.toString();
-            Log.i("CNN", result);
-            Log.i("CNN", Arrays.deepToString(result_pair.second));
-        } else {
-            result = "";
-            Log.e("MAIN_ACTIVITY", "NO MODEL SELECTED!");
-        }
-
-        long endTime = System.nanoTime();
-
-        executionTime = Math.round((endTime - startTime) / 1_000_000.0) / 1_000.0;
-
-        audioPlayer.setDataSource(result);
-        audioPlayer.play();
-        runOnUiThread(() -> {
-            timeTextView.setText(String.valueOf(executionTime));
-            recognizedCharTextView.setText(result);
-            bitmapDisplay.setImageBitmap(bitmap);
-        });
-    }
-
 
     public Bitmap getBitmap() {
         return bitmap;

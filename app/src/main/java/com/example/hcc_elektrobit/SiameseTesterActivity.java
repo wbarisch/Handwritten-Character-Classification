@@ -18,7 +18,6 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
     private SMSonnxModel model;
     private Bitmap bitmap;
     private Bitmap bitmap2;
-    private AudioPlayerManager audioPlayerManager;
     private Timer canvasTimer;
     private boolean timerStarted = false;
     int bitmapState = 0;
@@ -32,13 +31,9 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
         bitmapDisplay2 = findViewById(R.id.bitmap_display2);
-
-
-
         model = SMSonnxModel.getInstance(this);
 
         SupportSet.getInstance().updateSet(this);
-
 
         drawingCanvas.setOnTouchListener((v, event) -> {
 
@@ -68,7 +63,6 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
         findSimilarity();
         drawingCanvas.clear();
         timerStarted = false;
-
     }
 
     private void findSimilarity(){
@@ -86,22 +80,15 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
             bitmapState = 1;
         } else {
             bitmap2 = drawingCanvas.getBitmap(105);
-
             float similarity = model.classify_similarity(bitmap,bitmap2);
 
             runOnUiThread(() -> {
 
                 bitmapDisplay2.setImageBitmap(createBitmapFromFloatArray(model.preprocessBitmap(bitmap2),105,105));
                 recognizedCharTextView.setText(String.valueOf(similarity));
-
             });
             bitmapState = 0;
-
         }
-
-
-
-
     }
 
     public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
@@ -111,7 +98,6 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
         }
 
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
         int[] pixels = new int[width * height];
 
         for (int i = 0; i < floatArray.length; i++) {
@@ -122,7 +108,6 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
             int color = Color.argb(255, grayscale, grayscale, grayscale);
             pixels[i] = color;
         }
-
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
         return bitmap;

@@ -1,6 +1,5 @@
 package com.example.hcc_elektrobit;
 
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
