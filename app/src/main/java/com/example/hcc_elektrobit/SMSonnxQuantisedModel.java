@@ -110,14 +110,14 @@ public class SMSonnxQuantisedModel {
 
     public String classify_id(Bitmap bitmap1){
 
-        SupportSet.getInstance().updateSet(context);
+        SupportSet.getInstance().updateSet();
 
         List<SupportSetItem> supportSet = SupportSet.getInstance().getItems();
 
         Map<String, List<Float>> similarityMap = new HashMap<>();
 
         for (SupportSetItem item : supportSet) {
-            String labelId = item.getlabelId();
+            String labelId = item.getLabelId();
             Bitmap bitmap2 = item.getBitmap();
 
             float[][] result = findSimilarity(bitmap1, bitmap2);
@@ -215,7 +215,7 @@ public class SMSonnxQuantisedModel {
         Map<String, List<Float>> similarityMap = new HashMap<>();
 
         for (SupportSetItem item : supportSet) {
-            String labelId = item.getlabelId();
+            String labelId = item.getLabelId();
             Bitmap bitmap2 = item.getBitmap();
 
             float[][] result = findSimilarity(bitmap, bitmap2);

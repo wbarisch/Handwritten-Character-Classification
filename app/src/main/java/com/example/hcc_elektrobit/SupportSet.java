@@ -1,28 +1,22 @@
 package com.example.hcc_elektrobit;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class SupportSet {
 
-
     private static volatile SupportSet INSTANCE = null;
-
 
     private Set<SupportSetItem> SupportSetItems = new TreeSet<>(new Comparator<SupportSetItem>() {
         @Override
@@ -31,8 +25,6 @@ public class SupportSet {
             if (labelComparison != 0) {
                 return labelComparison;
             }
-
-
             labelComparison = Integer.compare(o1.getBitmap().getByteCount(), o2.getBitmap().getByteCount());
             if (labelComparison == 0) {
                 return 1;
@@ -40,11 +32,12 @@ public class SupportSet {
             return labelComparison;
         }
     });
+
     private SupportSet() {
     }
 
     public static SupportSet getInstance() {
-        if(INSTANCE == null) {
+        if (INSTANCE == null) {
             synchronized (SupportSet.class) {
                 if (INSTANCE == null) {
                     INSTANCE = new SupportSet();
@@ -54,43 +47,41 @@ public class SupportSet {
         return INSTANCE;
     }
 
-    public void addItem(SupportSetItem _hi){
+    public void addItem(SupportSetItem _hi) {
         SupportSetItems.add(_hi);
     }
 
-    public List<SupportSetItem> getItems(){
+    public List<SupportSetItem> getItems() {
         return new ArrayList<>(SupportSetItems);
     }
 
-    public void saveItem(SupportSetItem setItem, Context context){
-        File file = new File(context.getFilesDir(), "support_set");
-        if(!file.exists()){
+    public void saveItem(SupportSetItem setItem) {
+        File file = new File(JFileProvider.getInternalDir(), "support_set");
+        if (!file.exists()) {
             file.mkdir();
         }
-        String fileName = setItem.labelId + "_" + Integer.toString(setItem.bitmap.getGenerationId()) + ".png";
+        String fileName = setItem.labelId + "_" + setItem.bitmap.getGenerationId() + ".png";
         setItem.setFileName(fileName);
         file = new File(file, fileName);
-        try(FileOutputStream out = new FileOutputStream(file)){
+        try (FileOutputStream out = new FileOutputStream(file)) {
             setItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-            Log.i("Bitmap Saved!", "Bitmap save in " + file);
+            Log.i("Bitmap Saved!", "Bitmap saved in " + file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-
-    // fill the history set with the saved imgs
-    public void updateSet(Context context){
-        File bitmapDir = new File(context.getFilesDir(), "support_set");
-        if(!bitmapDir.exists()){
+    public void updateSet() {
+        File bitmapDir = new File(JFileProvider.getInternalDir(), "support_set");
+        if (!bitmapDir.exists()) {
             return;
         }
 
         SupportSetItems.clear();
-        for (File file: Objects.requireNonNull(bitmapDir.listFiles())) {
-            try(FileInputStream in = new FileInputStream(file)){
+        for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
+            try (FileInputStream in = new FileInputStream(file)) {
                 Bitmap bmp = BitmapFactory.decodeStream(in);
-                String labelId = file.getName().substring(0,file.getName().indexOf("_"));
+                String labelId = file.getName().substring(0, file.getName().indexOf("_"));
                 SupportSetItem _hi = new SupportSetItem(bmp, labelId);
                 _hi.setFileName(file.getName());
                 SupportSetItems.add(_hi);
@@ -99,8 +90,9 @@ public class SupportSet {
             }
         }
     }
-    public void clearSet(Context context) {
-        File bitmapDir = new File(context.getFilesDir(), "support_set");
+
+    public void clearSet() {
+        File bitmapDir = new File(JFileProvider.getInternalDir(), "support_set");
         if (bitmapDir.exists()) {
             for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
                 if (file.delete()) {
@@ -116,11 +108,11 @@ public class SupportSet {
         }
     }
 
-    public void removeItem(SupportSetItem item, Context context) {
+    public void removeItem(SupportSetItem item) {
         SupportSetItems.remove(item);
 
         // Delete the corresponding file
-        File fileDir = new File(context.getFilesDir(), "support_set");
+        File fileDir = new File(JFileProvider.getInternalDir(), "support_set");
         String fileName = item.getFileName();
         Log.i("File Name", fileName);
         File file = new File(fileDir, fileName);

@@ -132,7 +132,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         });
 
         audioPlayer = new AudioPlayer(this);
-        SupportSet.getInstance().updateSet(this);
+        SupportSet.getInstance().updateSet();
 
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override

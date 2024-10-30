@@ -45,7 +45,7 @@ public class SupportSetAdapter extends ArrayAdapter<SupportSetItem> {
         SupportSetItem item = sup_list.get(position);
 
         imageView.setImageBitmap(item.getBitmap());
-        String predictionStr = item.getlabelId();
+        String predictionStr = item.getLabelId();
         textView.setText(predictionStr);
 
         return v;

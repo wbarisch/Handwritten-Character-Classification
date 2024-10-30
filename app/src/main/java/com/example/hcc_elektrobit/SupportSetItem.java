@@ -18,7 +18,7 @@ public class SupportSetItem {
         return bitmap;
     }
 
-    public String getlabelId(){
+    public String getLabelId(){
         return labelId;
     }
 
