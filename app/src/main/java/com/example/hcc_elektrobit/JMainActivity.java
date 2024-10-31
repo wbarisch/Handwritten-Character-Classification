@@ -244,7 +244,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             }
             Pair<String, Map<String, Float>> result_pair;
             if(quantizedModel){
-
+                //2 step model
                 result_pair= SMSComaparisonOnnxModel.getInstance().classifyAndReturnPredAndSimilarityMap(bitmap);
             } else {
                 result_pair = SMSonnxModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
