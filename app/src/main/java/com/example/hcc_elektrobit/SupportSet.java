@@ -79,6 +79,7 @@ public class SupportSet {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        addItem(setItem);
     }
 
     public void updateSet() {

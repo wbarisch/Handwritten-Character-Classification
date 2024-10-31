@@ -17,6 +17,8 @@ public class SupportSetItem {
     SupportSetItem(Bitmap bmp, String labelId){
         this.bitmap = bmp;
         this.labelId = labelId;
+        float[][] emb = SMSEmbeddingOnnxModel.getInstance().embedBitmap(bmp);
+        imgEmbedding = SMSComaparisonOnnxModel.getInstance().loadTensor(emb);
 
     }
 
