@@ -11,6 +11,11 @@ android {
         applicationId = "com.example.hcc_elektrobit"
         minSdk = 24
         targetSdk = 34
+        ndkVersion = "28.0.12433566"
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            stl = "c++_shared"
+        }
         versionCode = 1
         versionName = "1.0"
 
@@ -43,6 +48,13 @@ android {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+        jniLibs.pickFirsts.add("lib/arm64-v8a/libc++_shared.so")
+        jniLibs.pickFirsts.add("lib/armeabi-v7a/libc++_shared.so")
+        jniLibs.pickFirsts.add("lib/x86/libc++_shared.so")
+        jniLibs.pickFirsts.add("lib/x86_64/libc++_shared.so")
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -71,5 +83,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.onnxruntime.android)
+    implementation(project(":openCVLibrary"))
     testImplementation(libs.androidx.core)
 }
