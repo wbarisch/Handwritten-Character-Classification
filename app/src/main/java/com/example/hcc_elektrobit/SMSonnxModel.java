@@ -29,6 +29,10 @@ public class SMSonnxModel {
     private final Context context;
     private static final String TAG = "SMSonnxModel";
 
+    public float same_image_similarity = 0.9850878f;
+
+    public int bmp_size = 105;
+
     private SMSonnxModel(Context context) {
         this.context = context;
         try {
@@ -264,4 +268,7 @@ public class SMSonnxModel {
         return resultMap;
     }
 
+    public float get_same_image_similarity() {
+        return same_image_similarity;
+    }
 }
