@@ -14,20 +14,20 @@ import androidx.core.util.Consumer;
 public class DialogManager {
 
     private final Activity activity;
-    private final JMainActivity jMainActivity;
+    private final MainActivity mainActivity;
     private final ImageSharingManager imageSharingManager;
     private final ImageSavingManager imageSavingManager;
 
-    public DialogManager(Activity activity, JMainActivity jMainActivity, ImageSharingManager imageSharingManager, ImageSavingManager imageSavingManager) {
+    public DialogManager(Activity activity, MainActivity mainActivity, ImageSharingManager imageSharingManager, ImageSavingManager imageSavingManager) {
         this.activity = activity;
-        this.jMainActivity = jMainActivity;
+        this.mainActivity = mainActivity;
         this.imageSharingManager = imageSharingManager;
         this.imageSavingManager = imageSavingManager;
     }
 
     public DialogManager(Activity activity) {
         this.activity = activity;
-        this.jMainActivity = null;
+        this.mainActivity = null;
         this.imageSharingManager = null;
         this.imageSavingManager = null;
     }
@@ -39,7 +39,7 @@ public class DialogManager {
         String[] options = {"Share", "Save to Device"};
 
         builder.setItems(options, (dialog, which) -> {
-            Bitmap currentBitmap = jMainActivity.getBitmap();
+            Bitmap currentBitmap = mainActivity.getBitmap();
 
             if (which == 0) {
                 if (currentBitmap == null) {

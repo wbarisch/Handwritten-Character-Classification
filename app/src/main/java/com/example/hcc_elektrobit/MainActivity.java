@@ -5,28 +5,25 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.Switch;
-import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.Observer;
+
 import com.example.hcc_elektrobit.databinding.ActivityMainBinding;
+
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Map;
 
-public class JMainActivity extends AppCompatActivity {
-
+public class MainActivity extends AppCompatActivity {
+    private CharacterMapping characterMapping = new CharacterMapping();
     private DialogManager dialogManager;
     private DrawingCanvas drawingCanvas;
     private Bitmap bitmap;
@@ -49,7 +46,7 @@ public class JMainActivity extends AppCompatActivity {
         driverMode.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
-                Intent intent = new Intent(JMainActivity.this, DrivingMode.class);
+                Intent intent = new Intent(MainActivity.this, DrivingMode.class);
                 startActivity(intent);
                 return true;
             }
@@ -90,28 +87,22 @@ public class JMainActivity extends AppCompatActivity {
         Button trainingModeButton = findViewById(R.id.training_mode_button);
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
-        Switch CNNToggle = findViewById(R.id.cnn_toggle);
-        Switch quanToggle = findViewById(R.id.quan_toggle);
 
-        // Support set ?
         SupportSet.getInstance().updateSet(this);
 
-        // Is this logic?
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Switch to SiameseTesterActivity
-                Intent intent = new Intent(JMainActivity.this, SiameseTesterActivity.class);
+                Intent intent = new Intent(MainActivity.this, SiameseTesterActivity.class);
                 startActivity(intent);
             }
         });
 
-        // Is this also logic?
         supportsetActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Switch to SiameseTesterActivity
-                Intent intent = new Intent(JMainActivity.this, SupportSetActivity.class);
+                Intent intent = new Intent(MainActivity.this, SupportSetActivity.class);
                 startActivity(intent);
             }
         });
@@ -170,6 +161,14 @@ public class JMainActivity extends AppCompatActivity {
 
             return true;
         });
+
+        viewModel.isCnnModel.observe(this, newValue -> {
+            viewModel.onCnnSwitchChanged();
+        });
+
+        viewModel.isQuantizedModel.observe(this, newValue -> {
+            viewModel.onQuanSwitchToggled();
+        });
     }
 
     @Override
@@ -179,7 +178,7 @@ public class JMainActivity extends AppCompatActivity {
 
         if(id == R.id.menuButton) {
 
-            Intent intent = new Intent(JMainActivity.this, JHistoryActivity.class);
+            Intent intent = new Intent(MainActivity.this, JHistoryActivity.class);
             startActivity(intent);
             return true;
         }
@@ -221,5 +220,4 @@ public class JMainActivity extends AppCompatActivity {
     public void enterTrainingMode() {
         Log.d("JMainActivity", "Training mode enabled");
     }
-
 }

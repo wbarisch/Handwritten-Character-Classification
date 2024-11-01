@@ -1,147 +1,145 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
     <data class=".databinding.ActivityMainBinding">
         <variable
             name="viewModel"
             type="com.example.hcc_elektrobit.MainViewModel" />
     </data>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#87CEFA"
-    tools:context=".JMainActivity">
-
-    <com.example.hcc_elektrobit.DrawingCanvas
-        android:id="@+id/drawing_canvas"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="#FFFFFF"
-        app:layout_constraintDimensionRatio="1"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="match_parent"
+        android:background="#87CEFA"
+        tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/recognized_as"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="Recognized as: "
-        android:textSize="30dp"
-        android:textStyle="bold"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/recognized_char"
-        app:layout_constraintTop_toBottomOf="@id/drawing_canvas" />
+        <com.example.hcc_elektrobit.DrawingCanvas
+            android:id="@+id/drawing_canvas"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="#FFFFFF"
+            app:layout_constraintDimensionRatio="1"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/recognized_char"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="@{viewModel.classifiedCharacter}"
-        android:textColor="#FF0000"
-        android:textSize="30dp"
-        android:textStyle="bold"
-        app:layout_constraintLeft_toRightOf="@+id/recognized_as"
-        app:layout_constraintTop_toBottomOf="@id/drawing_canvas" />
+        <TextView
+            android:id="@+id/recognized_as"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="Recognized as: "
+            android:textSize="30dp"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/recognized_char"
+            app:layout_constraintTop_toBottomOf="@id/drawing_canvas" />
 
-    <ImageView
-        android:id="@+id/bitmap_display"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center"
-        android:contentDescription="Displayed Bitmap"
-        app:imageBitmap="@{viewModel.drawingBitmap}"
-        app:layout_constraintBottom_toBottomOf="@id/drawing_canvas"
-        app:layout_constraintLeft_toLeftOf="@+id/drawing_canvas" />
+        <TextView
+            android:id="@+id/recognized_char"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:textColor="#FF0000"
+            android:text="@{viewModel.classifiedCharacter}"
+            android:textSize="30dp"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toRightOf="@+id/recognized_as"
+            app:layout_constraintTop_toBottomOf="@id/drawing_canvas" />
 
-    <Button
-        android:id="@+id/share_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Share"
-        app:layout_constraintLeft_toLeftOf="@+id/recognized_as"
-        app:layout_constraintTop_toBottomOf="@id/recognized_as" />
+        <ImageView
+            android:id="@+id/bitmap_display"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:contentDescription="Displayed Bitmap"
+            android:imageBitmap="@{viewModel.drawingBitmap}"
+            app:layout_constraintBottom_toBottomOf="@id/drawing_canvas"
+            app:layout_constraintLeft_toLeftOf="@+id/drawing_canvas" />
 
-    <Button
-        android:id="@+id/training_mode_button"
-        android:layout_width="46dp"
-        android:layout_height="47dp"
-        android:drawableStart="@drawable/ic_training"
-        app:layout_constraintStart_toEndOf="@id/share_button"
-        app:layout_constraintTop_toTopOf="@id/share_button" />
+        <Button
+            android:id="@+id/share_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Share"
+            app:layout_constraintLeft_toLeftOf="@+id/recognized_as"
+            app:layout_constraintTop_toBottomOf="@id/recognized_as" />
 
-    <Button
-        android:id="@+id/siamese_test_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Siamese test button"
-        app:layout_constraintTop_toBottomOf="@id/share_button"
-        app:layout_constraintLeft_toLeftOf="@+id/share_button"/>
+        <Button
+            android:id="@+id/training_mode_button"
+            android:layout_width="46dp"
+            android:layout_height="47dp"
+            android:drawableStart="@drawable/ic_training"
+            app:layout_constraintStart_toEndOf="@id/share_button"
+            app:layout_constraintTop_toTopOf="@id/share_button" />
 
-    <Button
-        android:id="@+id/support_set_gen"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Support Set"
-        app:layout_constraintLeft_toLeftOf="@+id/share_button"
-        app:layout_constraintTop_toBottomOf="@id/siamese_test_button" />
+        <Button
+            android:id="@+id/siamese_test_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Siamese test button"
+            app:layout_constraintTop_toBottomOf="@id/share_button"
+            app:layout_constraintLeft_toLeftOf="@+id/share_button"/>
 
-    <Switch
-        android:id="@+id/cnn_toggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="192dp"
-        android:scaleX="1.2"
-        android:scaleY="1.2"
-        android:text="CNN Toggle"
-        android:checked="@={viewModel.isCnnModel}"
-        android:enabled="@={viewModel.isCnnEnabled}"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:onCheckedChanged="@{(buttonView, isChecked) -> viewModel.onCnnSwitchChanged(isChecked)}"/>
+        <Button
+            android:id="@+id/support_set_gen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Support Set"
+            app:layout_constraintLeft_toLeftOf="@+id/share_button"
+            app:layout_constraintTop_toBottomOf="@id/siamese_test_button" />
+
+        <Switch
+            android:id="@+id/cnn_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="192dp"
+            android:scaleX="1.2"
+            android:scaleY="1.2"
+            android:checked="@={viewModel.isCnnModel}"
+            android:enabled="@{viewModel.isCnnEnabled}"
+            android:text="CNN Toggle"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
 
-    <Switch
-        android:id="@+id/quan_toggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="192dp"
-        android:scaleX="1.2"
-        android:scaleY="1.2"
-        android:text="Quantized"
-        android:paddingTop="15dp"
-        android:checked="@={viewModel.isQuantizedModel}"
-        app:layout_constraintStart_toStartOf="@+id/cnn_toggle"
-        app:layout_constraintTop_toBottomOf="@+id/cnn_toggle"
-        app:onCheckedChanged="@{(buttonView, isChecked) -> viewModel.onQuanSwitchToggled(isChecked)}"/>
+        <Switch
+            android:id="@+id/quan_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="192dp"
+            android:scaleX="1.2"
+            android:scaleY="1.2"
+            android:checked="@={viewModel.isQuantizedModel}"
+            android:text="Quantized Model"
+            android:paddingTop="15dp"
+            app:layout_constraintStart_toStartOf="@+id/cnn_toggle"
+            app:layout_constraintTop_toBottomOf="@+id/cnn_toggle"/>
 
-    <TextView
-        android:id="@+id/time_as"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="Time:"
-        android:textSize="30dp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        <TextView
+            android:id="@+id/time_as"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="Time:"
+            android:textSize="30dp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-    <TextView
-        android:id="@+id/time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="@{viewModel.executionTime}"
-        android:textSize="30dp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        app:layout_constraintLeft_toRightOf="@id/time_as"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:textSize="30dp"
+            android:text="@{viewModel.executionTime}"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            app:layout_constraintLeft_toRightOf="@id/time_as"
+            app:layout_constraintBottom_toBottomOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

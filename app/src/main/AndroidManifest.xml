@@ -39,7 +39,7 @@
         </provider>
 
         <activity
-            android:name=".JMainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.HCC_Elektrobit.ActionBar">
             <intent-filter>

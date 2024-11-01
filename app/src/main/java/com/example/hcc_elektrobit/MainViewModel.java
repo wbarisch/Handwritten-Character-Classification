@@ -48,6 +48,7 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
      */
     public void mainAppFunction(Bitmap firstBitmap){
 
+        _drawingBitmap.setValue(firstBitmap);
         classifyCharacterDispatcher(firstBitmap);
         String fileName = String.valueOf(classifiedCharacter);
 
@@ -128,9 +129,9 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
     //endregion
 
     //region Binded Functions
-    public void onQuanSwitchToggled(boolean isChecked){
+    public void onQuanSwitchToggled(){
 
-        if (isChecked && Boolean.TRUE.equals(isCnnModel.getValue())) {
+        if (isQuantizedModel.getValue()) {
             isCnnModel.setValue(false);
             isCnnEnabled.setValue(false);
         } else {
@@ -138,9 +139,9 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
         }
     }
 
-    public void onCnnSwitchChanged(boolean isChecked){
+    public void onCnnSwitchChanged(){
 
-        if(isChecked)
+        if(isCnnModel.getValue())
             modelName = "CNN";
         else
             modelName = "SMS";

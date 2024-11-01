@@ -31,7 +31,7 @@ public class SupportSetActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
         if(id == R.id.menuButton) {
-            Intent intent = new Intent(SupportSetActivity.this, JMainActivity.class);
+            Intent intent = new Intent(SupportSetActivity.this, MainActivity.class);
             startActivity(intent);
             return true;
         }

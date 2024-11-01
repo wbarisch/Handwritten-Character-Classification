@@ -190,7 +190,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
         if(SelectedItemId == R.id.developer_mode) {
             // Switch to developer mode.
-            startActivity(new Intent(DrivingMode.this, JMainActivity.class));
+            startActivity(new Intent(DrivingMode.this, MainActivity.class));
             return true;
 
         } else{
