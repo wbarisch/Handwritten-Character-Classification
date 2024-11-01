@@ -74,8 +74,6 @@ public class History {
             try(FileInputStream in = new FileInputStream(file)){
                 Bitmap bmp = BitmapFactory.decodeStream(in);
                 String pred = file.getName();
-                HistoryItem _hi = new HistoryItem(bmp, pred);
-                historyItems.add(_hi);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
