@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.IOException;
@@ -38,6 +39,10 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     CanvasTimer canvasTimer;
     private CharacterMapping characterMapping;
     boolean timerStarted = false;
+    private boolean quantizedModel = false;
+
+    private TextView timeTextView;
+
 
     String model_name = "SMS";
 
@@ -50,8 +55,17 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         }
         MenuItem toggleAntiAliasItem = menu.findItem(R.id.action_toggle_antialias);
         MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
+        MenuItem driverMode = menu.findItem(R.id.driver_mode);
 
 
+        driverMode.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
+                Intent intent = new Intent(JMainActivity.this, DrivingMode.class);
+                startActivity(intent);
+                return true;
+            }
+        });
         if (drawingCanvas != null) {
             if (toggleAntiAliasItem != null) {
                 toggleAntiAliasItem.setChecked(drawingCanvas.getPaint().isAntiAlias());
@@ -78,6 +92,23 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
         Switch CNNToggle = findViewById(R.id.cnn_toggle);
+        Switch quanToggle = findViewById(R.id.quan_toggle);
+        timeTextView = findViewById(R.id.time);
+
+        quanToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                quantizedModel = !quantizedModel;
+
+                if (CNNToggle.isChecked()){
+                    CNNToggle.setChecked(false);
+                    model_name = "SMS";
+                }
+                CNNToggle.setClickable(!quantizedModel);
+                CNNToggle.setAlpha(quantizedModel?0.5f:1.0f);
+
+            }
+        });
 
         CNNToggle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,7 +122,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         });
 
         audioPlayer = new AudioPlayer(this);
-        SupportSet.getInstance().updateSet(this);
+        SupportSet.getInstance().updateSet();
 
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -199,6 +230,10 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     private void classifyCharacter(){
 
+        double executionTime;
+
+        long startTime = System.nanoTime();
+
         String result;
         if (model_name.equals("SMS")){
             bitmap = drawingCanvas.getBitmap(105);
@@ -207,9 +242,14 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
                 Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
                 return;
             }
+            Pair<String, Map<String, Float>> result_pair;
+            if(quantizedModel){
 
-            sms_model = SMSonnxModel.getInstance(this);
-            Pair<String, Map<String, Float>> result_pair = sms_model.classifyAndReturnPredAndSimilarityMap(bitmap);
+                result_pair= SMSonnxQuantisedModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
+            } else {
+                result_pair = SMSonnxModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
+            }
+
 
             History history = History.getInstance();
             SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first, result_pair.second);
@@ -242,14 +282,21 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             Log.e("MAIN_ACTIVITY", "NO MODEL SELECTED!");
         }
 
+        long endTime = System.nanoTime();
+
+
+        executionTime = Math.round((endTime - startTime) / 1_000_000.0) / 1_000.0;
+
         audioPlayer.PlayAudio(result);
         runOnUiThread(() -> {
-
+            timeTextView.setText(String.valueOf(executionTime));
             recognizedCharTextView.setText(result);
             bitmapDisplay.setImageBitmap(bitmap);
 
+
         });
     }
+
 
     public Bitmap getBitmap() {
         return bitmap;

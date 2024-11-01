@@ -21,19 +21,15 @@ import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
-public class SMSonnxModel {
-    private static SMSonnxModel INSTANCE = null;
+public class SMSonnxQuantisedModel {
+    private static SMSonnxQuantisedModel INSTANCE = null;
 
     private OrtEnvironment env;
     private OrtSession session;
     private final Context context;
     private static final String TAG = "SMSonnxModel";
 
-    public float same_image_similarity = 0.9850878f;
-
-    public int bmp_size = 105;
-
-    private SMSonnxModel(Context context) {
+    private SMSonnxQuantisedModel(Context context) {
         this.context = context;
         try {
             String modelPath = copyModelToCache();
@@ -47,11 +43,11 @@ public class SMSonnxModel {
         }
     }
 
-    public static SMSonnxModel getInstance(Context context) {
+    public static SMSonnxQuantisedModel getInstance(Context context) {
         if (INSTANCE == null) {
-            synchronized (SMSonnxModel.class) {
+            synchronized (SMSonnxQuantisedModel.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new SMSonnxModel(context.getApplicationContext());
+                    INSTANCE = new SMSonnxQuantisedModel(context.getApplicationContext());
                 }
             }
         }
@@ -59,7 +55,7 @@ public class SMSonnxModel {
     }
 
     private String copyModelToCache() throws IOException {
-        String modelFileName = "siamese_model_mine_245.onnx";
+        String modelFileName = "siamese_model_mine_245_prerocc_quantized.onnx";
         File cacheDir = context.getCacheDir();
         File modelFile = new File(cacheDir, modelFileName);
 
@@ -268,7 +264,4 @@ public class SMSonnxModel {
         return resultMap;
     }
 
-    public float get_same_image_similarity() {
-        return same_image_similarity;
-    }
 }

@@ -84,4 +84,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.onnxruntime.android)
     implementation(project(":openCVLibrary"))
+    testImplementation(libs.androidx.core)
 }

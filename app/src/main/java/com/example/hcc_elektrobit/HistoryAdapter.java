@@ -13,6 +13,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.w3c.dom.Text;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +49,7 @@ public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
 
         ImageView imageView = v.findViewById(R.id.bmp);
         TextView textView = v.findViewById(R.id.pred);
+        TextView model = v.findViewById(R.id.model);
 
         HistoryItem item = hist_list.get(position);
 
@@ -55,9 +58,11 @@ public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
         if(item instanceof SMSHistoryItem){
             predictionStr = ((SMSHistoryItem)item).getPred();
             textView.setText(predictionStr);
+            model.setText(item.getModel());
         } else if (item instanceof CNNHistoryItem) {
             predictionStr = ((CNNHistoryItem)item).getPred();
             textView.setText(predictionStr);
+            model.setText(item.getModel());
         }
 
 

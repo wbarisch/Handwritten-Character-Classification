@@ -24,4 +24,11 @@
         app:showAsAction="never">
     </item>
 
+    <item
+        android:id="@+id/driver_mode"
+        android:title="Driver Mode"
+        android:orderInCategory="104"
+        app:showAsAction="never">
+    </item>
+
 </menu>
