@@ -285,24 +285,18 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.training_activity_menu, menu);
 
-        MenuItem toggleBitmapMethodItem = menu.findItem(R.id.action_toggle_bitmap_method);
         MenuItem toggleAntiAliasItem = menu.findItem(R.id.action_toggle_antialias);
         MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
 
         if (drawingCanvas != null) {
-            boolean useOldBitmapMethod = drawingCanvas.isUseOldBitmapMethod();
-            if (toggleBitmapMethodItem != null) {
-                toggleBitmapMethodItem.setChecked(useOldBitmapMethod);
-            }
-
             if (toggleAntiAliasItem != null) {
-                toggleAntiAliasItem.setChecked(!useOldBitmapMethod && drawingCanvas.getPaint().isAntiAlias());
-                toggleAntiAliasItem.setEnabled(!useOldBitmapMethod);
+                toggleAntiAliasItem.setChecked(drawingCanvas.getPaint().isAntiAlias());
             }
 
             if (selectStrokeWidthItem != null) {
-                selectStrokeWidthItem.setEnabled(!useOldBitmapMethod);
+                selectStrokeWidthItem.setEnabled(true);
             }
+
         }
 
         return true;
@@ -311,7 +305,12 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.menu_bitmap_size) {
+        if(id == R.id.menuButton) {
+            Intent intent = new Intent(TrainingActivity.this, JHistoryActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        else if (id == R.id.menu_bitmap_size) {
             showBitmapSizeDialog();
             return true;
         } else if (id == R.id.menu_toggle_bitmap_mode) {
@@ -321,35 +320,19 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
                 Toast.makeText(this, "Bitmap mode set to: " + mode, Toast.LENGTH_SHORT).show();
             });
             return true;
-        } else if (id == R.id.action_toggle_bitmap_method) {
-            item.setChecked(!item.isChecked());
-
-            if (drawingCanvas != null) {
-                drawingCanvas.setUseOldBitmapMethod(item.isChecked());
-            }
-
-            invalidateOptionsMenu();
-
-            Log.d("TrainingActivity", "Use Old Bitmap Method set to: " + item.isChecked());
-            return true;
         } else if (id == R.id.action_toggle_antialias) {
-            if (!drawingCanvas.isUseOldBitmapMethod()) {
-                item.setChecked(!item.isChecked());
-                if (drawingCanvas != null) {
-                    drawingCanvas.setAntiAlias(item.isChecked());
-                }
-                Log.d("TrainingActivity", "Anti-Alias set to: " + item.isChecked());
+            item.setChecked(!item.isChecked());
+            if (drawingCanvas != null) {
+                drawingCanvas.setAntiAlias(item.isChecked());
             }
+            Log.d("TrainingActivity", "Anti-Alias set to: " + item.isChecked());
             return true;
         } else if (id == R.id.action_select_stroke_width) {
-            if (!drawingCanvas.isUseOldBitmapMethod()) {
-                dialogManager.showStrokeWidthInputDialog(drawingCanvas);
-            }
+            dialogManager.showStrokeWidthInputDialog(drawingCanvas);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
     private void showBitmapSizeDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Set Bitmap Image Size");

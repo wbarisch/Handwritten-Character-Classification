@@ -48,28 +48,18 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         if (historyItem != null) {
             historyItem.setTitle("History");
         }
-
-        MenuItem toggleBitmapMethodItem = menu.findItem(R.id.action_toggle_bitmap_method);
         MenuItem toggleAntiAliasItem = menu.findItem(R.id.action_toggle_antialias);
         MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
 
 
         if (drawingCanvas != null) {
-            boolean useOldBitmapMethod = drawingCanvas.isUseOldBitmapMethod();
-            if (toggleBitmapMethodItem != null) {
-                toggleBitmapMethodItem.setChecked(useOldBitmapMethod);
-            }
-
             if (toggleAntiAliasItem != null) {
-                toggleAntiAliasItem.setChecked(!useOldBitmapMethod && drawingCanvas.getPaint().isAntiAlias());
-                toggleAntiAliasItem.setEnabled(!useOldBitmapMethod);
+                toggleAntiAliasItem.setChecked(drawingCanvas.getPaint().isAntiAlias());
             }
-
             if (selectStrokeWidthItem != null) {
-                selectStrokeWidthItem.setEnabled(!useOldBitmapMethod);
+                selectStrokeWidthItem.setEnabled(true);
             }
         }
-
 
         return true;
     }
@@ -183,30 +173,17 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
             Intent intent = new Intent(JMainActivity.this, JHistoryActivity.class);
             startActivity(intent);
             return true;
-        } else if (id == R.id.action_toggle_bitmap_method) {
+        }
+
+        else if (id == R.id.action_toggle_antialias) {
             item.setChecked(!item.isChecked());
-
             if (drawingCanvas != null) {
-                drawingCanvas.setUseOldBitmapMethod(item.isChecked());
+                drawingCanvas.setAntiAlias(item.isChecked());
             }
-
-            invalidateOptionsMenu();
-
-            Log.d("JMainActivity", "Use Old Bitmap Method set to: " + item.isChecked());
-            return true;
-        } else if (id == R.id.action_toggle_antialias) {
-            if (!drawingCanvas.isUseOldBitmapMethod()) {
-                item.setChecked(!item.isChecked());
-                if (drawingCanvas != null) {
-                    drawingCanvas.setAntiAlias(item.isChecked());
-                }
-                Log.d("JMainActivity", "Anti-Alias set to: " + item.isChecked());
-            }
+            Log.d("JMainActivity", "Anti-Alias set to: " + item.isChecked());
             return true;
         } else if (id == R.id.action_select_stroke_width) {
-            if (!drawingCanvas.isUseOldBitmapMethod()) {
-                dialogManager.showStrokeWidthInputDialog(drawingCanvas);
-            }
+            dialogManager.showStrokeWidthInputDialog(drawingCanvas);
             return true;
         }
         return super.onOptionsItemSelected(item);

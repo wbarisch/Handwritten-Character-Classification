@@ -16,10 +16,8 @@ import androidx.annotation.NonNull;
 
 public class DrawingCanvas extends View {
 
-    Paint paint;
-    Path path;
-
-    private boolean useOldBitmapMethod = true;
+    private Paint paint;
+    private Path path;
 
     public DrawingCanvas(Context context, AttributeSet attributeSet){
 
@@ -34,29 +32,14 @@ public class DrawingCanvas extends View {
 
     }
 
-    public boolean isUseOldBitmapMethod() {
-        return this.useOldBitmapMethod;
-    }
-
-
-    public void setUseOldBitmapMethod(boolean useOldBitmapMethod) {
-        this.useOldBitmapMethod = useOldBitmapMethod;
-        setDynamicStrokeWidth();
-    }
-
     public void setStrokeWidth(float strokeWidth) {
-        if (!useOldBitmapMethod) {
-            paint.setStrokeWidth(strokeWidth);
-            invalidate();
-        }
+        paint.setStrokeWidth(strokeWidth);
+        invalidate();
+
     }
 
     private void setDynamicStrokeWidth() {
-        if (useOldBitmapMethod) {
-            paint.setStrokeWidth(100f);
-        } else {
-            paint.setStrokeWidth(30f);
-        }
+        paint.setStrokeWidth(30f);
         invalidate();
     }
 
@@ -116,18 +99,11 @@ public class DrawingCanvas extends View {
 
     }
     public Bitmap getBitmap(int dims) {
-        if (useOldBitmapMethod) {
-            Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-            this.draw(canvas);
-            return Bitmap.createScaledBitmap(bitmap, dims, dims, true);
-        } else {
-            Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-            canvas.drawColor(Color.WHITE);
-            this.draw(canvas);
-            return BitmapUtils.centerAndResizeBitmap(bitmap, dims);
-        }
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.WHITE);
+        this.draw(canvas);
+        return BitmapUtils.centerAndResizeBitmap(bitmap, dims);
     }
 
     public Bitmap getBitmap() {
@@ -137,5 +113,6 @@ public class DrawingCanvas extends View {
         this.draw(canvas);
         return bitmap;
     }
+
 
 }
