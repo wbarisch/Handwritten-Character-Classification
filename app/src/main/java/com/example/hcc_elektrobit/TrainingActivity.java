@@ -485,7 +485,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
             addBitmapToSaveList(centeredBitmap);
         }
 
-        // Provide feedback
         Toast.makeText(this, "Extracted " + boundingRects.size() + " characters", Toast.LENGTH_SHORT).show();
     }
 
