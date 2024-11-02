@@ -39,7 +39,7 @@ public class DrawingCanvas extends View {
     }
 
     private void setDynamicStrokeWidth() {
-        paint.setStrokeWidth(30f);
+        paint.setStrokeWidth(100f);
         invalidate();
     }
 
