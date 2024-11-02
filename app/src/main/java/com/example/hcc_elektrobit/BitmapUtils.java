@@ -18,6 +18,8 @@ public class BitmapUtils {
         int[] pixels = new int[width * height];
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
 
+        int backgroundColor = pixels[0];
+
         int left = width;
         int top = height;
         int right = -1;
@@ -27,7 +29,7 @@ public class BitmapUtils {
             for (int x = 0; x < width; x++) {
                 int pixel = pixels[x + y * width];
 
-                if (pixel != Color.BLACK) {
+                if (pixel != backgroundColor) {
                     if (x < left) left = x;
                     if (x > right) right = x;
                     if (y < top) top = y;
@@ -39,7 +41,7 @@ public class BitmapUtils {
         if (right < left || bottom < top) {
             Bitmap emptyBitmap = Bitmap.createBitmap(desiredSize, desiredSize, Bitmap.Config.ARGB_8888);
             Canvas emptyCanvas = new Canvas(emptyBitmap);
-            emptyCanvas.drawColor(Color.BLACK);
+            emptyCanvas.drawColor(backgroundColor);
             return emptyBitmap;
         }
 
@@ -57,7 +59,7 @@ public class BitmapUtils {
 
         Bitmap outputBitmap = Bitmap.createBitmap(desiredSize, desiredSize, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(outputBitmap);
-        canvas.drawColor(Color.BLACK);
+        canvas.drawColor(backgroundColor);
 
         float dx = (desiredSize - scaledWidth) / 2f;
         float dy = (desiredSize - scaledHeight) / 2f;

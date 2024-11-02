@@ -405,6 +405,12 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
         Imgproc.threshold(mat, mat, 0, 255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
 
+        boolean invertedForProcessing = false;
+        if (!saveAsWhiteCharacterOnBlack) {
+            Core.bitwise_not(mat, mat);
+            invertedForProcessing = true;
+        }
+
         Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
         Imgproc.morphologyEx(mat, mat, Imgproc.MORPH_OPEN, kernel);
 
@@ -459,6 +465,10 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
 
         for (Rect rect : boundingRects) {
             Mat charMat = new Mat(mat, rect);
+
+            if (invertedForProcessing) {
+                Core.bitwise_not(charMat, charMat);
+            }
 
             Bitmap charBitmap = Bitmap.createBitmap(charMat.width(), charMat.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(charMat, charBitmap);
