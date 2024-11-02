@@ -1,126 +1,108 @@
-// The HCC app running in driving mode.
-
 package com.example.hcc_elektrobit;
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.textservice.SentenceSuggestionsInfo;
+import android.view.textservice.TextInfo;
+import android.view.textservice.TextServicesManager;
+import android.view.textservice.SpellCheckerSession;
+import android.view.textservice.SuggestionsInfo;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class KeyboardModeActivity extends AppCompatActivity implements TimeoutActivity {
+public class KeyboardModeActivity extends AppCompatActivity implements TimeoutActivity, SpellCheckerSession.SpellCheckerSessionListener {
 
     // UI components
     private DrawingCanvas drawingCanvas;
     private LinearLayout outputView;
-    private TextView charTextView; // To show the result of character recognition
+    private TextView charTextView;
+    private EditText textBox; // New cumulative output text box
 
-    //
-    // private ImageView bitmapDisplay;
     private SMSComaparisonOnnxModel model;
     private Bitmap bitmap;
     private AudioPlayer audioPlayer;
 
-    //
-    CanvasTimer canvasTimer;
-    boolean timerStarted = false;
+    private CanvasTimer canvasTimer;
+    private boolean timerStarted = false;
+    private boolean isAfterControlGesture = false; // Flag to prevent classification on control gestures
 
-    // For handling control gestures: Touch events other than those used for drawing character i.e. "SingleTap", "DoubleTap", and so on.
     private GestureDetector gestureDetector;
-
-    // Variable to prevent drawing gestures' interference with control gestures
-    private boolean isAfterControlGesture = false; // true immediately after a control has occurred.
+    private SpellCheckerSession spellCheckerSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_keyboardmode);
 
+        // Initialize views and model
         drawingCanvas = findViewById(R.id.drawing_canvas);
         outputView = findViewById(R.id.output_view);
         charTextView = findViewById(R.id.char_view);
-
-        // FOR EXPERIMENT ONLY!
-        //bitmapDisplay = findViewById(R.id.bitmap_display);
+        textBox = findViewById(R.id.text_box); // Initialize cumulative text box
 
         model = SMSComaparisonOnnxModel.getInstance();
         audioPlayer = new AudioPlayer(this);
         SupportSet.getInstance().updateSet();
 
-        drawingCanvas.setOnTouchListener((v, event) -> {
+        // Set up the Android spell checker session
+        TextServicesManager textServicesManager = (TextServicesManager) getSystemService(Context.TEXT_SERVICES_MANAGER_SERVICE);
+        if (textServicesManager != null) {
+            spellCheckerSession = textServicesManager.newSpellCheckerSession(null, null, this, true);
+        }
 
-            if(timerStarted){
+        // Set up touch listener for drawingCanvas
+        drawingCanvas.setOnTouchListener((v, event) -> {
+            if (timerStarted) {
                 canvasTimer.cancel();
                 timerStarted = false;
             }
 
-            /*
-            drawingCanvas.onTouchEvent(event);
-
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-
-                canvasTimer = new CanvasTimer(this);
-                new Thread(canvasTimer).start();
-                timerStarted = true;
-
-            }
-             */
-
-            if(drawingCanvas.onTouchEvent(event)){
-
+            if (drawingCanvas.onTouchEvent(event)) {
                 isAfterControlGesture = false;
-
             }
 
-            // !!isAfterControlGesture: ignore MotionEvent.ACTION_UP occurring at the end of a control gesture.
             if (event.getAction() == MotionEvent.ACTION_UP && !isAfterControlGesture) {
-
                 canvasTimer = new CanvasTimer(this);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
-
             }
 
-            if(gestureDetector.onTouchEvent(event)){
-
-                if(timerStarted){
+            if (gestureDetector.onTouchEvent(event)) {
+                if (timerStarted) {
                     canvasTimer.cancel();
                     timerStarted = false;
                 }
-
             }
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 v.performClick();
             }
-
             return true;
-
         });
 
-        // GestureDetector for handling SingleTap, DoubleTap, e.t.c.
+        // Set up GestureDetector for single and double taps
         gestureDetector = new GestureDetector(this, new HCCGestureListener(this));
-
     }
 
     class HCCGestureListener extends GestureDetector.SimpleOnGestureListener {
 
         Context context;
 
-        public HCCGestureListener (Context context){
-
+        public HCCGestureListener(Context context) {
             this.context = context;
-
         }
 
         @Override
@@ -130,113 +112,125 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
 
         @Override
         public boolean onDoubleTap(MotionEvent event) {
-            undoCharacter();
-            isAfterControlGesture = true;
+            handleBackspace();
+            isAfterControlGesture = true;  // Prevent classification
             return true;
         }
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
-            toggleLetterCase();
-            isAfterControlGesture = true;
+            handleSpace();
+            isAfterControlGesture = true;  // Prevent classification
             return true;
         }
-
-        // NOTE: Further <TouchEvents> are open for application specific implementation by the customer.
-
     }
 
-    // Toggle between uppercase and lowercase forms of the output letter.
-    // Matters only for letters whose hand drawn uppercase and lowercase forms are indistinguishable, such as "U/u".
-    private void toggleLetterCase(){
-
-        // Currently does nothing.
-
-        // NOTE: I will implement it when the character recognition module is ready to recognize letters.
-
-        // FOR TESTING ONLY!
-        Toast.makeText(this, "Single Tap Detected", Toast.LENGTH_SHORT).show();
-
-    }
-
-    // Discard the last output of recognition. To be used in case of incorrect output or mistake by the user.
-    private void undoCharacter(){
-
-        // Undo output result
+    @Override
+    public void onTimeout() {
+        if (!isAfterControlGesture) {
+            classifyCharacter();
+        }
         drawingCanvas.clear();
-        charTextView.setText("");
-        outputView.setVisibility(View.INVISIBLE);
-
-        // NOTE: Further implementation by the customer (i.e. Elektrobit) is required here to discard the character
-        // from the particular application to which the output of this character recognition app is fed into.
-
-        Toast.makeText(this, "Character Deleted", Toast.LENGTH_SHORT).show();
-
+        timerStarted = false;
+        isAfterControlGesture = false;
     }
 
-    // Set menu resource for toolbar
+    private void classifyCharacter() {
+        bitmap = drawingCanvas.getBitmap(105);
+
+        if (bitmap == null) {
+            Log.e("KeyboardModeActivity", "Bitmap is null in classifyCharacter");
+            return;
+        }
+
+        String result = model.classifyAndReturnPredAndSimilarityMap(bitmap).first;
+
+        audioPlayer.PlayAudio(result);
+        runOnUiThread(() -> {
+            charTextView.setText(result);
+            addText(result); // Add recognized character to cumulative text box
+            outputView.setVisibility(View.VISIBLE);
+        });
+    }
+
+    private void addText(String character) {
+        String currentText = textBox.getText().toString();
+        textBox.setText(currentText + character);
+    }
+
+    private void handleSpace() {
+        String currentText = textBox.getText().toString();
+        if (!currentText.isEmpty() && !currentText.endsWith(" ")) {
+            textBox.setText(currentText + " ");
+            spellCheckLastWord();
+        }
+    }
+
+    private void handleBackspace() {
+        String currentText = textBox.getText().toString();
+        if (!currentText.isEmpty()) {
+            textBox.setText(currentText.substring(0, currentText.length() - 1));
+        }
+    }
+
+    private void spellCheckLastWord() {
+        String currentText = textBox.getText().toString().trim();
+        if (currentText.isEmpty()) return;
+
+        String[] words = currentText.split(" ");
+        String lastWord = words[words.length - 1];
+
+        if (spellCheckerSession != null) {
+            spellCheckerSession.getSuggestions(new TextInfo(lastWord), 5);
+        }
+    }
+
+    // Implementing the spell checker session listener
+    @Override
+    public void onGetSuggestions(SuggestionsInfo[] results) {
+        if (results == null || results.length == 0) return;
+
+        SuggestionsInfo suggestionsInfo = results[0];
+        if (suggestionsInfo.getSuggestionsCount() > 0) {
+            StringBuilder suggestedWord = new StringBuilder(suggestionsInfo.getSuggestionAt(0));
+
+            runOnUiThread(() -> {
+                String currentText = textBox.getText().toString().trim();
+                String[] words = currentText.split(" ");
+                words[words.length - 1] = suggestedWord.toString();  // Replace last word with suggestion
+
+                textBox.setText(TextUtils.join(" ", words) + " ");
+            });
+        }
+    }
+
+    @Override
+    public void onGetSentenceSuggestions(SentenceSuggestionsInfo[] results) {
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.hcc_menu, menu);
         return true;
     }
 
-    // Handle menu item selection
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
-
+    public boolean onOptionsItemSelected(MenuItem item) {
         int SelectedItemId = item.getItemId();
 
-        if(SelectedItemId == R.id.developer_mode) {
-            // Switch to developer mode.
+        if (SelectedItemId == R.id.developer_mode) {
             startActivity(new Intent(KeyboardModeActivity.this, JMainActivity.class));
             return true;
-
-        } else{
-
-            // The user's action isn't recognized.
-            // Invoke the superclass to handle it.
+        } else {
             return super.onOptionsItemSelected(item);
-
         }
-
     }
 
-    // What to do on timeout
-    public void onTimeout(){
-
-        classifyCharacter();
-        drawingCanvas.clear();
-        timerStarted = false;
-
-    }
-
-    // Invoke external CharacterClassifier class method from here to start processing the drawing.
-    private void classifyCharacter(){
-
-        bitmap = drawingCanvas.getBitmap(105);
-
-        if (bitmap == null) {
-            Log.e("MainActivity", "Bitmap is null in classifyCharacter");
-            return;
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (spellCheckerSession != null) {
+            spellCheckerSession.close();
         }
-
-        // TO DO:
-        // - Call CharacterClassifier class
-        // - To display the output character, set it to "recognizedCharTextView".
-
-        String result = SMSComaparisonOnnxModel.getInstance().classifyAndReturnPredAndSimilarityMap(bitmap).first;
-
-        audioPlayer.PlayAudio(String.valueOf(result));
-        runOnUiThread(() -> {
-
-            charTextView.setText(String.valueOf(result));
-            outputView.setVisibility(View.VISIBLE); // Show result
-
-            //bitmapDisplay.setImageBitmap(bitmap);
-
-        });
     }
-
-
 }

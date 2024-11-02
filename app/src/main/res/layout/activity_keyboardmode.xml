@@ -28,6 +28,26 @@
     -->
 
     <!-- LinearLayout showing output character in TextView -->
+    <EditText
+        android:id="@+id/text_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/white"
+        android:editable="false"
+        android:focusable="false"
+        android:gravity="start|top"
+        android:hint="Recognized text will appear here"
+        android:inputType="textMultiLine"
+        android:lines="4"
+        android:maxLines="4"
+        android:padding="8dp"
+        android:scrollHorizontally="false"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/output_view"
+        tools:layout_editor_absoluteX="0dp" />
+
     <LinearLayout
         android:id="@+id/output_view"
         android:layout_width="wrap_content"
