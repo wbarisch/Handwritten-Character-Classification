@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <declare-styleable name="CameraBridgeViewBase">
-        <attr name="show_fps" format="boolean" />
-        <attr name="camera_id" format="integer" />
-        <!-- Add any other custom attributes required by CameraBridgeViewBase -->
-    </declare-styleable>
-</resources>

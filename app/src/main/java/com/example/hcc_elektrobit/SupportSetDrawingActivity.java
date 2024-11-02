@@ -172,7 +172,7 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
         SupportSet supportSet = SupportSet.getInstance();
         SupportSetItem supportSetItem = new SupportSetItem(bitmap, labelId);
 
-        supportSet.saveItem(supportSetItem);
+        supportSet.saveItem(supportSetItem, this);
 
 
         runOnUiThread(() -> {
@@ -180,6 +180,30 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
             bitmapDisplay.setImageBitmap(bitmap);
 
         });
+    }
+
+    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
+
+        if (floatArray.length != width * height) {
+            throw new IllegalArgumentException("Float array length must match width * height");
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        int[] pixels = new int[width * height];
+
+        for (int i = 0; i < floatArray.length; i++) {
+
+            float value = floatArray[i];
+            value = Math.max(0, Math.min(1, value));
+            int grayscale = (int) (value * 255);
+            int color = Color.argb(255, grayscale, grayscale, grayscale);
+            pixels[i] = color;
+        }
+
+        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+
+        return bitmap;
     }
 
     public Bitmap getBitmap() {

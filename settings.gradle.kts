@@ -21,5 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "HCC_Elektrobit"
 include(":app")
-include(":app", ":openCVLibrary")
-
+ 

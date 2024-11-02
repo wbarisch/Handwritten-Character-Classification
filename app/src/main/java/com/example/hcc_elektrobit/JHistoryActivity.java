@@ -1,10 +1,8 @@
-// JHistoryActivity.java
 package com.example.hcc_elektrobit;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,20 +14,15 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.lifecycle.ViewModelProvider;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.Objects;
 
 public class JHistoryActivity extends AppCompatActivity {
 
-    private HistoryViewModel viewModel;
-    private HistoryAdapter adapter;
     private String path;
     private ActivityResultLauncher<Uri> directoryLauncher;
 
@@ -37,57 +30,58 @@ public class JHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jhistory);
-        History.getInstance().updateHistory(HCC_Application.getAppContext());
-
-        viewModel = new HistoryViewModel();
-
-        setupGridView();
-        setupButtons();
-        setupMenu();
 
         directoryLauncher = registerForActivityResult(
                 new ActivityResultContracts.OpenDocumentTree(),
-                result -> {
-                    if (result != null) {
-                        viewModel.export(path, result);
+                new ActivityResultCallback<Uri>() {
+                    @Override
+                    public void onActivityResult(Uri result) {
+                        if (result != null) {
+                            copyFolderToUri(path, result);
+                        }
                     }
-                }
-        );
+                });
 
-        // Observe history items from ViewModel
-        viewModel.getHistoryItems().observe(this, this::updateAdapter);
+
+        setupMenu();
+        setupButtons();
     }
 
-    private void setupGridView() {
-        GridView gridView = findViewById(R.id.grid_view);
-        adapter = new HistoryAdapter(this, R.layout.history_item, viewModel.getHistoryItems().getValue());
-        gridView.setAdapter(adapter);
+    private void setupMenu() {
 
-    }
-
-    private void updateAdapter(List<HistoryItem> items) {
-        adapter.clear();
-        if (items != null) {
-            adapter.addAll(items);
-        }
-        adapter.notifyDataSetChanged();
+        File source = new File(getFilesDir(), "saved_bitmaps");
+        path = source.toString();
     }
 
     private void setupButtons() {
+        GridView gridView = findViewById(R.id.grid_view);
         Button clearHistory = findViewById(R.id.clear_history);
         Button exportHistory = findViewById(R.id.export_history);
 
-        clearHistory.setOnClickListener(v -> viewModel.clearHistory());
-        exportHistory.setOnClickListener(v -> chooseDestinationDirectory());
+        History.getInstance().updateHistory(this);
+        HistoryAdapter adapter = new HistoryAdapter(this, R.layout.history_item, History.getInstance().getItems());
+        gridView.setAdapter(adapter);
+
+        clearHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                History.getInstance().clearHistory(JHistoryActivity.this);
+                History.getInstance().updateHistory(JHistoryActivity.this);
+                HistoryAdapter newAdapter = new HistoryAdapter(JHistoryActivity.this, R.layout.history_item, History.getInstance().getItems());
+                gridView.setAdapter(newAdapter);
+            }
+        });
+
+        exportHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chooseDestinationDirectory();
+            }
+        });
     }
 
     private void chooseDestinationDirectory() {
         directoryLauncher.launch(null);
-    }
-
-    private void setupMenu() {
-        File source = new File(getFilesDir(), "saved_bitmaps");
-        path = source.toString();
     }
 
     @Override
@@ -100,7 +94,8 @@ public class JHistoryActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.menuButton) {
+        int id = item.getItemId();
+        if (id == R.id.menuButton) {
             Intent intent = new Intent(JHistoryActivity.this, MainActivity.class);
             startActivity(intent);
             return true;
@@ -108,5 +103,42 @@ public class JHistoryActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void copyFolderToUri(String sourcePath, Uri destinationUri) {
+        try {
+            File sourceFolder = new File(sourcePath);
+            DocumentFile destinationDir = DocumentFile.fromTreeUri(this, destinationUri);
+            copyFilesRecursively(sourceFolder, destinationDir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    private void copyFilesRecursively(File source, DocumentFile destinationDir) {
+        if (source.isDirectory()) {
+            DocumentFile newDir = destinationDir.findFile(source.getName());
+            if (newDir == null) {
+                newDir = destinationDir.createDirectory(source.getName());
+            }
+            for (File file : source.listFiles()) {
+                copyFilesRecursively(file, newDir);
+            }
+        } else {
+            try {
+                DocumentFile newFile = destinationDir.findFile(source.getName());
+                if (newFile == null) {
+                    newFile = destinationDir.createFile("application/octet-stream", source.getName());
+                }
+                try (InputStream inStream = new FileInputStream(source);
+                     OutputStream outStream = getContentResolver().openOutputStream(newFile.getUri())) {
+                    byte[] buffer = new byte[1024];
+                    int length;
+                    while ((length = inStream.read(buffer)) > 0) {
+                        outStream.write(buffer, 0, length);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

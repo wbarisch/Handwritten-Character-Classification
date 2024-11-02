@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
         if (historyItem != null) {
             historyItem.setTitle("History");
         }
+
+        MenuItem toggleBitmapMethodItem = menu.findItem(R.id.action_toggle_bitmap_method);
         MenuItem toggleAntiAliasItem = menu.findItem(R.id.action_toggle_antialias);
         MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
         MenuItem driverMode = menu.findItem(R.id.driver_mode);
@@ -51,11 +53,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (drawingCanvas != null) {
-            if (toggleAntiAliasItem != null) {
-                toggleAntiAliasItem.setChecked(drawingCanvas.getPaint().isAntiAlias());
+            boolean useOldBitmapMethod = drawingCanvas.isUseOldBitmapMethod();
+            if (toggleBitmapMethodItem != null) {
+                toggleBitmapMethodItem.setChecked(useOldBitmapMethod);
             }
+
+            if (toggleAntiAliasItem != null) {
+                toggleAntiAliasItem.setChecked(!useOldBitmapMethod && drawingCanvas.getPaint().isAntiAlias());
+                toggleAntiAliasItem.setEnabled(!useOldBitmapMethod);
+            }
+
             if (selectStrokeWidthItem != null) {
-                selectStrokeWidthItem.setEnabled(true);
+                selectStrokeWidthItem.setEnabled(!useOldBitmapMethod);
             }
         }
 
@@ -79,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
 
-        SupportSet.getInstance().updateSet();
+        SupportSet.getInstance().updateSet(this);
 
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -173,16 +182,32 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             return true;
         }
+        else if (id == R.id.action_toggle_bitmap_method) {
 
-        else if (id == R.id.action_toggle_antialias) {
             item.setChecked(!item.isChecked());
+
             if (drawingCanvas != null) {
-                drawingCanvas.setAntiAlias(item.isChecked());
+                drawingCanvas.setUseOldBitmapMethod(item.isChecked());
             }
-            Log.d("JMainActivity", "Anti-Alias set to: " + item.isChecked());
+            invalidateOptionsMenu();
+
+            Log.d("JMainActivity", "Use Old Bitmap Method set to: " + item.isChecked());
+            return true;
+        }
+        else if (id == R.id.action_toggle_antialias) {
+
+            if (!drawingCanvas.isUseOldBitmapMethod()) {
+                item.setChecked(!item.isChecked());
+                if (drawingCanvas != null) {
+                    drawingCanvas.setAntiAlias(item.isChecked());
+                }
+                Log.d("JMainActivity", "Anti-Alias set to: " + item.isChecked());
+            }
             return true;
         } else if (id == R.id.action_select_stroke_width) {
-            dialogManager.showStrokeWidthInputDialog(drawingCanvas);
+            if (!drawingCanvas.isUseOldBitmapMethod()) {
+                dialogManager.showStrokeWidthInputDialog(drawingCanvas);
+            }
             return true;
         }
         return super.onOptionsItemSelected(item);
