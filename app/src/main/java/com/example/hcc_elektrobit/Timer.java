@@ -1,10 +1,12 @@
 package com.example.hcc_elektrobit;
 
+import android.os.Handler;
 import android.util.Log;
 
 public class Timer implements Runnable {
     private final String TAG;
     private final TimeoutActivity activity;
+
     private volatile boolean running = true;
     private int waitTime;
     public Timer(TimeoutActivity activity, int millisTime){
@@ -19,14 +21,12 @@ public class Timer implements Runnable {
 
     @Override
     public void run() {
-
         try {
             Thread.sleep(waitTime);
         } catch (InterruptedException e) {
             Log.e(TAG, "Thread interrupted while sleeping", e);
         }
-
-        if(running) {
+        if (running) {
             activity.onTimeout();
         }
     }

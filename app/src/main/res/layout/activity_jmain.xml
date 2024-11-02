@@ -40,7 +40,6 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:textColor="#FF0000"
-            android:text="@{viewModel.classifiedCharacter}"
             android:textSize="30dp"
             android:textStyle="bold"
             app:layout_constraintLeft_toRightOf="@+id/recognized_as"
@@ -52,7 +51,6 @@
             android:layout_height="100dp"
             android:layout_gravity="center"
             android:contentDescription="Displayed Bitmap"
-            android:imageBitmap="@{viewModel.drawingBitmap}"
             app:layout_constraintBottom_toBottomOf="@id/drawing_canvas"
             app:layout_constraintLeft_toLeftOf="@+id/drawing_canvas" />
 
@@ -96,8 +94,6 @@
             android:layout_marginBottom="192dp"
             android:scaleX="1.2"
             android:scaleY="1.2"
-            android:checked="@={viewModel.isCnnModel}"
-            android:enabled="@{viewModel.isCnnEnabled}"
             android:text="CNN Toggle"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
@@ -111,7 +107,6 @@
             android:layout_marginBottom="192dp"
             android:scaleX="1.2"
             android:scaleY="1.2"
-            android:checked="@={viewModel.isQuantizedModel}"
             android:text="Quantized Model"
             android:paddingTop="15dp"
             app:layout_constraintStart_toStartOf="@+id/cnn_toggle"
@@ -135,7 +130,6 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:textSize="30dp"
-            android:text="@{viewModel.executionTime}"
             android:textStyle="bold"
             android:textColor="@color/black"
             app:layout_constraintLeft_toRightOf="@id/time_as"

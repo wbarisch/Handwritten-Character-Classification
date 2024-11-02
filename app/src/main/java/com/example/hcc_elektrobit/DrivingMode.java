@@ -56,7 +56,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
         model = SMSonnxQuantisedModel.getInstance(this);
         audioPlayer = new AudioPlayerManager(this);
-        SupportSet.getInstance().updateSet(this);
+        SupportSet.getInstance().updateSet();
 
         drawingCanvas.setOnTouchListener((v, event) -> {
 

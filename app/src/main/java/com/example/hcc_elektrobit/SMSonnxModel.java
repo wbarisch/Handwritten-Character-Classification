@@ -29,6 +29,10 @@ public class SMSonnxModel {
     private final Context context;
     private static final String TAG = "SMSonnxModel";
 
+    public float same_image_similarity = 0.9850878f;
+
+    public int bmp_size = 105;
+
     private SMSonnxModel(Context context) {
         this.context = context;
         try {
@@ -110,14 +114,14 @@ public class SMSonnxModel {
 
     public String classify_id(Bitmap bitmap1){
 
-        SupportSet.getInstance().updateSet(context);
+        SupportSet.getInstance().updateSet();
 
         List<SupportSetItem> supportSet = SupportSet.getInstance().getItems();
 
         Map<String, List<Float>> similarityMap = new HashMap<>();
 
         for (SupportSetItem item : supportSet) {
-            String labelId = item.getlabelId();
+            String labelId = item.getLabelId();
             Bitmap bitmap2 = item.getBitmap();
 
             float[][] result = findSimilarity(bitmap1, bitmap2);
@@ -215,7 +219,7 @@ public class SMSonnxModel {
         Map<String, List<Float>> similarityMap = new HashMap<>();
 
         for (SupportSetItem item : supportSet) {
-            String labelId = item.getlabelId();
+            String labelId = item.getLabelId();
             Bitmap bitmap2 = item.getBitmap();
 
             float[][] result = findSimilarity(bitmap, bitmap2);
@@ -264,4 +268,7 @@ public class SMSonnxModel {
         return resultMap;
     }
 
+    public float get_same_image_similarity() {
+        return same_image_similarity;
+    }
 }
