@@ -63,6 +63,7 @@
             android:exported="true" />
         <activity android:name=".SupportSetActivity" />
         <activity android:name=".SupportSetDrawingActivity" />
+        <activity android:name=".KeyboardModeActivity" />
         <activity android:name=".JEvaluationActivity"/>
     </application>
 

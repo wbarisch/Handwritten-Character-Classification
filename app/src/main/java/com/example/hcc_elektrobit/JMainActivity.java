@@ -61,7 +61,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         driverMode.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
-                Intent intent = new Intent(JMainActivity.this, DrivingMode.class);
+                Intent intent = new Intent(JMainActivity.this, KeyboardModeActivity.class);
                 startActivity(intent);
                 return true;
             }
