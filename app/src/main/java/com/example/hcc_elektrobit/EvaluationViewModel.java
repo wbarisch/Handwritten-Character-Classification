@@ -197,6 +197,8 @@ public class EvaluationViewModel extends AndroidViewModel {
                     }
                 }
             }
+        }else{
+            Log.e("Model Evaluation", "No test folder found!");
         }
         return new Pair<>((float)correctPrediction / TEST_SIZE, misPredictions_value);
     }
@@ -239,6 +241,8 @@ public class EvaluationViewModel extends AndroidViewModel {
                     }
                 }
             }
+        }else{
+            Log.e("Model Evaluation", "No test folder found!");
         }
         return new Pair<>((float)correctPrediction / TEST_SIZE, misPredictions_value);
     }
@@ -284,8 +288,9 @@ public class EvaluationViewModel extends AndroidViewModel {
                     }
                 }
             }
+        }else{
+            Log.e("Model Evaluation", "No test folder found!");
         }
-        Log.e("acc", (float) correctPrediction / TEST_SIZE + "");
         return new Pair<>((float)correctPrediction / TEST_SIZE, misPredictions_value);
     }
 
