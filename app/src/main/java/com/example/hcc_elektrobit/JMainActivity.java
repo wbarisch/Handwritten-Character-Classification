@@ -39,7 +39,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     CanvasTimer canvasTimer;
     private CharacterMapping characterMapping;
     boolean timerStarted = false;
-    private boolean quantizedModel = false;
 
     private TextView timeTextView;
 
@@ -100,35 +99,9 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         Button trainingModeButton = findViewById(R.id.training_mode_button);
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
-        Switch CNNToggle = findViewById(R.id.cnn_toggle);
-        Switch quanToggle = findViewById(R.id.quan_toggle);
         timeTextView = findViewById(R.id.time);
 
-        quanToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                quantizedModel = !quantizedModel;
 
-                if (CNNToggle.isChecked()){
-                    CNNToggle.setChecked(false);
-                    model_name = "SMS";
-                }
-                CNNToggle.setClickable(!quantizedModel);
-                CNNToggle.setAlpha(quantizedModel?0.5f:1.0f);
-
-            }
-        });
-
-        CNNToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(model_name.equals("SMS")){
-                    model_name = "CNN";
-                }else if(model_name.equals("CNN")){
-                    model_name = "SMS";
-                }
-            }
-        });
 
         audioPlayer = new AudioPlayer(this);
         SupportSet.getInstance().updateSet();
@@ -244,53 +217,29 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         long startTime = System.nanoTime();
 
         String result;
-        if (model_name.equals("SMS")){
-            bitmap = drawingCanvas.getBitmap(105);
 
-            if (bitmap == null) {
-                Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
-                return;
-            }
-            Pair<String, Map<String, Float>> result_pair;
-            if(quantizedModel){
-                //2 step model
-                SMSComaparisonOnnxModel.getInstance().setQuantized(false);
-                result_pair= SMSComaparisonOnnxModel.getInstance().classifyAndReturnPredAndSimilarityMap(bitmap);
-            } else {
-                result_pair = SMSonnxModel.getInstance(this).classifyAndReturnPredAndSimilarityMap(bitmap);
-            }
+        bitmap = drawingCanvas.getBitmap(105);
 
-
-            History history = History.getInstance();
-            SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first, result_pair.second);
-
-            history.saveItem(historyItem, this);
-
-            result = result_pair.first;
-            Log.i("SMS", result);
-            Log.i("SMS", result_pair.second.toString());
-        }else if(model_name.equals("CNN")){
-            bitmap = drawingCanvas.getBitmap(28);
-
-            if (bitmap == null) {
-                Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
-                return;
-            }
-            cnn_model = CNNonnxModel.getInstance(this);
-            Pair<Integer, float[][]> result_pair = cnn_model.classifyAndReturnIntAndTensor(bitmap);
-
-            History history = History.getInstance();
-            CNNHistoryItem historyItem = new CNNHistoryItem(bitmap, result_pair.first.toString(), result_pair.second);
-
-            history.saveItem(historyItem, this);
-
-            result = result_pair.first.toString();
-            Log.i("CNN", result);
-            Log.i("CNN", Arrays.deepToString(result_pair.second));
-        } else {
-            result = "";
-            Log.e("MAIN_ACTIVITY", "NO MODEL SELECTED!");
+        if (bitmap == null) {
+            Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
+            return;
         }
+        Pair<String, Map<String, Float>> result_pair;
+
+        SMSComaparisonOnnxModel.getInstance().setQuantized(false);
+        result_pair= SMSComaparisonOnnxModel.getInstance().classifyAndReturnPredAndSimilarityMap(bitmap);
+
+
+
+        History history = History.getInstance();
+        SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first, result_pair.second);
+
+        history.saveItem(historyItem, this);
+
+        result = result_pair.first;
+        Log.i("SMS", result);
+        Log.i("SMS", result_pair.second.toString());
+
 
         long endTime = System.nanoTime();
 
