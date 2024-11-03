@@ -31,4 +31,11 @@
         app:showAsAction="never">
     </item>
 
+    <item
+        android:id="@+id/keyboard_mode"
+        android:title="Keyboard Mode"
+        android:orderInCategory="104"
+        app:showAsAction="never">
+    </item>
+
 </menu>

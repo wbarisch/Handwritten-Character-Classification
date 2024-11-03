@@ -23,6 +23,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Arrays;
+
 public class KeyboardModeActivity extends AppCompatActivity implements TimeoutActivity, SpellCheckerSession.SpellCheckerSessionListener {
 
     // UI components
@@ -75,7 +77,7 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
             }
 
             if (event.getAction() == MotionEvent.ACTION_UP && !isAfterControlGesture) {
-                canvasTimer = new CanvasTimer(this);
+                canvasTimer = new CanvasTimer(this,500);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
             }
@@ -155,6 +157,10 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
 
     private void addText(String character) {
         String currentText = textBox.getText().toString();
+        Log.e("kbac", currentText);
+        if((!currentText.isEmpty())&& !(currentText.endsWith(" "))){
+            character = character.toLowerCase();
+        }
         textBox.setText(currentText + character);
     }
 
@@ -189,7 +195,6 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
     @Override
     public void onGetSuggestions(SuggestionsInfo[] results) {
         if (results == null || results.length == 0) return;
-
         SuggestionsInfo suggestionsInfo = results[0];
         if (suggestionsInfo.getSuggestionsCount() > 0) {
             StringBuilder suggestedWord = new StringBuilder(suggestionsInfo.getSuggestionAt(0));

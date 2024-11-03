@@ -56,12 +56,21 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         MenuItem toggleAntiAliasItem = menu.findItem(R.id.action_toggle_antialias);
         MenuItem selectStrokeWidthItem = menu.findItem(R.id.action_select_stroke_width);
         MenuItem driverMode = menu.findItem(R.id.driver_mode);
+        MenuItem keyboardMode = menu.findItem(R.id.keyboard_mode);
 
+        keyboardMode.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
+                Intent intent = new Intent(JMainActivity.this, KeyboardModeActivity.class);
+                startActivity(intent);
+                return true;
+            }
+        });
 
         driverMode.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
-                Intent intent = new Intent(JMainActivity.this, KeyboardModeActivity.class);
+                Intent intent = new Intent(JMainActivity.this, DrivingMode.class);
                 startActivity(intent);
                 return true;
             }
