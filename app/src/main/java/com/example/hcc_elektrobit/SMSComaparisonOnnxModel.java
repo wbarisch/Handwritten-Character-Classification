@@ -1,10 +1,9 @@
 package com.example.hcc_elektrobit;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.util.Log;
 import android.util.Pair;
+
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,6 +25,8 @@ public class SMSComaparisonOnnxModel {
 
     private OrtEnvironment env;
     private OrtSession session;
+
+    private boolean quantized = false;
 
     private static final String TAG = "SMSonnxModel";
 
@@ -53,6 +54,7 @@ public class SMSComaparisonOnnxModel {
         return INSTANCE;
     }
 
+
     private String copyModelToCache() throws IOException {
         String modelFileName = "siamese_comparison_model_mine_245.onnx";
         File cacheDir = JFileProvider.getCacheDir();
@@ -69,6 +71,10 @@ public class SMSComaparisonOnnxModel {
             }
         }
         return modelFile.getAbsolutePath();
+    }
+
+    public void setQuantized(boolean quantized) {
+        this.quantized = quantized;
     }
     public float[][] findSimilarityEmbeddings(OnnxTensor bitmap, OnnxTensor bitmap2) {
         try {
@@ -107,8 +113,13 @@ public class SMSComaparisonOnnxModel {
         Pair<String, Map<String, Float>> resultMap;
 
         Map<String, List<Float>> similarityMap = new HashMap<>();
+        float[][] temp;
+        if (!quantized) {
+             temp = SMSEmbeddingOnnxModel.getInstance().embedBitmap(bitmap);
+        }else{
+            temp = SMSQuantizedEmbeddingOnnxModel.getInstance().embedBitmap(bitmap);
+        }
 
-        float[][] temp = SMSEmbeddingOnnxModel.getInstance().embedBitmap(bitmap);
         OnnxTensor tensorToCompare = loadTensor(temp);
 
         for (SupportSetItem item : supportSet) {

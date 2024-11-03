@@ -42,7 +42,7 @@ public class JEvaluationActivity extends AppCompatActivity {
         viewModel.setupSpinner(modelSpinner);
 
         viewModel.getEvaluationResult().observe(this, result -> {
-            result_text.setText("Accuracy: " + result);
+            result_text.setText("Results:\n " + result);
         });
 
         viewModel.getMispredictions().observe(this, result ->{
