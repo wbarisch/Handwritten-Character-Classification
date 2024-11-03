@@ -172,6 +172,46 @@ public class SMSComaparisonOnnxModel {
         return resultMap;
     }
 
+    public Pair<String, Map<String, Float>> classifyAndReturnPredAndSimilarityMap(Bitmap bitmap, boolean usavg) {
+        List<SupportSetItem> supportSet = SupportSet.getInstance().getItems();
+
+        Pair<String, Map<String, Float>> resultMap;
+
+        Map<String, List<Float>> similarityMap = new HashMap<>();
+        float[][] temp;
+        if (!quantized) {
+            temp = SMSEmbeddingOnnxModel.getInstance().embedBitmap(bitmap);
+        }else{
+            temp = SMSQuantizedEmbeddingOnnxModel.getInstance().embedBitmap(bitmap);
+        }
+
+        OnnxTensor tensorToCompare = loadTensor(temp);
+
+        String maxSimLabel = "";
+        float maxSim = 0.0f;
+        for (SupportSetItem item : supportSet) {
+            String labelId = item.getLabelId();
+            OnnxTensor tensorSupportItem = item.getImgEmbedding();
+
+            float[][] result = findSimilarityEmbeddings(tensorToCompare, tensorSupportItem);
+            float similarity = result[0][0] + 100f;
+
+
+            if(similarity > maxSim){
+                maxSim = similarity;
+                maxSimLabel = labelId;
+            }
+
+
+        }
+
+        Map<String, Float> averageSimilarityMap = new HashMap<>();
+        averageSimilarityMap.put(maxSimLabel,maxSim);
+        return new Pair<>(maxSimLabel,averageSimilarityMap);
+
+
+    }
+
 
 
     public void close() {
