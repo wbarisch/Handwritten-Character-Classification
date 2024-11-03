@@ -76,9 +76,12 @@ public class JHistoryActivity extends AppCompatActivity {
     private void setupButtons() {
         Button clearHistory = findViewById(R.id.clear_history);
         Button exportHistory = findViewById(R.id.export_history);
+        Button goToEval = findViewById(R.id.eval_button_act);
 
         clearHistory.setOnClickListener(v -> viewModel.clearHistory());
         exportHistory.setOnClickListener(v -> chooseDestinationDirectory());
+        goToEval.setOnClickListener(v -> goToModelEval());
+
     }
 
     private void chooseDestinationDirectory() {
@@ -106,6 +109,11 @@ public class JHistoryActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void goToModelEval(){
+        Intent modeEvalIntent = new Intent(this, JEvaluationActivity.class);
+        startActivity(modeEvalIntent);
     }
 
 

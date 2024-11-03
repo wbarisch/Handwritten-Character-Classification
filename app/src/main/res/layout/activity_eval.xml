@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/white"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/buttons"
+        android:layout_centerHorizontal="true">
+
+        <Button
+            android:id="@+id/evaluateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Evaluate Model"
+            android:backgroundTint="#BDBDF2" />
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel Evaluation"
+            android:backgroundTint="#BDBDF2" />
+
+    </LinearLayout>
+
+
+    <Spinner
+        android:id="@+id/model_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/buttons"
+        android:layout_marginTop="20dp"
+        android:minHeight="48dp" />
+
+    <TextView
+        android:id="@+id/resultTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/model_spinner"
+        android:layout_marginTop="35dp"
+        android:layout_centerHorizontal="true"
+        android:text="Result will appear here"
+        android:textSize="12pt"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/resultTextView"
+        android:layout_marginTop="35dp">
+
+        <LinearLayout
+            android:id="@+id/mispredictions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp" />
+    </ScrollView>
+
+
+</RelativeLayout>
