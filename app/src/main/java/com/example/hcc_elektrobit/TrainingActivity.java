@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
@@ -21,11 +22,12 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.compose.ui.graphics.Canvas;
+
 
 
 import org.opencv.android.OpenCVLoader;
@@ -34,6 +36,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
@@ -41,7 +44,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 public class TrainingActivity extends AppCompatActivity implements TimeoutActivity {
     private static final int REVIEW_IMAGES_REQUEST = 1;
@@ -51,7 +57,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private Bitmap bitmap;
     private CanvasTimer canvasTimer;
     private DialogManager dialogManager;
-    
+
     private DrawingCanvas drawingCanvas;
     private ImageSavingManager imageSavingManager;
     private boolean timerStarted = false;
@@ -305,12 +311,11 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if(id == R.id.menuButton) {
+        if (id == R.id.menuButton) {
             Intent intent = new Intent(TrainingActivity.this, JHistoryActivity.class);
             startActivity(intent);
             return true;
-        }
-        else if (id == R.id.menu_bitmap_size) {
+        } else if (id == R.id.menu_bitmap_size) {
             showBitmapSizeDialog();
             return true;
         } else if (id == R.id.menu_toggle_bitmap_mode) {
@@ -333,6 +338,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         }
         return super.onOptionsItemSelected(item);
     }
+
     private void showBitmapSizeDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Set Bitmap Image Size");
@@ -402,7 +408,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         if (mat.channels() > 1) {
             Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
         }
-
         Imgproc.threshold(mat, mat, 0, 255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
 
         boolean invertedForProcessing = false;
@@ -411,12 +416,16 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
             invertedForProcessing = true;
         }
 
+        int padding = 5;
+        Core.copyMakeBorder(mat, mat, padding, padding, padding, padding, Core.BORDER_CONSTANT, new Scalar(0));
+
         Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
         Imgproc.morphologyEx(mat, mat, Imgproc.MORPH_OPEN, kernel);
 
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(mat.clone(), contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
         Log.d("TrainingActivity", "Contours found: " + contours.size());
 
         if (contours.isEmpty()) {
@@ -425,8 +434,9 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         }
 
         List<Rect> boundingRects = new ArrayList<>();
-        int minContourArea = 100; // Adjust as needed
         int imageArea = mat.rows() * mat.cols();
+        double minContourArea = imageArea * 0.0001;
+
         for (MatOfPoint contour : contours) {
             Rect rect = Imgproc.boundingRect(contour);
             double contourArea = Imgproc.contourArea(contour);
@@ -440,46 +450,288 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
             return;
         }
 
-        int totalHeight = 0;
+        int left = Integer.MAX_VALUE;
+        int top = Integer.MAX_VALUE;
+        int right = Integer.MIN_VALUE;
+        int bottom = Integer.MIN_VALUE;
+
         for (Rect rect : boundingRects) {
-            totalHeight += rect.height;
+            if (rect.x < left) left = rect.x;
+            if (rect.y < top) top = rect.y;
+            if (rect.x + rect.width > right) right = rect.x + rect.width;
+            if (rect.y + rect.height > bottom) bottom = rect.y + rect.height;
         }
-        int avgCharHeight = totalHeight / boundingRects.size();
-        int verticalTolerance = avgCharHeight / 2;
 
-        Comparator<Rect> readingOrderComparator = new Comparator<Rect>() {
-            @Override
-            public int compare(Rect r1, Rect r2) {
-                int r1CenterY = r1.y + r1.height / 2;
-                int r2CenterY = r2.y + r2.height / 2;
+        int expansion = 10;
+        left = Math.max(left - expansion, 0);
+        top = Math.max(top - expansion, 0);
+        right = Math.min(right + expansion, mat.cols());
+        bottom = Math.min(bottom + expansion, mat.rows());
 
-                if (Math.abs(r1CenterY - r2CenterY) < verticalTolerance) {
-                    return Integer.compare(r1.x, r2.x);
-                } else {
-                    return Integer.compare(r1.y, r2.y);
+        Rect writingArea = new Rect(left, top, right - left, bottom - top);
+        mat = new Mat(mat, writingArea);
+
+        for (int i = 0; i < boundingRects.size(); i++) {
+            Rect rect = boundingRects.get(i);
+            rect.x -= left;
+            rect.y -= top;
+            boundingRects.set(i, rect);
+        }
+        List<Integer> heights = new ArrayList<>();
+        List<Integer> widths = new ArrayList<>();
+        for (Rect rect : boundingRects) {
+            heights.add(rect.height);
+            widths.add(rect.width);
+        }
+        Collections.sort(heights);
+        Collections.sort(widths);
+        int medianIndex = heights.size() / 2;
+        double medianHeight = heights.get(medianIndex);
+        double medianWidth = widths.get(medianIndex);
+
+        double dotSizeThreshold = medianHeight * 0.3;
+
+        List<Rect> mainBodies = new ArrayList<>();
+        List<Rect> dots = new ArrayList<>();
+
+        for (Rect rect : boundingRects) {
+            double aspectRatio = (double) rect.width / rect.height;
+            if (rect.height < dotSizeThreshold && rect.width < dotSizeThreshold && aspectRatio >= 0.5 && aspectRatio <= 1.5) {
+                dots.add(rect);
+            } else {
+                mainBodies.add(rect);
+            }
+        }
+
+        Map<Integer, Rect> mergedRectsMap = new HashMap<>();
+        for (int i = 0; i < mainBodies.size(); i++) {
+            mergedRectsMap.put(i, mainBodies.get(i));
+        }
+        boolean[] dotMerged = new boolean[dots.size()];
+
+        for (int i = 0; i < dots.size(); i++) {
+            Rect dotRect = dots.get(i);
+            int dotCenterX = dotRect.x + dotRect.width / 2;
+
+            double minDistance = Double.MAX_VALUE;
+            int bestIndex = -1;
+
+            for (int j = 0; j < mainBodies.size(); j++) {
+                Rect mainRect = mainBodies.get(j);
+
+                double verticalGap = mainRect.y - (dotRect.y + dotRect.height);
+                double verticalGapThreshold = mainRect.height * 1.5;
+
+                if (verticalGap >= -mainRect.height * 0.1 && verticalGap <= verticalGapThreshold) {
+                    int mainCenterX = mainRect.x + mainRect.width / 2;
+                    int horizontalDistance = Math.abs(mainCenterX - dotCenterX);
+                    int maxHorizontalDistance = (int) (mainRect.width * 1.5);
+
+                    if (horizontalDistance <= maxHorizontalDistance) {
+                        double distance = Math.hypot(horizontalDistance, verticalGap);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            bestIndex = j;
+                        }
+                    }
                 }
             }
-        };
 
-        Collections.sort(boundingRects, readingOrderComparator);
+            if (bestIndex != -1) {
+                Rect mainRect = mergedRectsMap.get(bestIndex);
+                Rect combinedRect = unionRect(mainRect, dotRect);
+                mergedRectsMap.put(bestIndex, combinedRect);
+                dotMerged[i] = true;
+            }
+        }
 
-        for (Rect rect : boundingRects) {
-            Mat charMat = new Mat(mat, rect);
+        List<Rect> mergedRects = new ArrayList<>(mergedRectsMap.values());
+
+        for (int i = 0; i < dots.size(); i++) {
+            if (!dotMerged[i]) {
+                mergedRects.add(dots.get(i));
+            }
+        }
+        mergedRects = mergeNearbyComponents(mergedRects);
+
+        drawBoundingRects(mat, mergedRects, "Merged Bounding Rects");
+
+        int totalHeight = 0;
+        for (Rect rect : mergedRects) {
+            totalHeight += rect.height;
+        }
+        double avgCharHeight = (double) totalHeight / mergedRects.size();
+
+        List<List<Rect>> lines = new ArrayList<>();
+        mergedRects.sort(Comparator.comparingInt(r -> r.y));
+        double lineThreshold = avgCharHeight * 0.7;
+
+        List<Rect> currentLine = new ArrayList<>();
+        Rect previousRect = null;
+        for (Rect rect : mergedRects) {
+            if (previousRect == null) {
+                currentLine.add(rect);
+            } else {
+                if (Math.abs(rect.y - previousRect.y) <= lineThreshold) {
+                    currentLine.add(rect);
+                } else {
+                    lines.add(new ArrayList<>(currentLine));
+                    currentLine.clear();
+                    currentLine.add(rect);
+                }
+            }
+            previousRect = rect;
+        }
+        if (!currentLine.isEmpty()) {
+            lines.add(currentLine);
+        }
+
+        List<Rect> sortedRects = new ArrayList<>();
+        for (List<Rect> line : lines) {
+            line.sort(Comparator.comparingInt(r -> r.x));
+            sortedRects.addAll(line);
+        }
+
+        for (Rect rect : sortedRects) {
+            int adjustedX = rect.x;
+            int adjustedY = rect.y;
+            int adjustedWidth = rect.width;
+            int adjustedHeight = rect.height;
+
+            if (adjustedX + adjustedWidth > mat.cols()) {
+                adjustedWidth = mat.cols() - adjustedX;
+            }
+            if (adjustedY + adjustedHeight > mat.rows()) {
+                adjustedHeight = mat.rows() - adjustedY;
+            }
+
+            Rect adjustedRect = new Rect(adjustedX, adjustedY, adjustedWidth, adjustedHeight);
+            Mat charMat = new Mat(mat, adjustedRect);
 
             if (invertedForProcessing) {
                 Core.bitwise_not(charMat, charMat);
             }
 
-            Bitmap charBitmap = Bitmap.createBitmap(charMat.width(), charMat.height(), Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(charMat, charBitmap);
-
-            Bitmap centeredBitmap = BitmapUtils.centerAndResizeBitmap(charBitmap, bitmapSize);
-
+            Bitmap centeredBitmap = centerAndResizeCharMat(charMat, bitmapSize);
             addBitmapToSaveList(centeredBitmap);
         }
 
-        Toast.makeText(this, "Extracted " + boundingRects.size() + " characters", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Extracted " + sortedRects.size() + " characters", Toast.LENGTH_SHORT).show();
     }
 
+    private List<Rect> mergeNearbyComponents(List<Rect> rects) {
 
+        List<Integer> heights = new ArrayList<>();
+        List<Integer> widths = new ArrayList<>();
+        for (Rect rect : rects) {
+            heights.add(rect.height);
+            widths.add(rect.width);
+        }
+        Collections.sort(heights);
+        Collections.sort(widths);
+        double medianHeight = heights.get(heights.size() / 2);
+        double medianWidth = widths.get(widths.size() / 2);
+
+        double maxHorizontalGap = medianWidth * 0.15;
+        double maxVerticalGap = medianHeight * 0.15;
+
+        boolean[] merged = new boolean[rects.size()];
+        List<Rect> mergedRects = new ArrayList<>();
+
+        for (int i = 0; i < rects.size(); i++) {
+            if (merged[i]) continue;
+
+            Rect baseRect = rects.get(i);
+            Rect combinedRect = new Rect(baseRect.x, baseRect.y, baseRect.width, baseRect.height);
+            merged[i] = true;
+
+            for (int j = i + 1; j < rects.size(); j++) {
+                if (merged[j]) continue;
+
+                Rect compareRect = rects.get(j);
+
+                if (areRectsClose(baseRect, compareRect, maxHorizontalGap, maxVerticalGap)) {
+
+                    Rect tempCombinedRect = unionRect(combinedRect, compareRect);
+                    double maxAllowedWidth = medianWidth * 1.5;
+                    double maxAllowedHeight = medianHeight * 2.0;
+                    if (tempCombinedRect.width <= maxAllowedWidth && tempCombinedRect.height <= maxAllowedHeight) {
+                        combinedRect = tempCombinedRect;
+                        merged[j] = true;
+                    }
+                }
+            }
+            mergedRects.add(combinedRect);
+        }
+        return mergedRects;
+    }
+
+    private boolean areRectsClose(Rect r1, Rect r2, double maxHGap, double maxVGap) {
+        int hDistance = Math.abs((r1.x + r1.width / 2) - (r2.x + r2.width / 2)) - (r1.width + r2.width) / 2;
+        int vDistance = Math.abs((r1.y + r1.height / 2) - (r2.y + r2.height / 2)) - (r1.height + r2.height) / 2;
+
+        return hDistance <= maxHGap && vDistance <= maxVGap;
+    }
+
+    private Rect unionRect(Rect rectA, Rect rectB) {
+        int x = Math.min(rectA.x, rectB.x);
+        int y = Math.min(rectA.y, rectB.y);
+        int width = Math.max(rectA.x + rectA.width, rectB.x + rectB.width) - x;
+        int height = Math.max(rectA.y + rectA.height, rectB.y + rectB.height) - y;
+        return new Rect(x, y, width, height);
+    }
+
+    private void drawBoundingRects(Mat mat, List<Rect> rects, String windowName) {
+        Mat matCopy = mat.clone();
+
+        for (Rect rect : rects) {
+            Imgproc.rectangle(matCopy, rect.tl(), rect.br(), new Scalar(0, 255, 0), 2);
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(matCopy.cols(), matCopy.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(matCopy, bitmap);
+
+    }
+
+    private Bitmap centerAndResizeCharMat(Mat charMat, int desiredSize) {
+        Mat nonZeroCoordinates = new Mat();
+        Core.findNonZero(charMat, nonZeroCoordinates);
+
+        if (nonZeroCoordinates.empty()) {
+            Bitmap emptyBitmap = Bitmap.createBitmap(desiredSize, desiredSize, Bitmap.Config.ARGB_8888);
+            Canvas emptyCanvas = new Canvas(emptyBitmap);
+            emptyCanvas.drawColor(Color.BLACK);
+            return emptyBitmap;
+        }
+
+        Rect bbox = Imgproc.boundingRect(nonZeroCoordinates);
+        Mat cropped = new Mat(charMat, bbox);
+
+        int contentWidth = cropped.cols();
+        int contentHeight = cropped.rows();
+        int margin = 2;
+        int maxContentSize = desiredSize - 2 * margin;
+        float scale = (float) maxContentSize / Math.max(contentWidth, contentHeight);
+        scale = Math.min(scale, 1.0f);
+
+        int newWidth = Math.round(contentWidth * scale);
+        int newHeight = Math.round(contentHeight * scale);
+        newWidth = Math.max(newWidth, 1);
+        newHeight = Math.max(newHeight, 1);
+
+        Size newSize = new Size(newWidth, newHeight);
+        Mat resizedChar = new Mat();
+        Imgproc.resize(cropped, resizedChar, newSize, 0, 0, Imgproc.INTER_AREA);
+
+        Mat outputMat = Mat.zeros(desiredSize, desiredSize, charMat.type());
+
+        int x = (desiredSize - newWidth) / 2;
+        int y = (desiredSize - newHeight) / 2;
+        Rect roi = new Rect(x, y, newWidth, newHeight);
+        resizedChar.copyTo(outputMat.submat(roi));
+
+        Bitmap centeredBitmap = Bitmap.createBitmap(outputMat.cols(), outputMat.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(outputMat, centeredBitmap);
+        return centeredBitmap;
+    }
 }
