@@ -28,7 +28,7 @@ public class SMSComaparisonOnnxModel {
 
     private boolean quantized = false;
 
-    private static final String TAG = "SMSonnxModel";
+    private static final String TAG = "SMSonnxModel_Comp";
 
     private SMSComaparisonOnnxModel() {
         try {

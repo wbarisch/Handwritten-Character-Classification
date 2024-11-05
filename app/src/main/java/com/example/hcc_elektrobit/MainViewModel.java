@@ -26,19 +26,16 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
     private MutableLiveData<String> _executionTime = new MutableLiveData<>("0.000");
     public LiveData<String> executionTime = _executionTime;
     private final AudioPlayerManager audioPlayerManager;
-    private final CNNonnxModel cnn_model;
+
     private final Context mainContext;
-    private String modelName = "CNN";
-    public MutableLiveData<Boolean> isQuantizedModel = new MutableLiveData<>(false);
-    public MutableLiveData<Boolean> isCnnModel = new MutableLiveData<>(false);
-    public MutableLiveData<Boolean> isCnnEnabled = new MutableLiveData<>(true);
+    private String modelName = "SMS";
+
 
     public MainViewModel(Application application){
 
         super(application);
         mainContext = HCC_Application.getAppContext();
         audioPlayerManager = new AudioPlayerManager(mainContext);
-        cnn_model = CNNonnxModel.getInstance(mainContext);
         canvasTimer = new Timer(this, 1000);
     }
 
@@ -50,7 +47,7 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
 
         _drawingBitmap.setValue(firstBitmap);
         classifyCharacterDispatcher(firstBitmap);
-        String fileName = String.valueOf(classifiedCharacter);
+        String fileName = classifiedCharacter.getValue();
 
         try{
             audioPlayerManager.setDataSource(fileName);
@@ -73,17 +70,12 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
         }
 
         long startTime = System.nanoTime();
-        switch(modelName){
-            case "SMS":
-                classifyCharacterSMS(canvasBitmap);
-                break;
-            case "CNN":
-                classifyCharacterCNN(canvasBitmap);
-                break;
-            default:
-                Log.e("MainViewModel", "Error in classifyCharacterDispatcher: No model");
-                _classifiedCharacter.setValue("_");
-        }
+
+        classifyCharacterSMS(canvasBitmap);
+
+
+
+
         long endTime = System.nanoTime();
 
         Log.i(modelName, classifiedCharacter.getValue());
@@ -100,79 +92,19 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
         History history = History.getInstance();
         Pair<String, Map<String, Float>> result_pair;
 
-        if(isQuantizedModel.getValue()){
-            result_pair = SMSonnxQuantisedModel.getInstance(mainContext).classifyAndReturnPredAndSimilarityMap(canvasBitmap);
-        }
-        else {
-            result_pair = SMSonnxModel.getInstance(mainContext).classifyAndReturnPredAndSimilarityMap(canvasBitmap);
-        }
+
+        result_pair = SMSComaparisonOnnxModel.getInstance().classifyAndReturnPredAndSimilarityMap(canvasBitmap);
+
         SMSHistoryItem historyItem = new SMSHistoryItem(canvasBitmap, result_pair.first.toString(), result_pair.second);
         history.saveItem(historyItem, mainContext);
-        _classifiedCharacter.setValue(result_pair.first.toString());
+        _classifiedCharacter.setValue(result_pair.first);
         Log.i(modelName, result_pair.second.toString());
     }
 
-    /**
-     * Classify character method for the CNN model function call.
-     */
-    private void classifyCharacterCNN(Bitmap canvasBitmap){
 
-        History history = History.getInstance();
-        Pair<Integer, float[][]> result_pair = cnn_model.classifyAndReturnIntAndTensor(canvasBitmap);
 
-        CNNHistoryItem historyItemCNN = new CNNHistoryItem(canvasBitmap, result_pair.first.toString(), result_pair.second);
-        history.saveItem(historyItemCNN, mainContext);
-        _classifiedCharacter.setValue(result_pair.first.toString());
-        Log.i(modelName, Arrays.deepToString(result_pair.second));
-    }
-
-    //endregion
-
-    //region Binded Functions
-    public void onQuanSwitchToggled(){
-
-        if (isQuantizedModel.getValue()) {
-            isCnnModel.setValue(false);
-            isCnnEnabled.setValue(false);
-        } else {
-            isCnnEnabled.setValue(true);
-        }
-    }
-
-    public void onCnnSwitchChanged(){
-
-        if(isCnnModel.getValue())
-            modelName = "CNN";
-        else
-            modelName = "SMS";
-    }
-    //endregion
 
     //region Support Methods
-
-    private Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height){
-
-        if(floatArray.length != width * height){
-            throw new IllegalArgumentException("Float array length must match width * height");
-        }
-
-        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        int[] pixels = new int[width * height];
-
-        for (int i = 0; i < floatArray.length; i++) {
-
-            float value = floatArray[i];
-            value = Math.max(0, Math.min(1, value));
-            int grayscale = (int) (value * 255);
-            int color = Color.argb(255, grayscale, grayscale, grayscale);
-            pixels[i] = color;
-        }
-
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-
-        return bitmap;
-    }
 
     /**
      * Starts a new timer with the provided value in milliseconds

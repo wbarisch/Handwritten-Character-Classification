@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         keyboardMode.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
-                Intent intent = new Intent(JMainActivity.this, KeyboardModeActivity.class);
+                Intent intent = new Intent(MainActivity.this, KeyboardModeActivity.class);
                 startActivity(intent);
                 return true;
             }
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
         viewModel.clearCanvasEvent.observe(this, shouldClear -> {
             if (shouldClear) {
-                bitmap = drawingCanvas.getBitmap(28);
+                bitmap = drawingCanvas.getBitmap(105);
                 viewModel.mainAppFunction(bitmap);
                 drawingCanvas.clear();
                 viewModel.clearCanvasHandled(); // Reset the event state in the ViewModel
@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap(28);
+                bitmap = drawingCanvas.getBitmap(105);
                 viewModel.startTimer(1000);
             }
             if (event.getAction() == MotionEvent.ACTION_UP) {

@@ -118,6 +118,8 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         leaveButton.setVisibility(View.GONE);
         reviewButton.setVisibility(View.GONE);
 
+        canvasTimer = new Timer(this, 1000);
+
         exitButton.setOnClickListener(v -> {
             dialogManager.showExitTrainingModeDialog(this::finish);
         });
@@ -201,20 +203,18 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if (canvasTimer != null) {
-                        canvasTimer.stopTimer();
+                        canvasTimer.cancel();
                         timerStarted = false;
                     }
                     break;
                 case MotionEvent.ACTION_UP:
-                    if (canvasTimer == null) {
-                        canvasTimer = new CanvasTimer(this, 1000);
+                    if (canvasTimer != null) {
+                        canvasTimer.cancel(); // Cancel any existing timer
                     }
-                    if (!timerStarted) {
-                        canvasTimer.startTimer();
-                        timerStarted = true;
-                    } else {
-                        canvasTimer.resetTimer();
-                    }
+
+                    // Create a new Timer instance and start it in a separate thread
+                    canvasTimer = new Timer(this, 1000);
+                    new Thread(canvasTimer).start();
                     break;
                 default:
                     break;
@@ -680,7 +680,6 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
         int height = Math.max(rectA.y + rectA.height, rectB.y + rectB.height) - y;
         return new Rect(x, y, width, height);
     }
-
     private void drawBoundingRects(Mat mat, List<Rect> rects, String windowName) {
         Mat matCopy = mat.clone();
 

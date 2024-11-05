@@ -103,7 +103,7 @@ public class JHistoryActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menuButton) {
-            Intent intent = new Intent(JHistoryActivity.this, JMainActivity.class);
+            Intent intent = new Intent(JHistoryActivity.this, MainActivity.class);
             startActivity(intent);
             return true;
         }

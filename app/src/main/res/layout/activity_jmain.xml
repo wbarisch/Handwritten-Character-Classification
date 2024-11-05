@@ -87,7 +87,6 @@
             android:text="Support Set"
             app:layout_constraintLeft_toLeftOf="@+id/share_button"
             app:layout_constraintTop_toBottomOf="@id/siamese_test_button" />
-        app:layout_constraintTop_toBottomOf="@id/siamese_test_button" />
 
         <TextView
             android:id="@+id/time_as"

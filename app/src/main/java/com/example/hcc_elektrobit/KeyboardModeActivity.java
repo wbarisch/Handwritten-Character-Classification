@@ -35,9 +35,9 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
 
     private SMSComaparisonOnnxModel model;
     private Bitmap bitmap;
-    private AudioPlayer audioPlayer;
+    private AudioPlayerManager audioPlayer;
 
-    private CanvasTimer canvasTimer;
+    private Timer canvasTimer;
     private boolean timerStarted = false;
     private boolean isAfterControlGesture = false; // Flag to prevent classification on control gestures
 
@@ -56,7 +56,7 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
         textBox = findViewById(R.id.text_box); // Initialize cumulative text box
 
         model = SMSComaparisonOnnxModel.getInstance();
-        audioPlayer = new AudioPlayer(this);
+        audioPlayer = new AudioPlayerManager(this);
         SupportSet.getInstance().updateSet();
 
         // Set up the Android spell checker session
@@ -77,7 +77,7 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
             }
 
             if (event.getAction() == MotionEvent.ACTION_UP && !isAfterControlGesture) {
-                canvasTimer = new CanvasTimer(this,500);
+                canvasTimer = new Timer(this,500);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
             }
@@ -147,7 +147,9 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
 
         String result = model.classifyAndReturnPredAndSimilarityMap(bitmap).first;
 
-        audioPlayer.PlayAudio(result);
+        audioPlayer.setDataSource(result);
+        audioPlayer.play();
+
         runOnUiThread(() -> {
             charTextView.setText(result);
             addText(result); // Add recognized character to cumulative text box
@@ -224,7 +226,7 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
         int SelectedItemId = item.getItemId();
 
         if (SelectedItemId == R.id.developer_mode) {
-            startActivity(new Intent(KeyboardModeActivity.this, JMainActivity.class));
+            startActivity(new Intent(KeyboardModeActivity.this, MainActivity.class));
             return true;
         } else {
             return super.onOptionsItemSelected(item);
