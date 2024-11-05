@@ -55,7 +55,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private int bitmapSize = 28;
 
     private Bitmap bitmap;
-    private CanvasTimer canvasTimer;
+    private Timer canvasTimer;
     private DialogManager dialogManager;
 
     private DrawingCanvas drawingCanvas;

@@ -30,10 +30,10 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
     // private ImageView bitmapDisplay;
     private SMSonnxQuantisedModel model;
     private Bitmap bitmap;
-    private AudioPlayer audioPlayer;
+    private AudioPlayerManager audioPlayer;
 
     //
-    CanvasTimer canvasTimer;
+    Timer canvasTimer;
     boolean timerStarted = false;
 
     // For handling control gestures: Touch events other than those used for drawing character i.e. "SingleTap", "DoubleTap", and so on.
@@ -55,8 +55,8 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         //bitmapDisplay = findViewById(R.id.bitmap_display);
 
         model = SMSonnxQuantisedModel.getInstance(this);
-        audioPlayer = new AudioPlayer(this);
-        SupportSet.getInstance().updateSet();
+        audioPlayer = new AudioPlayerManager(this);
+        SupportSet.getInstance().updateSet(this);
 
         drawingCanvas.setOnTouchListener((v, event) -> {
 
@@ -86,7 +86,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
             // !!isAfterControlGesture: ignore MotionEvent.ACTION_UP occurring at the end of a control gesture.
             if (event.getAction() == MotionEvent.ACTION_UP && !isAfterControlGesture) {
 
-                canvasTimer = new CanvasTimer(this);
+                canvasTimer = new Timer(this, 1000);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
 
@@ -190,7 +190,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
         if(SelectedItemId == R.id.developer_mode) {
             // Switch to developer mode.
-            startActivity(new Intent(DrivingMode.this, JMainActivity.class));
+            startActivity(new Intent(DrivingMode.this, MainActivity.class));
             return true;
 
         } else{
@@ -228,14 +228,13 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
         String result = model.classify_id(bitmap);
 
-        audioPlayer.PlayAudio(String.valueOf(result));
+        audioPlayer.setDataSource(String.valueOf(result));
+        audioPlayer.play();
         runOnUiThread(() -> {
 
             charTextView.setText(String.valueOf(result));
             outputView.setVisibility(View.VISIBLE); // Show result
-
             //bitmapDisplay.setImageBitmap(bitmap);
-
         });
     }
 

@@ -16,7 +16,10 @@ public class HCC_Application extends Application {
     }
 
     protected static Context getAppContext(){
-
         return INSTANCE.getApplicationContext();
+    }
+
+    protected Application getApplication(){
+        return this;
     }
 }

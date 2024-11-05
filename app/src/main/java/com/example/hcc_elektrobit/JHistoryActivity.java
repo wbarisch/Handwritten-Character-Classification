@@ -1,4 +1,3 @@
-// JHistoryActivity.java
 package com.example.hcc_elektrobit;
 
 import android.content.Intent;

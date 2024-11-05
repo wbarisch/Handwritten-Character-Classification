@@ -2,51 +2,36 @@ package com.example.hcc_elektrobit;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.Switch;
-import android.widget.TextView;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.Observer;
+
+import com.example.hcc_elektrobit.databinding.ActivityMainBinding;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Map;
 
-public class JMainActivity extends AppCompatActivity implements TimeoutActivity {
-
+public class MainActivity extends AppCompatActivity {
+    private CharacterMapping characterMapping = new CharacterMapping();
     private DialogManager dialogManager;
     private DrawingCanvas drawingCanvas;
-    private TextView recognizedCharTextView;
-    private ImageView bitmapDisplay;
-    private SMSonnxModel sms_model;
-    private CNNonnxModel cnn_model;
     private Bitmap bitmap;
-    private AudioPlayer audioPlayer;
-    CanvasTimer canvasTimer;
-    private CharacterMapping characterMapping;
-    boolean timerStarted = false;
-
-    private TextView timeTextView;
-
-
-    String model_name = "SMS";
+    private MainViewModel viewModel;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
+
         getMenuInflater().inflate(R.menu.main_menu, menu);
         MenuItem historyItem = menu.findItem(R.id.menuButton);
         if (historyItem != null) {
@@ -69,11 +54,12 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         driverMode.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
-                Intent intent = new Intent(JMainActivity.this, DrivingMode.class);
+                Intent intent = new Intent(MainActivity.this, DrivingMode.class);
                 startActivity(intent);
                 return true;
             }
         });
+
         if (drawingCanvas != null) {
             if (toggleAntiAliasItem != null) {
                 toggleAntiAliasItem.setChecked(drawingCanvas.getPaint().isAntiAlias());
@@ -88,29 +74,28 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+        viewModel = new MainViewModel(this.getApplication());
         setContentView(R.layout.activity_jmain);
 
-        characterMapping = new CharacterMapping();
+        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_jmain);
+        binding.setViewModel(viewModel);
+        binding.setLifecycleOwner(this);
+
         drawingCanvas = findViewById(R.id.drawing_canvas);
-        recognizedCharTextView = findViewById(R.id.recognized_char);
-        bitmapDisplay = findViewById(R.id.bitmap_display);
         Button shareButton = findViewById(R.id.share_button);
         Button trainingModeButton = findViewById(R.id.training_mode_button);
         Button siameseActivityButton = findViewById(R.id.siamese_test_button);
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
-        timeTextView = findViewById(R.id.time);
 
-
-
-        audioPlayer = new AudioPlayer(this);
         SupportSet.getInstance().updateSet();
 
         siameseActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Switch to SiameseTesterActivity
-                Intent intent = new Intent(JMainActivity.this, SiameseTesterActivity.class);
+                Intent intent = new Intent(MainActivity.this, SiameseTesterActivity.class);
                 startActivity(intent);
             }
         });
@@ -118,8 +103,7 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         supportsetActivityButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Switch to SiameseTesterActivity
-                Intent intent = new Intent(JMainActivity.this, SupportSetActivity.class);
+                Intent intent = new Intent(MainActivity.this, SupportSetActivity.class);
                 startActivity(intent);
             }
         });
@@ -150,24 +134,25 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
 
         dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
-
         shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
         trainingModeButton.setOnClickListener(v -> dialogManager.showTrainingModeDialog());
 
-        drawingCanvas.setOnTouchListener((v, event) -> {
-
-            if(timerStarted){
-                canvasTimer.cancel();
-                timerStarted = false;
+        viewModel.clearCanvasEvent.observe(this, shouldClear -> {
+            if (shouldClear) {
+                bitmap = drawingCanvas.getBitmap(28);
+                viewModel.mainAppFunction(bitmap);
+                drawingCanvas.clear();
+                viewModel.clearCanvasHandled(); // Reset the event state in the ViewModel
             }
+        });
+
+        drawingCanvas.setOnTouchListener((v, event) -> {
 
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 bitmap = drawingCanvas.getBitmap(28);
-                canvasTimer = new CanvasTimer(this);
-                new Thread(canvasTimer).start();
-                timerStarted = true;
+                viewModel.startTimer(1000);
             }
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 v.performClick();
@@ -180,10 +165,12 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
+
         int id = item.getItemId();
 
         if(id == R.id.menuButton) {
-            Intent intent = new Intent(JMainActivity.this, JHistoryActivity.class);
+
+            Intent intent = new Intent(MainActivity.this, JHistoryActivity.class);
             startActivity(intent);
             return true;
         }
@@ -202,61 +189,6 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
         return super.onOptionsItemSelected(item);
     }
 
-    public void onTimeout(){
-
-        classifyCharacter();
-        drawingCanvas.clear();
-        timerStarted = false;
-
-    }
-
-    private void classifyCharacter(){
-
-        double executionTime;
-
-        long startTime = System.nanoTime();
-
-        String result;
-
-        bitmap = drawingCanvas.getBitmap(105);
-
-        if (bitmap == null) {
-            Log.e("JMainActivity", "Bitmap is null in classifyCharacter");
-            return;
-        }
-        Pair<String, Map<String, Float>> result_pair;
-
-        SMSComaparisonOnnxModel.getInstance().setQuantized(false);
-        result_pair= SMSComaparisonOnnxModel.getInstance().classifyAndReturnPredAndSimilarityMap(bitmap);
-
-
-
-        History history = History.getInstance();
-        SMSHistoryItem historyItem = new SMSHistoryItem(bitmap, result_pair.first, result_pair.second);
-
-        history.saveItem(historyItem, this);
-
-        result = result_pair.first;
-        Log.i("SMS", result);
-        Log.i("SMS", result_pair.second.toString());
-
-
-        long endTime = System.nanoTime();
-
-
-        executionTime = Math.round((endTime - startTime) / 1_000_000.0) / 1_000.0;
-
-        audioPlayer.PlayAudio(result);
-        runOnUiThread(() -> {
-            timeTextView.setText(String.valueOf(executionTime));
-            recognizedCharTextView.setText(result);
-            bitmapDisplay.setImageBitmap(bitmap);
-
-
-        });
-    }
-
-
     public Bitmap getBitmap() {
         return bitmap;
     }
@@ -264,5 +196,4 @@ public class JMainActivity extends AppCompatActivity implements TimeoutActivity 
     public void enterTrainingMode() {
         Log.d("JMainActivity", "Training mode enabled");
     }
-
 }
