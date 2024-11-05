@@ -52,7 +52,7 @@ import java.util.Map;
 public class TrainingActivity extends AppCompatActivity implements TimeoutActivity {
     private static final int REVIEW_IMAGES_REQUEST = 1;
 
-    private int bitmapSize = 28;
+    private int bitmapSize = 105;
 
     private Bitmap bitmap;
     private Timer canvasTimer;

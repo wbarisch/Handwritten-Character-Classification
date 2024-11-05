@@ -10,8 +10,9 @@ import android.graphics.RectF;
 
 public class BitmapUtils {
 
-    public static Bitmap centerAndResizeBitmap(Bitmap bitmap, int desiredSize) {
+    public static Bitmap centerAndResizeBitmap(Bitmap bitmap, int desiredSize, boolean antiAlias) {
         int margin = 2;
+        int targetStrokeWidth = 5;
 
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
@@ -67,7 +68,9 @@ public class BitmapUtils {
         RectF destRect = new RectF(dx, dy, dx + scaledWidth, dy + scaledHeight);
 
         Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
-        paint.setAntiAlias(true);
+        paint.setAntiAlias(antiAlias);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(targetStrokeWidth / scale);
 
         canvas.drawBitmap(croppedBitmap, null, destRect, paint);
 

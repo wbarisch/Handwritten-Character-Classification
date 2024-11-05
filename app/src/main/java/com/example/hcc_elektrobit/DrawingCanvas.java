@@ -24,7 +24,7 @@ public class DrawingCanvas extends View {
         super(context, attributeSet);
         paint = new Paint();
         path = new Path();
-        paint.setAntiAlias(true);
+        paint.setAntiAlias(false);
         paint.setColor(Color.BLACK);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
@@ -99,11 +99,15 @@ public class DrawingCanvas extends View {
 
     }
     public Bitmap getBitmap(int dims) {
-        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawColor(Color.WHITE);
-        this.draw(canvas);
-        return BitmapUtils.centerAndResizeBitmap(bitmap, dims);
+        if (getWidth() > 0 && getHeight() > 0) {
+            Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            canvas.drawColor(Color.WHITE);
+            this.draw(canvas);
+            return BitmapUtils.centerAndResizeBitmap(bitmap, dims, paint.isAntiAlias());
+        } else {
+            throw new IllegalArgumentException("width and height must be > 0");
+        }
     }
 
     public Bitmap getBitmap() {
