@@ -99,13 +99,14 @@ public class SMSEmbeddingOnnxModel {
     public float[] preprocessBitmap(Bitmap bitmap) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
-
+/**
         Matrix matrix = new Matrix();
         matrix.postRotate(90);
         matrix.postScale(-1, 1, width / 2f, height / 2f);
 
         Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
-
+**/
+        Bitmap rotatedBitmap = bitmap;
         float[] data = new float[105 * 105];
         int index = 0;
 
