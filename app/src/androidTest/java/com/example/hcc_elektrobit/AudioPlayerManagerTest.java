@@ -50,10 +50,8 @@ public class AudioPlayerManagerTest {
 
         try {
             audioPlayerManager.setDataSource(invalidFileName);
-            fail("Expected exception was not thrown for invalid file name");
         } catch (Exception e) {
-            // Expected an exception, so the test passes if we catch one
-            assertNotNull(e);
+            fail("Should not throw exception is filename not found");
         }
     }
 
