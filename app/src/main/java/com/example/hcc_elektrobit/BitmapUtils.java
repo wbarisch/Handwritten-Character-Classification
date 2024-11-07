@@ -12,33 +12,36 @@ import android.graphics.RectF;
 public class BitmapUtils {
 
 
-    public static Bitmap drawPathToBitmap(Path path, int desiredSize, float strokeWidth, boolean antiAlias) {
+    public static Bitmap drawPathToBitmap(Path path, int canvasWidth, int canvasHeight, int desiredSize, float strokeWidth, boolean antiAlias) {
+        // Calculate scaling factors to map canvas to bitmap dimensions
+        float margin = desiredSize * 0.05f; // You can adjust this as needed (e.g., 5% of desiredSize)
+        float scaleX = (desiredSize - 2 * margin) / canvasWidth;
+        float scaleY = (desiredSize - 2 * margin) / canvasHeight;
+        float scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
 
-        RectF bounds = new RectF();
-        path.computeBounds(bounds, true);
-
-        if (bounds.isEmpty()) {
-            Bitmap emptyBitmap = Bitmap.createBitmap(desiredSize, desiredSize, Bitmap.Config.ARGB_8888);
-            Canvas emptyCanvas = new Canvas(emptyBitmap);
-            emptyCanvas.drawColor(Color.WHITE);
-            return emptyBitmap;
-        }
-
-        float margin = 2f;
-
-        float scale = Math.min(
-                (desiredSize - 2 * margin) / bounds.width(),
-                (desiredSize - 2 * margin) / bounds.height()
-        );
-          // Find bounding box of non-background content
+        // Create matrix to scale the path
         Matrix matrix = new Matrix();
         matrix.postScale(scale, scale);
 
-        float dx = (desiredSize - bounds.width() * scale) / 2f - bounds.left * scale;
-        float dy = (desiredSize - bounds.height() * scale) / 2f - bounds.top * scale;
-        matrix.postTranslate(dx, dy);
+        // Transform the path with scaling
+        Path scaledPath = new Path();
+        path.transform(matrix, scaledPath);
+
+        // Get the bounds of the scaled path
+        RectF bounds = new RectF();
+        scaledPath.computeBounds(bounds, true);
+
+        // Compute the translation to center the path within the desiredSize, considering margin
+        float dx = ((desiredSize - 2 * margin - bounds.width()) / 2f) + margin - bounds.left;
+        float dy = ((desiredSize - 2 * margin - bounds.height()) / 2f) + margin - bounds.top;
+
+        matrix.postTranslate(dx, dy); // Update the existing matrix to include translation
+
+        // Transform the path with the updated matrix
         Path transformedPath = new Path();
         path.transform(matrix, transformedPath);
+
+        // Draw the transformed path onto bitmap
         Bitmap outputBitmap = Bitmap.createBitmap(desiredSize, desiredSize, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(outputBitmap);
         canvas.drawColor(Color.WHITE);
@@ -46,7 +49,7 @@ public class BitmapUtils {
         Paint paint = new Paint();
         paint.setAntiAlias(antiAlias);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(strokeWidth);
+        paint.setStrokeWidth(strokeWidth); // Use fixed stroke width
         paint.setColor(Color.BLACK);
         canvas.drawPath(transformedPath, paint);
 
@@ -94,10 +97,10 @@ public class BitmapUtils {
 
         Bitmap croppedBitmap = Bitmap.createBitmap(bitmap, left, top, contentWidth, contentHeight);
 
-        float scale = Math.min(
-                (desiredSize - 2 * margin) / (float) contentWidth,
-                (desiredSize - 2 * margin) / (float) contentHeight
-        );
+        float scalingFactorWidth = (desiredSize - 2 * margin) / (float) contentWidth;
+        float scalingFactorHeight = (desiredSize - 2 * margin) / (float) contentHeight;
+        float scale = Math.min(1.0f, Math.min(scalingFactorWidth, scalingFactorHeight));
+
         float scaledWidth = contentWidth * scale;
         float scaledHeight = contentHeight * scale;
 

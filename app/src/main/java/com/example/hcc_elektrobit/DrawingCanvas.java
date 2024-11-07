@@ -85,7 +85,8 @@ public class DrawingCanvas extends View {
         if (getWidth() > 0 && getHeight() > 0) {
             if (useFixedSize) {
                 Path drawnPath = getDrawnPath();
-                return BitmapUtils.drawPathToBitmap(drawnPath, desiredSize, outputStrokeWidth, paint.isAntiAlias());
+                // Pass the canvas dimensions and desired stroke width
+                return BitmapUtils.drawPathToBitmap(drawnPath, getWidth(), getHeight(), desiredSize, outputStrokeWidth, paint.isAntiAlias());
             } else {
                 Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
                 Canvas canvas = new Canvas(bitmap);
