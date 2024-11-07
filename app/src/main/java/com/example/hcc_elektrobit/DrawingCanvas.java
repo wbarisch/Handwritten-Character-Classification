@@ -1,26 +1,18 @@
 package com.example.hcc_elektrobit;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.RectF;
+import android.graphics.*;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-
 import androidx.annotation.NonNull;
 
 public class DrawingCanvas extends View {
-
     private Paint paint;
     private Path path;
+    private float currentStrokeWidth = 50f;
 
-    public DrawingCanvas(Context context, AttributeSet attributeSet){
-
+    public DrawingCanvas(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
         paint = new Paint();
         path = new Path();
@@ -29,17 +21,16 @@ public class DrawingCanvas extends View {
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
         setDynamicStrokeWidth();
-
     }
 
     public void setStrokeWidth(float strokeWidth) {
         paint.setStrokeWidth(strokeWidth);
+        currentStrokeWidth = strokeWidth;
         invalidate();
-
     }
 
     private void setDynamicStrokeWidth() {
-        paint.setStrokeWidth(100f);
+        paint.setStrokeWidth(currentStrokeWidth);
         invalidate();
     }
 
@@ -53,61 +44,62 @@ public class DrawingCanvas extends View {
     }
 
     @Override
-    protected void onDraw(@NonNull Canvas canvas){
+    protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawColor(Color.WHITE);
         canvas.drawPath(path, paint);
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event){
-
+    public boolean onTouchEvent(MotionEvent event) {
         float xPos = event.getX();
         float yPos = event.getY();
-
         switch(event.getAction()){
-
             case MotionEvent.ACTION_DOWN:
-                path.moveTo(xPos,yPos);
+                path.moveTo(xPos, yPos);
                 invalidate();
                 return true;
-
             case MotionEvent.ACTION_MOVE:
-                path.lineTo(xPos,yPos);
+                path.lineTo(xPos, yPos);
                 invalidate();
                 return true;
-
             default:
                 return false;
-
         }
-
     }
 
     @Override
     public boolean performClick() {
-
         return super.performClick();
-
     }
 
-    // Erase the current drawing
-    public void clear(){
-
+    public void clear() {
         path.reset();
         invalidate();
-
     }
-    public Bitmap getBitmap(int dims) {
+
+    public Path getDrawnPath() {
+        return new Path(path);
+    }
+    public Bitmap getBitmap(int desiredSize, boolean useFixedSize, float outputStrokeWidth) {
         if (getWidth() > 0 && getHeight() > 0) {
-            Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-            canvas.drawColor(Color.WHITE);
-            this.draw(canvas);
-            return BitmapUtils.centerAndResizeBitmap(bitmap, dims, paint.isAntiAlias());
+            if (useFixedSize) {
+                Path drawnPath = getDrawnPath();
+                return BitmapUtils.drawPathToBitmap(drawnPath, desiredSize, outputStrokeWidth, paint.isAntiAlias());
+            } else {
+                Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                canvas.drawColor(Color.WHITE);
+                this.draw(canvas);
+                return BitmapUtils.centerAndResizeBitmap(bitmap, desiredSize, paint.isAntiAlias());
+            }
         } else {
-            throw new IllegalArgumentException("width and height must be > 0");
+            throw new IllegalArgumentException("Width and height must be > 0");
         }
+    }
+
+    public Bitmap getBitmap(int desiredSize, boolean useFixedSize) {
+        return getBitmap(desiredSize, useFixedSize, 3f);
     }
 
     public Bitmap getBitmap() {
@@ -117,6 +109,4 @@ public class DrawingCanvas extends View {
         this.draw(canvas);
         return bitmap;
     }
-
-
 }
