@@ -11,16 +11,24 @@ public class SupportSetItem {
     String labelId;
     String fileName;
     OnnxTensor imgEmbedding;
+    float[] embeddingValues;
 
-
-
-    SupportSetItem(Bitmap bmp, String labelId){
+    SupportSetItem(Bitmap bmp, String labelId) {
         this.bitmap = bmp;
         this.labelId = labelId;
         float[][] emb = SMSEmbeddingOnnxModel.getInstance().embedBitmap(bmp);
         imgEmbedding = SMSComaparisonOnnxModel.getInstance().loadTensor(emb);
-
+        embeddingValues = emb[0];
     }
+
+    public float[] getEmbeddingValues() {
+        return embeddingValues;
+    }
+
+    public void setEmbeddingValues(float[] embeddingValues) {
+        this.embeddingValues = embeddingValues;
+    }
+
 
     public Bitmap getBitmap(){
         return bitmap;

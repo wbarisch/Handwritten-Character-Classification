@@ -15,13 +15,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class SupportSet {
-
     private static volatile SupportSet INSTANCE = null;
 
     private Set<SupportSetItem> SupportSetItems = new TreeSet<>(new Comparator<SupportSetItem>() {
         @Override
         public int compare(SupportSetItem o1, SupportSetItem o2) {
-            int labelComparison = CharSequence.compare(o1.labelId, o2.labelId);
+            int labelComparison = CharSequence.compare(o1.getLabelId(), o2.getLabelId());
             if (labelComparison != 0) {
                 return labelComparison;
             }
@@ -56,30 +55,28 @@ public class SupportSet {
     }
 
     public void saveItem(SupportSetItem setItem) {
-        File dir  = new File(JFileProvider.getInternalDir(), "support_set");
+        File dir = new File(JFileProvider.getInternalDir(), "support_set");
         if (!dir.exists()) {
             dir.mkdir();
+
+            int genId = setItem.getBitmap().getGenerationId();
+            String fileName = setItem.getLabelId() + "_" + genId + ".png";
+            File file = new File(dir, fileName);
+            while (file.exists()) {
+                genId++;
+                fileName = setItem.getLabelId() + "_" + genId + ".png";
+                file = new File(dir, fileName);
+            }
+            setItem.setFileName(fileName);
+
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                setItem.getBitmap().compress(Bitmap.CompressFormat.PNG, 100, out);
+                Log.i("Bitmap Saved!", "Bitmap saved in " + file);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            addItem(setItem);
         }
-        int genId = setItem.bitmap.getGenerationId();
-
-        String fileName = setItem.labelId + "_" + String.valueOf(genId) + ".png";
-        File file = new File(dir, fileName);
-
-
-        while (file.exists()) {
-            genId++;
-            fileName = setItem.labelId + "_" + genId + ".png";
-            file = new File(dir, fileName);
-        }
-
-        setItem.setFileName(fileName);
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            setItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-            Log.i("Bitmap Saved!", "Bitmap saved in " + file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        addItem(setItem);
     }
 
     public void updateSet() {
@@ -87,20 +84,19 @@ public class SupportSet {
         if (!bitmapDir.exists()) {
             return;
         }
-
-        //SupportSetItems.clear();
+        SupportSetItems.clear();
         for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
             try (FileInputStream in = new FileInputStream(file)) {
                 String fileName = file.getName();
-                if(checkItemLoaded(fileName)){
+                if (checkItemLoaded(fileName)) {
                     continue;
                 }
                 Log.i("File Loaded", fileName);
                 Bitmap bmp = BitmapFactory.decodeStream(in);
-                String labelId = file.getName().substring(0, file.getName().indexOf("_"));
-                SupportSetItem _hi = new SupportSetItem(bmp, labelId);
-                _hi.setFileName(fileName);
-                SupportSetItems.add(_hi);
+                String labelId = fileName.substring(0, fileName.indexOf("_"));
+                SupportSetItem item = new SupportSetItem(bmp, labelId);
+                item.setFileName(fileName);
+                SupportSetItems.add(item);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -108,8 +104,8 @@ public class SupportSet {
     }
 
     private boolean checkItemLoaded(String fileName) {
-        for (SupportSetItem i: SupportSetItems ){
-            if (Objects.equals(i.getFileName(), fileName)){
+        for (SupportSetItem i : SupportSetItems) {
+            if (Objects.equals(i.getFileName(), fileName)) {
                 return true;
             }
         }
@@ -143,7 +139,6 @@ public class SupportSet {
             Log.e("Item Removal Failed", "Item was not found in the SupportSetItems set.");
         }
 
-        // Delete the corresponding file
         File fileDir = new File(JFileProvider.getInternalDir(), "support_set");
         String fileName = item.getFileName();
         Log.i("File Name", fileName);
@@ -157,17 +152,18 @@ public class SupportSet {
     }
 
     public void renameItem(SupportSetItem item, String newLabel) {
-        File dir  = new File(JFileProvider.getInternalDir(), "support_set");
+        File dir = new File(JFileProvider.getInternalDir(), "support_set");
 
 
         String fileName = item.getFileName();
         File file = new File(dir, fileName);
         item.setLabelId(newLabel);
-        String newFileName = item.labelId  + fileName.substring(fileName.indexOf('_'));
+        String newFileName = item.getLabelId() + fileName.substring(fileName.indexOf('_'));
         File newFile = new File(dir, newFileName);
         file.renameTo(newFile);
         item.setFileName(newFileName);
 
 
     }
+
 }
