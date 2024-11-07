@@ -24,7 +24,7 @@ public class DrawingCanvas extends View {
         super(context, attributeSet);
         paint = new Paint();
         path = new Path();
-        paint.setAntiAlias(true);
+        paint.setAntiAlias(false);
         paint.setColor(Color.BLACK);
         paint.setStrokeJoin(Paint.Join.ROUND);
         paint.setStyle(Paint.Style.STROKE);
@@ -99,11 +99,34 @@ public class DrawingCanvas extends View {
 
     }
     public Bitmap getBitmap(int dims) {
-        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        canvas.drawColor(Color.WHITE);
-        this.draw(canvas);
-        return BitmapUtils.centerAndResizeBitmap(bitmap, dims);
+        if (getWidth() > 0 && getHeight() > 0) {
+            // Create a new bitmap with the specified dimensions
+            Bitmap bitmap = Bitmap.createBitmap(dims, dims, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            canvas.drawColor(Color.WHITE);
+
+            // Calculate the scaling factor
+            float scaleX = (float) dims / getWidth();
+            float scaleY = (float) dims / getHeight();
+            float scale = Math.min(scaleX, scaleY);
+
+            // Save the original stroke width
+            float originalStrokeWidth = paint.getStrokeWidth();
+
+            // Set the stroke width to 5 pixels (after scaling)
+            paint.setStrokeWidth(5f / scale);
+
+            // Scale the canvas and draw the path
+            canvas.scale(scale, scale);
+            this.draw(canvas);
+
+            // Restore the original stroke width
+            paint.setStrokeWidth(originalStrokeWidth);
+
+            return bitmap;
+        } else {
+            throw new IllegalArgumentException("width and height must be > 0");
+        }
     }
 
     public Bitmap getBitmap() {
