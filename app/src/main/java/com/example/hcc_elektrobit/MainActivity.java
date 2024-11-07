@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
                 viewModel.clearCanvasEvent.observe(MainActivity.this, shouldClear -> {
                     if (shouldClear) {
-                        bitmap = drawingCanvas.getBitmap(105);
+                        bitmap = drawingCanvas.getBitmap(105, true, 3f);
                         viewModel.mainAppFunction(bitmap);
                         drawingCanvas.clear();
                         viewModel.clearCanvasHandled();
@@ -150,14 +150,14 @@ public class MainActivity extends AppCompatActivity {
                 });
 
                 viewModel.getBitmapSize().observe(MainActivity.this, size -> {
-                    bitmap = drawingCanvas.getBitmap(size);
+                    bitmap = drawingCanvas.getBitmap(size, true);
                 });
 
                 drawingCanvas.setOnTouchListener((v, event) -> {
                     drawingCanvas.onTouchEvent(event);
 
                     if (event.getAction() == MotionEvent.ACTION_UP) {
-                        bitmap = drawingCanvas.getBitmap(105);
+                        bitmap = drawingCanvas.getBitmap(105, true);
                         viewModel.startTimer(1000);
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
