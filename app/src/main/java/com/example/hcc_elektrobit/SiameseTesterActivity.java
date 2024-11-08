@@ -3,13 +3,19 @@ package com.example.hcc_elektrobit;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Map;
+
 public class SiameseTesterActivity extends AppCompatActivity implements TimeoutActivity {
+
+    private static final String TAG = "SiameseTesterActivity";
 
     private DrawingCanvas drawingCanvas;
     private TextView recognizedCharTextView;
@@ -27,6 +33,8 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_siamesetester);
 
+        model = SMSonnxModel.getInstance(this);
+
         drawingCanvas = findViewById(R.id.drawing_canvas);
         recognizedCharTextView = findViewById(R.id.recognized_char);
         bitmapDisplay = findViewById(R.id.bitmap_display);
@@ -37,23 +45,19 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
 
         drawingCanvas.setOnTouchListener((v, event) -> {
 
-            if(timerStarted){
+            if (timerStarted) {
                 canvasTimer.cancel();
                 timerStarted = false;
             }
-
-            drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 canvasTimer = new Timer(this, 1000);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
-            }
-            if (event.getAction() == MotionEvent.ACTION_UP) {
                 v.performClick();
             }
 
-            return true;
+            return false; // Return false to allow DrawingCanvas to handle touch events
         });
     }
 
@@ -65,56 +69,56 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
         timerStarted = false;
     }
 
-    private void findSimilarity(){
-
-       if(bitmapState == 0) {
-
+    private void findSimilarity() {
+        if (bitmapState == 0) {
             bitmap = drawingCanvas.getBitmap(105, true);
             runOnUiThread(() -> {
                 bitmapDisplay2.setImageDrawable(null);
-                bitmapDisplay.setImageBitmap(createBitmapFromFloatArray(model.preprocessBitmap(bitmap),105,105));
+                bitmapDisplay.setImageBitmap(createBitmapFromPreprocessedData(model.preprocessBitmap(bitmap)));
                 recognizedCharTextView.setText("_");
-
-
             });
             bitmapState = 1;
         } else {
-            bitmap2 = drawingCanvas.getBitmap(105,true);
-            float similarity = model.classify_similarity(bitmap,bitmap2);
+            bitmap2 = drawingCanvas.getBitmap(105, true);
 
-            runOnUiThread(() -> {
+            try {
+                float similarityScore = model.findSimilarity(bitmap, bitmap2);
 
-                bitmapDisplay2.setImageBitmap(createBitmapFromFloatArray(model.preprocessBitmap(bitmap2),105,105));
-                recognizedCharTextView.setText(String.valueOf(similarity));
-            });
+                runOnUiThread(() -> {
+                    bitmapDisplay2.setImageBitmap(createBitmapFromPreprocessedData(model.preprocessBitmap(bitmap2)));
+                    recognizedCharTextView.setText("Similarity Score: " + similarityScore);
+                    Log.i(TAG, "Similarity Score between bitmap1 and bitmap2: " + similarityScore);
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Error finding similarity", e);
+                runOnUiThread(() -> {
+                    recognizedCharTextView.setText("Error computing similarity");
+                });
+            }
+
             bitmapState = 0;
         }
     }
-
-    public Bitmap createBitmapFromFloatArray(float[] floatArray, int width, int height) {
-
-        if (floatArray.length != width * height) {
-            throw new IllegalArgumentException("Float array length must match width * height");
-        }
-
+    public Bitmap createBitmapFromPreprocessedData(float[][][][] data) {
+        int width = data[0][0][0].length;
+        int height = data[0][0].length;
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        int[] pixels = new int[width * height];
 
-        for (int i = 0; i < floatArray.length; i++) {
-
-            float value = floatArray[i];
-            value = Math.max(0, Math.min(1, value));
-            int grayscale = (int) (value * 255);
-            int color = Color.argb(255, grayscale, grayscale, grayscale);
-            pixels[i] = color;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                float value = data[0][0][y][x];
+                value = Math.max(0, Math.min(1, value));
+                int grayscale = (int) (value * 255);
+                int color = Color.argb(255, grayscale, grayscale, grayscale);
+                bitmap.setPixel(x, y, color);
+            }
         }
-        bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-
         return bitmap;
     }
+
 
     public Bitmap getBitmap() {
-        return bitmap;
-    }
+            return bitmap;
+        }
 
 }

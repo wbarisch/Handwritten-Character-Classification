@@ -57,7 +57,7 @@ public class SMSComaparisonOnnxModel {
 
 
     private String copyModelToCache() throws IOException {
-        String modelFileName = "comparison_model.onnx";
+        String modelFileName = "siamese_comparison_model_500.onnx";
         File cacheDir = JFileProvider.getCacheDir();
         File modelFile = new File(cacheDir, modelFileName);
 
