@@ -79,7 +79,7 @@ public class SMSonnxModel {
     }
 
     private String copyModelToCache() throws IOException {
-        String modelFileName = "siamese_embedding_model_500.onnx"; // Use the embeddings model
+        String modelFileName = "siamese_embedding_model_500.onnx";
         File cacheDir = context.getCacheDir();
         File modelFile = new File(cacheDir, modelFileName);
 
@@ -97,23 +97,15 @@ public class SMSonnxModel {
     }
     public float findSimilarity(Bitmap bitmap1, Bitmap bitmap2) {
         try {
-            // Preprocess the bitmaps
             float[][][][] input1TensorData = preprocessBitmap(bitmap1);
             float[][][][] input2TensorData = preprocessBitmap(bitmap2);
-
-            // Create input tensors
             OnnxTensor inputTensor1 = OnnxTensor.createTensor(env, input1TensorData);
             OnnxTensor inputTensor2 = OnnxTensor.createTensor(env, input2TensorData);
-
-            // Get embeddings for both images
             float[] embedding1 = getEmbedding(inputTensor1);
             float[] embedding2 = getEmbedding(inputTensor2);
-
-            // Optionally normalize embeddings
             embedding1 = normalizeEmbedding(embedding1);
             embedding2 = normalizeEmbedding(embedding2);
 
-            // Compute cosine similarity
             float similarity = computeCosineSimilarity(embedding1, embedding2);
 
             return similarity;
@@ -129,7 +121,7 @@ public class SMSonnxModel {
         for (float value : embedding) {
             norm += value * value;
         }
-        norm = (float) Math.sqrt(norm) + 1e-10f; // Avoid division by zero
+        norm = (float) Math.sqrt(norm) + 1e-10f;
         for (int i = 0; i < embedding.length; i++) {
             embedding[i] /= norm;
         }
@@ -140,13 +132,13 @@ public class SMSonnxModel {
 
     private float[] getEmbedding(OnnxTensor inputTensor) throws OrtException {
         Map<String, OnnxTensor> inputMap = new HashMap<>();
-        inputMap.put("input_image", inputTensor); // Replace with the actual input name from your model
+        inputMap.put("input_image", inputTensor);
 
         // Run the model
         OrtSession.Result result = session.run(inputMap);
 
         // Get the embedding from the output
-        float[][] embeddingOutput = (float[][]) result.get(0).getValue(); // Adjust index if needed
+        float[][] embeddingOutput = (float[][]) result.get(0).getValue();
         float[] embedding = embeddingOutput[0];
 
         return embedding;
@@ -165,7 +157,7 @@ public class SMSonnxModel {
             normB += emb2[i] * emb2[i];
         }
 
-        return dotProduct / ((float) Math.sqrt(normA) * (float) Math.sqrt(normB) + 1e-10f); // Avoid division by zero
+        return dotProduct / ((float) Math.sqrt(normA) * (float) Math.sqrt(normB) + 1e-10f);
     }
 
     public float classify_similarity(Bitmap bitmap1, Bitmap bitmap2){
@@ -251,59 +243,6 @@ public class SMSonnxModel {
         } catch (OrtException e) {
             Log.e(TAG, "Error closing ONNX environment or session", e);
         }
-    }
-
-    public Pair<String, Map<String, Float>> classifyAndReturnPredAndSimilarityMap(Bitmap bitmap) {
-        List<SupportSetItem> supportSet = SupportSet.getInstance().getItems();
-
-        Pair<String, Map<String, Float>> resultMap;
-
-        Map<String, List<Float>> similarityMap = new HashMap<>();
-
-        for (SupportSetItem item : supportSet) {
-            String labelId = item.getLabelId();
-            Bitmap bitmap2 = item.getBitmap();
-
-            float similarity = findSimilarity(bitmap, bitmap2);
-
-            similarityMap.putIfAbsent(labelId, new ArrayList<>());
-            similarityMap.get(labelId).add(similarity);
-
-
-        }
-
-        Map<String, Float> averageSimilarityMap = new HashMap<>();
-        for (Map.Entry<String, List<Float>> entry : similarityMap.entrySet()) {
-            String labelId = entry.getKey();
-            List<Float> similarities = entry.getValue();
-
-            float sum = 0;
-            for (Float similarity : similarities) {
-                sum += similarity;
-            }
-            float average = sum / similarities.size();
-            averageSimilarityMap.put(labelId, average);
-
-            Log.e(TAG, "Average Similarity: " + average + " for Label ID: " + labelId);
-        }
-
-        String maxLabelId = "";
-        float maxAverage = Float.MIN_VALUE;
-        for (Map.Entry<String, Float> entry : averageSimilarityMap.entrySet()) {
-            String labelId = entry.getKey();
-            float average = entry.getValue();
-
-            if (average > maxAverage) {
-                maxAverage = average;
-                maxLabelId = labelId;
-            }
-        }
-
-        Log.e(TAG, "Maximum Average Similarity: " + maxAverage + " for Label ID: " + maxLabelId);
-
-        resultMap = new Pair<>(maxLabelId, averageSimilarityMap);
-
-        return resultMap;
     }
 
     public float get_same_image_similarity() {

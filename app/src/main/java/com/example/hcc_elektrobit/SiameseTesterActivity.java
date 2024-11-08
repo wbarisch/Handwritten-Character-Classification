@@ -57,7 +57,7 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
                 v.performClick();
             }
 
-            return false; // Return false to allow DrawingCanvas to handle touch events
+            return false;
         });
     }
 
