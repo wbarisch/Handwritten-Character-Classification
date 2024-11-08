@@ -69,7 +69,7 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
 
        if(bitmapState == 0) {
 
-            bitmap = drawingCanvas.getBitmap(105);
+            bitmap = drawingCanvas.getBitmap(105, true);
             runOnUiThread(() -> {
                 bitmapDisplay2.setImageDrawable(null);
                 bitmapDisplay.setImageBitmap(createBitmapFromFloatArray(model.preprocessBitmap(bitmap),105,105));
@@ -79,7 +79,7 @@ public class SiameseTesterActivity extends AppCompatActivity implements TimeoutA
             });
             bitmapState = 1;
         } else {
-            bitmap2 = drawingCanvas.getBitmap(105);
+            bitmap2 = drawingCanvas.getBitmap(105,true);
             float similarity = model.classify_similarity(bitmap,bitmap2);
 
             runOnUiThread(() -> {

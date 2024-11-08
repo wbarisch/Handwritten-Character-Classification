@@ -26,7 +26,7 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
     private MutableLiveData<String> _executionTime = new MutableLiveData<>("0.000");
     public LiveData<String> executionTime = _executionTime;
     private final AudioPlayerManager audioPlayerManager;
-
+    private MutableLiveData<Integer> bitmapSize = new MutableLiveData<>(105);
     private final Context mainContext;
     private String modelName = "SMS";
 
@@ -127,6 +127,15 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
     public void clearCanvasHandled() {
         _clearCanvasEvent.postValue(false);
     }
+
+    public LiveData<Integer> getBitmapSize() {
+        return bitmapSize;
+    }
+
+    public void setBitmapSize(int size) {
+        bitmapSize.setValue(size);
+    }
+
 
     //endregion
 }

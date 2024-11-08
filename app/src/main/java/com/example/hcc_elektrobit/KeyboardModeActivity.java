@@ -138,7 +138,7 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
     }
 
     private void classifyCharacter() {
-        bitmap = drawingCanvas.getBitmap(105);
+        bitmap = drawingCanvas.getBitmap(105, true, 3f);
 
         if (bitmap == null) {
             Log.e("KeyboardModeActivity", "Bitmap is null in classifyCharacter");
