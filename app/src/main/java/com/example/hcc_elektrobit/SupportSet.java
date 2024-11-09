@@ -49,21 +49,20 @@ public class SupportSet {
         return new ArrayList<>(SupportSetItems);
     }
 
-    // NEW: categorized SupportSetItems getters.
+    // Get a list of SupportSetItems for the specified input mode
+    public List<SupportSetItem> getItems(int inputMode){
 
-    public List<SupportSetItem> getUpperCaseLetters() {
-        return new ArrayList<>(upperCaseLetters);
+        switch (inputMode){
+            case InputMode.UPPERCASE:
+                return new ArrayList<>(upperCaseLetters);
+            case InputMode.LOWERCASE:
+                return new ArrayList<>(lowerCaseLetters);
+            case InputMode.NUMBER:
+                return new ArrayList<>(digits);
+            default:
+                return new ArrayList<>(SupportSetItems);
+        }
     }
-
-    public List<SupportSetItem> getLowerCaseLetters() {
-        return new ArrayList<>(lowerCaseLetters);
-    }
-
-    public List<SupportSetItem> getDigits() {
-        return new ArrayList<>(digits);
-    }
-
-    // NEW - END
 
     public void saveItem(SupportSetItem setItem) {
         File dir  = new File(JFileProvider.getInternalDir(), "support_set");

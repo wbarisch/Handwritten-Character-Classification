@@ -144,7 +144,7 @@ public class SMSComaparisonOnnxModel {
 
     // Overloaded method to handle input mode as a parameter
     public Pair<String, Map<String, Float>> classifyAndReturnPredAndSimilarityMap(Bitmap bitmap, int inputMode) {
-        List<SupportSetItem> supportSet = getSupportSetItems(inputMode);
+        List<SupportSetItem> supportSet = SupportSet.getInstance().getItems(inputMode);
         Map<String, List<Float>> similarityMap = new HashMap<>();
         float[][] temp;
         if (!quantized) {
@@ -193,24 +193,6 @@ public class SMSComaparisonOnnxModel {
         Log.e(TAG, "Predicted Label: " + maxLabelId + " with Similarity: " + maxSimilarity);
 
         return new Pair<>(maxLabelId, maxSimilarityMap);
-    }
-
-    // Get a list of SupportSetItems of the specified input mode
-    private List<SupportSetItem> getSupportSetItems(int inputMode){
-
-        switch (inputMode){
-            case InputMode.DEFAULT:
-                return SupportSet.getInstance().getItems();
-            case InputMode.UPPERCASE:
-                return SupportSet.getInstance().getUpperCaseLetters();
-            case InputMode.LOWERCASE:
-                return SupportSet.getInstance().getLowerCaseLetters();
-            case InputMode.NUMBER:
-                return SupportSet.getInstance().getDigits();
-                break;
-            default:
-                return SupportSet.getInstance().getItems();
-        }
     }
 
     public void close() {
