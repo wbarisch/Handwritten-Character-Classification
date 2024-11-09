@@ -142,6 +142,76 @@ public class SMSComaparisonOnnxModel {
         return new Pair<>(maxLabelId, maxSimilarityMap);
     }
 
+    // Overloaded method to handle input mode as a parameter
+    public Pair<String, Map<String, Float>> classifyAndReturnPredAndSimilarityMap(Bitmap bitmap, int inputMode) {
+        List<SupportSetItem> supportSet = getSupportSetItems(inputMode);
+        Map<String, List<Float>> similarityMap = new HashMap<>();
+        float[][] temp;
+        if (!quantized) {
+            temp = SMSEmbeddingOnnxModel.getInstance().embedBitmap(bitmap);
+        } else {
+            temp = SMSQuantizedEmbeddingOnnxModel.getInstance().embedBitmap(bitmap);
+        }
+        float[] embeddingToCompare = temp[0];
+
+        for (SupportSetItem item : supportSet) {
+            String labelId = item.getLabelId();
+            float[] supportEmbedding = item.getEmbeddingValues();
+            if (supportEmbedding == null) {
+                try {
+                    supportEmbedding = ((float[][]) item.getImgEmbedding().getValue())[0];
+                    item.setEmbeddingValues(supportEmbedding);
+                } catch (OrtException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+            }
+
+            float similarity = computeCosineSimilarity(embeddingToCompare, supportEmbedding);
+            similarityMap.putIfAbsent(labelId, new ArrayList<>());
+            similarityMap.get(labelId).add(similarity);
+        }
+
+        Map<String, Float> maxSimilarityMap = new HashMap<>();
+        for (Map.Entry<String, List<Float>> entry : similarityMap.entrySet()) {
+            String labelId = entry.getKey();
+            List<Float> similarities = entry.getValue();
+            float maxSimilarity = Collections.max(similarities);
+            maxSimilarityMap.put(labelId, maxSimilarity);
+            Log.e(TAG, "Maximum Similarity: " + maxSimilarity + " for Label ID: " + labelId);
+        }
+        String maxLabelId = "";
+        float maxSimilarity = Float.NEGATIVE_INFINITY;
+        for (Map.Entry<String, Float> entry : maxSimilarityMap.entrySet()) {
+            String labelId = entry.getKey();
+            float similarity = entry.getValue();
+            if (similarity > maxSimilarity) {
+                maxSimilarity = similarity;
+                maxLabelId = labelId;
+            }
+        }
+        Log.e(TAG, "Predicted Label: " + maxLabelId + " with Similarity: " + maxSimilarity);
+
+        return new Pair<>(maxLabelId, maxSimilarityMap);
+    }
+
+    // Get a list of SupportSetItems of the specified input mode
+    private List<SupportSetItem> getSupportSetItems(int inputMode){
+
+        switch (inputMode){
+            case InputMode.DEFAULT:
+                return SupportSet.getInstance().getItems();
+            case InputMode.UPPERCASE:
+                return SupportSet.getInstance().getUpperCaseLetters();
+            case InputMode.LOWERCASE:
+                return SupportSet.getInstance().getLowerCaseLetters();
+            case InputMode.NUMBER:
+                return SupportSet.getInstance().getDigits();
+                break;
+            default:
+                return SupportSet.getInstance().getItems();
+        }
+    }
 
     public void close() {
         try {
@@ -155,8 +225,6 @@ public class SMSComaparisonOnnxModel {
             Log.e(TAG, "Error closing ONNX environment or session", e);
         }
     }
-
-
 
     public OnnxTensor loadTensor(float[][] emb) {
         OnnxTensor returnTensor;

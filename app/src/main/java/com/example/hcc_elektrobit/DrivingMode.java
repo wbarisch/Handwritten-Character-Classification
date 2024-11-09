@@ -200,12 +200,6 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     public void onTimeout(){
 
-        /*
-        classifyCharacter();
-        drawingCanvas.clear();
-        timerStarted = false;
-         */
-
         if (!isAfterControlGesture) {
             classifyCharacter();
         }
@@ -217,8 +211,6 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     private void classifyCharacter(){
 
-        /*
-
         bitmap = drawingCanvas.getBitmap(105, true, 3f);
 
         if (bitmap == null) {
@@ -226,7 +218,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
             return;
         }
 
-        String result = model.classifyAndReturnPredAndSimilarityMap(bitmap).first;
+        String result = model.classifyAndReturnPredAndSimilarityMap(bitmap, inputMode).first;
 
         audioPlayer.setDataSource(result);
         audioPlayer.play();
@@ -235,8 +227,6 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
             charTextView.setText(result);
             outputView.setVisibility(View.VISIBLE);
         });
-
-         */
 
     }
 
