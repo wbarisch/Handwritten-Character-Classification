@@ -22,20 +22,10 @@ public class SupportSet {
     private static volatile SupportSet INSTANCE = null;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Future<?> evaluationFuture;
-    private Set<SupportSetItem> SupportSetItems = new TreeSet<>(new Comparator<SupportSetItem>() {
-        @Override
-        public int compare(SupportSetItem o1, SupportSetItem o2) {
-            int labelComparison = CharSequence.compare(o1.getLabelId(), o2.getLabelId());
-            if (labelComparison != 0) {
-                return labelComparison;
-            }
-            int generationComparison = Integer.compare(o1.getBitmap().getGenerationId(), o2.getBitmap().getGenerationId());
-            if (generationComparison != 0) {
-                return generationComparison;
-            }
-            return Integer.compare(o1.getBitmap().getByteCount(), o2.getBitmap().getByteCount());
-        }
-    });
+    private Set<SupportSetItem> SupportSetItems = new TreeSet<>(new SupportSetItemComparator());
+    private Set<SupportSetItem> upperCaseLetters = new TreeSet<>(new SupportSetItemComparator());
+    private Set<SupportSetItem> lowerCaseLetters = new TreeSet<>(new SupportSetItemComparator());
+    private Set<SupportSetItem> digits = new TreeSet<>(new SupportSetItemComparator());
 
     private SupportSet() {
     }
