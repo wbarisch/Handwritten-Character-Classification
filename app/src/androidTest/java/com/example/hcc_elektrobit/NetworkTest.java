@@ -23,7 +23,7 @@ public class NetworkTest {
     // The neural network model
     private static final SMSComaparisonOnnxModel model = SMSComaparisonOnnxModel.getInstance();
 
-    // Use the app's SupportSet as a sample data
+    // Use the app's SupportSet items as a sample data
     private final List<SupportSetItem> sampleData = HCC_Application.getSupportSet().getItems();
 
     // Test the setup
@@ -64,6 +64,32 @@ public class NetworkTest {
 
                 Log.d("testNotQuantized", "Testing a sample of character: " + labelId);
                 Log.d("testNotQuantized", "Expected: " + labelId + ", Found: " + result);
+
+                assertEquals("Testing a sample of character \"" + labelId + "\" failed.", labelId, result);
+
+            }
+        }
+
+    }
+
+    // Test quantized model
+    @Test
+    public void testQuantized() {
+
+        if(sampleData.isEmpty()){
+
+            fail("No sample to test!");
+
+        } else {
+            model.setQuantized(true);
+
+            for (SupportSetItem item : sampleData) {
+
+                String labelId = item.getLabelId();
+                String result = model.classifyAndReturnPredAndSimilarityMap(item.getBitmap()).first;
+
+                Log.d("testQuantized", "Testing a sample of character: " + labelId);
+                Log.d("testQuantized", "Expected: " + labelId + ", Found: " + result);
 
                 assertEquals("Testing a sample of character \"" + labelId + "\" failed.", labelId, result);
 
