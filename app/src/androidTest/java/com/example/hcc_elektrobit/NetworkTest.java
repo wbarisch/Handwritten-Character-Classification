@@ -46,6 +46,32 @@ public class NetworkTest {
 
     }
 
+    // Test non-quantized model
+    @Test
+    public void testNotQuantized() {
+
+        if(sampleData.isEmpty()){
+
+            fail("No sample to test!");
+
+        } else {
+            model.setQuantized(false);
+
+            for (SupportSetItem item : sampleData) {
+
+                String labelId = item.getLabelId();
+                String result = model.classifyAndReturnPredAndSimilarityMap(item.getBitmap()).first;
+
+                Log.d("testNotQuantized", "Testing a sample of character: " + labelId);
+                Log.d("testNotQuantized", "Expected: " + labelId + ", Found: " + result);
+
+                assertEquals("Testing a sample of character \"" + labelId + "\" failed.", labelId, result);
+
+            }
+        }
+
+    }
+
     @AfterClass
     public static void tearDown() {
         model.close();
