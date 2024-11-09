@@ -110,8 +110,6 @@ public class SMSEmbeddingOnnxModel {
                 int g = (pixel >> 8) & 0xff;
                 int b = pixel & 0xff;
                 float grayscale = (0.299f * r + 0.587f * g + 0.114f * b) / 255.0f;
-
-                float grayscale = (r + g + b) / 3.0f / 255.0f;
                 data[index++] = grayscale;
             }
         }

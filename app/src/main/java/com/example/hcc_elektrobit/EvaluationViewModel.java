@@ -268,7 +268,7 @@ public class EvaluationViewModel extends AndroidViewModel {
                         Bitmap bitmap = BitmapFactory.decodeStream(is);
 
                         if (bitmap != null) {
-                            String result = twoStep.classifyAndReturnPredAndSimilarityMap(bitmap).first;
+                            String result = String.valueOf(twoStep.classifyAndReturnPredAndSimilarityMap(bitmap).first.charAt(0));
                             String expected = png.getName().charAt(0) + "";
                             Log.d("testAct", "tested " + png.getName());
                             Log.d("predicted", result);
