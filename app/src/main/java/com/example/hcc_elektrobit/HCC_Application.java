@@ -22,4 +22,16 @@ public class HCC_Application extends Application {
     protected Application getApplication(){
         return this;
     }
+
+    // Expose internal variable through getter for testing.
+    public static SupportSet getSupportSet(){
+
+        SupportSet supportSet = SupportSet.getInstance();
+
+        supportSet.updateSet();
+
+        return supportSet;
+
+    }
+
 }
