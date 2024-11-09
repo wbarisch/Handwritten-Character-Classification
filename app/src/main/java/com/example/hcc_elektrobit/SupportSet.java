@@ -49,6 +49,22 @@ public class SupportSet {
         return new ArrayList<>(SupportSetItems);
     }
 
+    // NEW: categorized SupportSetItems getters.
+
+    public List<SupportSetItem> getUpperCaseLetters() {
+        return new ArrayList<>(upperCaseLetters);
+    }
+
+    public List<SupportSetItem> getLowerCaseLetters() {
+        return new ArrayList<>(lowerCaseLetters);
+    }
+
+    public List<SupportSetItem> getDigits() {
+        return new ArrayList<>(digits);
+    }
+
+    // NEW - END
+
     public void saveItem(SupportSetItem setItem) {
         File dir  = new File(JFileProvider.getInternalDir(), "support_set");
         if (!dir.exists()) {
