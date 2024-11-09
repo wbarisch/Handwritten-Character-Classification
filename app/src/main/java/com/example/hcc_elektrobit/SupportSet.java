@@ -112,6 +112,17 @@ public class SupportSet {
                     SupportSetItem _hi = new SupportSetItem(bmp, labelId);
                     _hi.setFileName(fileName);
                     SupportSetItems.add(_hi);
+
+                    // NEW: Add item to categorized sets
+                    if(Character.isUpperCase(labelId.charAt(0))){
+                        upperCaseLetters.add(_hi);
+                    } else if (Character.isLowerCase(labelId.charAt(0))) {
+                        lowerCaseLetters.add(_hi);
+                    } else if (Character.isDigit(labelId.charAt(0))) {
+                        digits.add(_hi);
+                    }
+                    // NEW-END
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
