@@ -145,7 +145,7 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
             return;
         }
 
-        String result = model.classifyAndReturnPredAndSimilarityMap(bitmap).first;
+        String result = String.valueOf(model.classifyAndReturnPredAndSimilarityMap(bitmap).first.charAt(0));
 
         audioPlayer.setDataSource(result);
         audioPlayer.play();
