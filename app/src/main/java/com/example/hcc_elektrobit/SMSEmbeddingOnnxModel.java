@@ -73,9 +73,15 @@ public class SMSEmbeddingOnnxModel {
             OnnxTensor inputTensor1 = OnnxTensor.createTensor(env, FloatBuffer.wrap(input1TensorData), new long[]{1, 1, 105, 105});
 
             Map<String, OnnxTensor> inputMap = new HashMap<>();
-            inputMap.put("input_image", inputTensor1);
+            inputMap.put("input_image", inputTensor1);  // Use the input name "input1" as defined in the model export
+
+            // Run the ONNX session with the inputs
             OrtSession.Result result = session.run(inputMap);
+
+            // Get the output from the result
             float[][] output = (float[][]) result.get(0).getValue();
+
+            // Log output information for debugging
             Log.i(TAG, "Output Tensor Shape: [" + output.length + ", " + output[0].length + "]");
             Log.i(TAG, "Output Tensor Values: " + java.util.Arrays.toString(output[0]));
 
@@ -105,9 +111,11 @@ public class SMSEmbeddingOnnxModel {
                 int b = pixel & 0xff;
                 float grayscale = (0.299f * r + 0.587f * g + 0.114f * b) / 255.0f;
 
+                float grayscale = (r + g + b) / 3.0f / 255.0f;
                 data[index++] = grayscale;
             }
         }
+
         return data;
     }
 
