@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.Toast;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -26,7 +27,7 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
     private MutableLiveData<String> _executionTime = new MutableLiveData<>("0.000");
     public LiveData<String> executionTime = _executionTime;
     private final AudioPlayerManager audioPlayerManager;
-
+    private MutableLiveData<Integer> bitmapSize = new MutableLiveData<>(105);
     private final Context mainContext;
     private String modelName = "SMS";
 
@@ -44,7 +45,10 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
      * @param firstBitmap
      */
     public void mainAppFunction(Bitmap firstBitmap){
-
+        if(!SupportSet.getInstance().imagesLoaded()){
+            Toast.makeText(mainContext,"Images still loading", Toast.LENGTH_SHORT).show();
+            return;
+        }
         _drawingBitmap.setValue(firstBitmap);
         classifyCharacterDispatcher(firstBitmap);
         String fileName = classifiedCharacter.getValue();
@@ -120,6 +124,12 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
         new Thread(canvasTimer).start();
     }
 
+    public void stopTimer() {
+        if (canvasTimer != null) {
+            canvasTimer.cancel(); // Cancel any existing timer
+        }
+    }
+
     public void onTimeout() {
         _clearCanvasEvent.postValue(true); // Notify that the canvas should be cleared
     }
@@ -127,6 +137,15 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
     public void clearCanvasHandled() {
         _clearCanvasEvent.postValue(false);
     }
+
+    public LiveData<Integer> getBitmapSize() {
+        return bitmapSize;
+    }
+
+    public void setBitmapSize(int size) {
+        bitmapSize.setValue(size);
+    }
+
 
     //endregion
 }

@@ -86,11 +86,11 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
                         String bitmapSizeStr = bitmapSizeInput.getText().toString();
 
                         if (!imageId.isEmpty()) {
-                            labelId = imageId; // Convert imageId to integer and set labelId
+                            labelId = imageId;
                         }
 
                         if (!bitmapSizeStr.isEmpty()) {
-                            bitmapSize = Integer.parseInt(bitmapSizeStr); // Convert bitmap size to integer and set bitmapSize
+                            bitmapSize = Integer.parseInt(bitmapSizeStr);
                         }
 
 
@@ -126,7 +126,7 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
             drawingCanvas.onTouchEvent(event);
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap(bitmapSize);
+                bitmap = drawingCanvas.getBitmap(bitmapSize, true, 3f);
                 canvasTimer = new Timer(this, 1000);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
@@ -160,7 +160,7 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
             return;
         }
 
-        bitmap = drawingCanvas.getBitmap(bitmapSize);
+        bitmap = drawingCanvas.getBitmap(bitmapSize, true, 3f);
 
         if (bitmap == null) {
             Log.e("JMainActivity", "Bitmap is null in classifyCharacter");

@@ -138,14 +138,14 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
     }
 
     private void classifyCharacter() {
-        bitmap = drawingCanvas.getBitmap(105);
+        bitmap = drawingCanvas.getBitmap(105, true, 3f);
 
         if (bitmap == null) {
             Log.e("KeyboardModeActivity", "Bitmap is null in classifyCharacter");
             return;
         }
 
-        String result = model.classifyAndReturnPredAndSimilarityMap(bitmap).first;
+        String result = String.valueOf(model.classifyAndReturnPredAndSimilarityMap(bitmap).first.charAt(0));
 
         audioPlayer.setDataSource(result);
         audioPlayer.play();

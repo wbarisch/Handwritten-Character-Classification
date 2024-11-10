@@ -1,15 +1,21 @@
 package com.example.hcc_elektrobit;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.EditText;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -17,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 
+import com.example.hcc_elektrobit.databinding.ActivityJmainBinding;
 import com.example.hcc_elektrobit.databinding.ActivityMainBinding;
 
 import java.io.IOException;
@@ -28,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawingCanvas drawingCanvas;
     private Bitmap bitmap;
     private MainViewModel viewModel;
+    private ActivityMainBinding binding;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
@@ -74,12 +82,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         viewModel = new MainViewModel(this.getApplication());
-        setContentView(R.layout.activity_jmain);
 
-        ActivityMainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_jmain);
+        ActivityJmainBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_jmain);
         binding.setViewModel(viewModel);
         binding.setLifecycleOwner(this);
 
@@ -91,21 +97,14 @@ public class MainActivity extends AppCompatActivity {
 
         SupportSet.getInstance().updateSet();
 
-        siameseActivityButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Switch to SiameseTesterActivity
-                Intent intent = new Intent(MainActivity.this, SiameseTesterActivity.class);
-                startActivity(intent);
-            }
+        siameseActivityButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SiameseTesterActivity.class);
+            startActivity(intent);
         });
 
-        supportsetActivityButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SupportSetActivity.class);
-                startActivity(intent);
-            }
+        supportsetActivityButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SupportSetActivity.class);
+            startActivity(intent);
         });
 
         ActivityResultLauncher<Intent> createDocumentLauncher = registerForActivityResult(
@@ -132,41 +131,56 @@ public class MainActivity extends AppCompatActivity {
         ImageSharingManager imageSharingManager = new ImageSharingManager(this);
         ImageSavingManager imageSavingManager = new ImageSavingManager(createDocumentLauncher, characterMapping);
 
-
         dialogManager = new DialogManager(this, this, imageSharingManager, imageSavingManager);
         shareButton.setOnClickListener(v -> dialogManager.showShareOrSaveDialog());
         trainingModeButton.setOnClickListener(v -> dialogManager.showTrainingModeDialog());
 
-        viewModel.clearCanvasEvent.observe(this, shouldClear -> {
-            if (shouldClear) {
-                bitmap = drawingCanvas.getBitmap(105);
-                viewModel.mainAppFunction(bitmap);
-                drawingCanvas.clear();
-                viewModel.clearCanvasHandled(); // Reset the event state in the ViewModel
+        drawingCanvas.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                drawingCanvas.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                viewModel.clearCanvasEvent.observe(MainActivity.this, shouldClear -> {
+                    if (shouldClear) {
+                        bitmap = drawingCanvas.getBitmap(105, true, 3f);
+                        viewModel.mainAppFunction(bitmap);
+                        drawingCanvas.clear();
+                        viewModel.clearCanvasHandled();
+                    }
+                });
+
+                viewModel.getBitmapSize().observe(MainActivity.this, size -> {
+                    bitmap = drawingCanvas.getBitmap(size, true);
+                });
+
+                drawingCanvas.setOnTouchListener((v, event) -> {
+                    drawingCanvas.onTouchEvent(event);
+
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        bitmap = drawingCanvas.getBitmap(105, true);
+                        viewModel.startTimer(1000);
+                        v.performClick();
+                    }
+
+                    if(event.getAction() == MotionEvent.ACTION_DOWN){
+                        viewModel.stopTimer();
+                    }
+
+                    return true;
+                });
             }
         });
-
-        drawingCanvas.setOnTouchListener((v, event) -> {
-
-            drawingCanvas.onTouchEvent(event);
-
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                bitmap = drawingCanvas.getBitmap(105);
-                viewModel.startTimer(1000);
-            }
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                v.performClick();
-            }
-
-            return true;
-        });
-
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
 
         int id = item.getItemId();
+
+        if (id == R.id.action_set_bitmap_size) {
+            showBitmapSizeInputDialog();
+            return true;
+        }
 
         if(id == R.id.menuButton) {
 
@@ -191,6 +205,31 @@ public class MainActivity extends AppCompatActivity {
 
     public Bitmap getBitmap() {
         return bitmap;
+    }
+
+    private void showBitmapSizeInputDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Set Bitmap Size");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                int newSize = Integer.parseInt(input.getText().toString());
+                viewModel.setBitmapSize(newSize);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 
     public void enterTrainingMode() {

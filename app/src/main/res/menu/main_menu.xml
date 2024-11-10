@@ -18,6 +18,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_set_bitmap_size"
+        android:title="Set Bitmap Size"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_select_stroke_width"
         android:title="Select Stroke Width"
         android:orderInCategory="103"

@@ -80,7 +80,7 @@ public class SupportSetActivity extends AppCompatActivity {
         clearHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                viewModel.clearSet();
+                //viewModel.clearSet();
                 updateGridView();
             }
         });

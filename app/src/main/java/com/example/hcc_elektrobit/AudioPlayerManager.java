@@ -39,6 +39,8 @@ public class AudioPlayerManager {
      */
     public void setDataSource(String fileName){
 
+        fileName = String.valueOf(fileName.charAt(0)).toUpperCase();
+
         if(fileName.equals(currentFileName))
             return;
 

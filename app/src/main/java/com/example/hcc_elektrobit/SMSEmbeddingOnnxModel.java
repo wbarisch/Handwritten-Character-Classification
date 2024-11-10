@@ -50,7 +50,7 @@ public class SMSEmbeddingOnnxModel {
     }
 
     private String copyModelToCache() throws IOException {
-        String modelFileName = "siamese_embedding_model_mine_245.onnx";
+        String modelFileName = "siamese_embedding_model_500.onnx";
         File cacheDir = JFileProvider.getCacheDir();
         File modelFile = new File(cacheDir, modelFileName);
 
@@ -97,28 +97,19 @@ public class SMSEmbeddingOnnxModel {
 
 
     public float[] preprocessBitmap(Bitmap bitmap) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-
-        Matrix matrix = new Matrix();
-        matrix.postRotate(90);
-        matrix.postScale(-1, 1, width / 2f, height / 2f);
-
-        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);
-
-        float[] data = new float[105 * 105];
+        int targetWidth = 105;
+        int targetHeight = 105;
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true);
+        float[] data = new float[targetWidth * targetHeight];
         int index = 0;
 
-        //attempt to normalize correctly, i dont think its working right
-        for (int i = 0; i < rotatedBitmap.getWidth(); i++) {
-            for (int j = 0; j < rotatedBitmap.getHeight(); j++) {
-                int pixel = rotatedBitmap.getPixel(i, j);
-
+        for (int y = 0; y < targetHeight; y++) {
+            for (int x = 0; x < targetWidth; x++) {
+                int pixel = scaledBitmap.getPixel(x, y);
                 int r = (pixel >> 16) & 0xff;
                 int g = (pixel >> 8) & 0xff;
                 int b = pixel & 0xff;
-
-                float grayscale = (r + g + b) / 3.0f / 255.0f;
+                float grayscale = (0.299f * r + 0.587f * g + 0.114f * b) / 255.0f;
                 data[index++] = grayscale;
             }
         }

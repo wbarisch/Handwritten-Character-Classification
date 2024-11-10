@@ -215,7 +215,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
     // Invoke external CharacterClassifier class method from here to start processing the drawing.
     private void classifyCharacter(){
 
-        bitmap = drawingCanvas.getBitmap(105);
+        bitmap = drawingCanvas.getBitmap(105, true);
 
         if (bitmap == null) {
             Log.e("MainActivity", "Bitmap is null in classifyCharacter");

@@ -39,7 +39,7 @@ public class EvaluationViewModel extends AndroidViewModel {
     private SMSComaparisonOnnxModel twoStepModel;
     private SMSComaparisonOnnxModel twoStepQuanModel;
 
-    private final int TEST_SIZE = 111;
+    private int TEST_SIZE = 0;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Future<?> evaluationFuture;
     private boolean testRunning = false;
@@ -249,6 +249,7 @@ public class EvaluationViewModel extends AndroidViewModel {
 
     private Pair<Float, Map<String, List<String>>> test(SMSComaparisonOnnxModel twoStep) {
         int correctPrediction = 0;
+        TEST_SIZE = 0;
         Map<String, List<String>> misPredictions_value = new HashMap<>();
         File testDataFolder = new File(JFileProvider.getInternalDir(), "test_data");
         if (testDataFolder.exists() && testDataFolder.isDirectory()) {
@@ -263,10 +264,11 @@ public class EvaluationViewModel extends AndroidViewModel {
                     }
 
                     try (InputStream is = new FileInputStream(png)) {
+                        TEST_SIZE++;
                         Bitmap bitmap = BitmapFactory.decodeStream(is);
 
                         if (bitmap != null) {
-                            String result = twoStep.classifyAndReturnPredAndSimilarityMap(bitmap).first;
+                            String result = String.valueOf(twoStep.classifyAndReturnPredAndSimilarityMap(bitmap).first.charAt(0));
                             String expected = png.getName().charAt(0) + "";
                             Log.d("testAct", "tested " + png.getName());
                             Log.d("predicted", result);
