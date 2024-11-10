@@ -159,9 +159,11 @@ public class MainActivity extends AppCompatActivity {
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         bitmap = drawingCanvas.getBitmap(105, true);
                         viewModel.startTimer(1000);
-                    }
-                    if (event.getAction() == MotionEvent.ACTION_UP) {
                         v.performClick();
+                    }
+
+                    if(event.getAction() == MotionEvent.ACTION_DOWN){
+                        viewModel.stopTimer();
                     }
 
                     return true;

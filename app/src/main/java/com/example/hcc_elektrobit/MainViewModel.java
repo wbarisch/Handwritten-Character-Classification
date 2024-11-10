@@ -120,6 +120,12 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
         new Thread(canvasTimer).start();
     }
 
+    public void stopTimer() {
+        if (canvasTimer != null) {
+            canvasTimer.cancel(); // Cancel any existing timer
+        }
+    }
+
     public void onTimeout() {
         _clearCanvasEvent.postValue(true); // Notify that the canvas should be cleared
     }
