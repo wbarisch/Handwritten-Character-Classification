@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.Toast;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -44,7 +45,10 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
      * @param firstBitmap
      */
     public void mainAppFunction(Bitmap firstBitmap){
-
+        if(!SupportSet.getInstance().imagesLoaded()){
+            Toast.makeText(mainContext,"Images still loading", Toast.LENGTH_SHORT).show();
+            return;
+        }
         _drawingBitmap.setValue(firstBitmap);
         classifyCharacterDispatcher(firstBitmap);
         String fileName = classifiedCharacter.getValue();

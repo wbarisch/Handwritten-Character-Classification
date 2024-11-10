@@ -112,6 +112,12 @@ public class SupportSet {
             }
         });
     }
+    public boolean imagesLoaded() {
+        if (evaluationFuture == null) {
+            return false;
+        }
+        return evaluationFuture.isDone();
+    }
 
     private boolean checkItemLoaded(String fileName) {
         for (SupportSetItem i : SupportSetItems) {
