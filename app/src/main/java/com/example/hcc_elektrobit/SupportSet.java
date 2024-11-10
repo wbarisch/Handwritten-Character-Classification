@@ -22,20 +22,10 @@ public class SupportSet {
     private static volatile SupportSet INSTANCE = null;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Future<?> evaluationFuture;
-    private Set<SupportSetItem> SupportSetItems = new TreeSet<>(new Comparator<SupportSetItem>() {
-        @Override
-        public int compare(SupportSetItem o1, SupportSetItem o2) {
-            int labelComparison = CharSequence.compare(o1.getLabelId(), o2.getLabelId());
-            if (labelComparison != 0) {
-                return labelComparison;
-            }
-            int generationComparison = Integer.compare(o1.getBitmap().getGenerationId(), o2.getBitmap().getGenerationId());
-            if (generationComparison != 0) {
-                return generationComparison;
-            }
-            return Integer.compare(o1.getBitmap().getByteCount(), o2.getBitmap().getByteCount());
-        }
-    });
+    private Set<SupportSetItem> SupportSetItems = new TreeSet<>(new SupportSetItemComparator());
+    private Set<SupportSetItem> upperCaseLetters = new TreeSet<>(new SupportSetItemComparator());
+    private Set<SupportSetItem> lowerCaseLetters = new TreeSet<>(new SupportSetItemComparator());
+    private Set<SupportSetItem> digits = new TreeSet<>(new SupportSetItemComparator());
 
     private SupportSet() {
     }
@@ -57,6 +47,21 @@ public class SupportSet {
 
     public List<SupportSetItem> getItems() {
         return new ArrayList<>(SupportSetItems);
+    }
+
+    // Get a list of SupportSetItems for the specified input mode
+    public List<SupportSetItem> getItems(int inputMode){
+
+        switch (inputMode){
+            case InputMode.UPPERCASE:
+                return new ArrayList<>(upperCaseLetters);
+            case InputMode.LOWERCASE:
+                return new ArrayList<>(lowerCaseLetters);
+            case InputMode.NUMBER:
+                return new ArrayList<>(digits);
+            default:
+                return new ArrayList<>(SupportSetItems);
+        }
     }
 
     public void saveItem(SupportSetItem setItem) {
@@ -106,6 +111,17 @@ public class SupportSet {
                     SupportSetItem _hi = new SupportSetItem(bmp, labelId);
                     _hi.setFileName(fileName);
                     SupportSetItems.add(_hi);
+
+                    // NEW: Add item to categorized sets
+                    if(Character.isUpperCase(labelId.charAt(0))){
+                        upperCaseLetters.add(_hi);
+                    } else if (Character.isLowerCase(labelId.charAt(0))) {
+                        lowerCaseLetters.add(_hi);
+                    } else if (Character.isDigit(labelId.charAt(0))) {
+                        digits.add(_hi);
+                    }
+                    // NEW-END
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

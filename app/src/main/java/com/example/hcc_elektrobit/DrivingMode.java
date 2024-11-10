@@ -26,9 +26,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
     private LinearLayout outputView;
     private TextView charTextView; // To show the result of character recognition
 
-    //
-    // private ImageView bitmapDisplay;
-    private SMSonnxQuantisedModel model;
+    private SMSComaparisonOnnxModel model;
     private Bitmap bitmap;
     private AudioPlayerManager audioPlayer;
 
@@ -36,11 +34,13 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
     Timer canvasTimer;
     boolean timerStarted = false;
 
-    // For handling control gestures: Touch events other than those used for drawing character i.e. "SingleTap", "DoubleTap", and so on.
     private GestureDetector gestureDetector;
 
-    // Variable to prevent drawing gestures' interference with control gestures
-    private boolean isAfterControlGesture = false; // true immediately after a control has occurred.
+    // Flag to prevent classification on control gestures
+    private boolean isAfterControlGesture = false; // true immediately after a control has occurred
+
+    // Designates input mode in use
+    private int inputMode = InputMode.DEFAULT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,10 +51,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         outputView = findViewById(R.id.output_view);
         charTextView = findViewById(R.id.char_view);
 
-        // FOR EXPERIMENT ONLY!
-        //bitmapDisplay = findViewById(R.id.bitmap_display);
-
-        model = SMSonnxQuantisedModel.getInstance(this);
+        model = SMSComaparisonOnnxModel.getInstance();
         audioPlayer = new AudioPlayerManager(this);
         SupportSet.getInstance().updateSet();
 
@@ -78,35 +75,27 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
              */
 
             if(drawingCanvas.onTouchEvent(event)){
-
                 isAfterControlGesture = false;
-
             }
 
-            // !!isAfterControlGesture: ignore MotionEvent.ACTION_UP occurring at the end of a control gesture.
+            // !isAfterControlGesture: ignore MotionEvent.ACTION_UP occurring at the end of a control gesture.
             if (event.getAction() == MotionEvent.ACTION_UP && !isAfterControlGesture) {
-
                 canvasTimer = new Timer(this, 1000);
                 new Thread(canvasTimer).start();
                 timerStarted = true;
-
             }
 
             if(gestureDetector.onTouchEvent(event)){
-
                 if(timerStarted){
                     canvasTimer.cancel();
                     timerStarted = false;
                 }
-
             }
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 v.performClick();
             }
-
             return true;
-
         });
 
         // GestureDetector for handling SingleTap, DoubleTap, e.t.c.
@@ -119,57 +108,63 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         Context context;
 
         public HCCGestureListener (Context context){
-
             this.context = context;
-
         }
 
         @Override
-        public boolean onDown(MotionEvent event) {
-            return true;
-        }
+        public boolean onDown(MotionEvent event) {return true;}
 
         @Override
         public boolean onDoubleTap(MotionEvent event) {
-            undoCharacter();
-            isAfterControlGesture = true;
+            backspace();
+            isAfterControlGesture = true; // Prevent classification
             return true;
         }
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
-            toggleLetterCase();
-            isAfterControlGesture = true;
+            toggleInputMode(); //enterSpace();
+            isAfterControlGesture = true; // Prevent classification
             return true;
         }
 
-        // NOTE: Further <TouchEvents> are open for application specific implementation by the customer.
+    }
+
+    // Toggle input modes
+    private void toggleInputMode(){
+
+        String message;
+
+        switch (inputMode){
+
+            case InputMode.DEFAULT:
+                inputMode = InputMode.UPPERCASE;
+                message = "Uppercase mode";
+                break;
+            case InputMode.UPPERCASE:
+                inputMode = InputMode.LOWERCASE;
+                message = "Lowercase mode";
+                break;
+            case InputMode.LOWERCASE:
+                inputMode = InputMode.NUMBER;
+                message = "Number mode";
+                break;
+            default:
+                inputMode = InputMode.DEFAULT;
+                message = "Default mode";
+        }
+
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
     }
 
-    // Toggle between uppercase and lowercase forms of the output letter.
-    // Matters only for letters whose hand drawn uppercase and lowercase forms are indistinguishable, such as "U/u".
-    private void toggleLetterCase(){
-
-        // Currently does nothing.
-
-        // NOTE: I will implement it when the character recognition module is ready to recognize letters.
-
-        // FOR TESTING ONLY!
-        Toast.makeText(this, "Single Tap Detected", Toast.LENGTH_SHORT).show();
-
-    }
-
-    // Discard the last output of recognition. To be used in case of incorrect output or mistake by the user.
-    private void undoCharacter(){
+    // Delete the last character
+    private void backspace(){
 
         // Undo output result
         drawingCanvas.clear();
         charTextView.setText("");
         outputView.setVisibility(View.INVISIBLE);
-
-        // NOTE: Further implementation by the customer (i.e. Elektrobit) is required here to discard the character
-        // from the particular application to which the output of this character recognition app is fed into.
 
         Toast.makeText(this, "Character Deleted", Toast.LENGTH_SHORT).show();
 
@@ -203,40 +198,36 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     }
 
-    // What to do on timeout
     public void onTimeout(){
 
-        classifyCharacter();
+        if (!isAfterControlGesture) {
+            classifyCharacter();
+        }
         drawingCanvas.clear();
         timerStarted = false;
+        isAfterControlGesture = false;
 
     }
 
-    // Invoke external CharacterClassifier class method from here to start processing the drawing.
     private void classifyCharacter(){
 
-        bitmap = drawingCanvas.getBitmap(105, true);
+        bitmap = drawingCanvas.getBitmap(105, true, 3f);
 
         if (bitmap == null) {
-            Log.e("MainActivity", "Bitmap is null in classifyCharacter");
+            Log.e("DrivingMode", "Bitmap is null in classifyCharacter");
             return;
         }
 
-        // TO DO:
-        // - Call CharacterClassifier class
-        // - To display the output character, set it to "recognizedCharTextView".
+        String result = model.classifyAndReturnPredAndSimilarityMap(bitmap, inputMode).first;
 
-        String result = model.classify_id(bitmap);
-
-        audioPlayer.setDataSource(String.valueOf(result));
+        audioPlayer.setDataSource(result);
         audioPlayer.play();
+
         runOnUiThread(() -> {
-
-            charTextView.setText(String.valueOf(result));
-            outputView.setVisibility(View.VISIBLE); // Show result
-            //bitmapDisplay.setImageBitmap(bitmap);
+            charTextView.setText(result);
+            outputView.setVisibility(View.VISIBLE);
         });
-    }
 
+    }
 
 }
