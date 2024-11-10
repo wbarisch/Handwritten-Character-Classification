@@ -5,6 +5,9 @@ import android.graphics.Bitmap;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.example.hcc_elektrobit.model.SMSonnxModel;
+import com.example.hcc_elektrobit.shared.HCC_Application;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
