@@ -5,12 +5,10 @@ import static com.example.hcc_elektrobit.JFileProvider.getContentResolver;
 
 import android.net.Uri;
 import android.util.Log;
-
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

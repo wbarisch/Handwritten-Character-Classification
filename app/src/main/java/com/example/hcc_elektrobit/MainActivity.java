@@ -185,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
         if(id == R.id.menuButton) {
 
             Intent intent = new Intent(MainActivity.this, JHistoryActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
             return true;
         }

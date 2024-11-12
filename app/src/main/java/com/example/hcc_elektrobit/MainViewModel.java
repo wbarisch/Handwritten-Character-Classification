@@ -3,7 +3,6 @@ package com.example.hcc_elektrobit;
 import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
@@ -12,7 +11,6 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public class MainViewModel extends AndroidViewModel implements TimeoutActivity {

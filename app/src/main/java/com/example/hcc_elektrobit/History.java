@@ -24,11 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class History {
 
 
     private static volatile History INSTANCE = null;
+    public static final ExecutorService exec = Executors.newSingleThreadExecutor();
 
 
     private Set<HistoryItem> historyItems = new HashSet<>();
@@ -63,63 +66,66 @@ public class History {
      * "prediction"+random integer for uniqueness
      */
     public void saveItem(HistoryItem historyItem, Context context){
-        File root = new File(context.getFilesDir(), "saved_bitmaps");
-        if(!root.exists()){
-            root.mkdir();
-        }
+        exec.submit(()->{
+            File root = new File(context.getFilesDir(), "saved_bitmaps");
+            if(!root.exists()){
+                root.mkdir();
+            }
 
-        String imgFileName = historyItem.pred + "" + (int) (Math.random() * 10000) + historyItem.getModel() + ".png";
-        File img_file = new File(root, imgFileName);
-        try(FileOutputStream out = new FileOutputStream(img_file)){
-            historyItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-            Log.i("Bitmap Saved!", "Bitmap save in " + img_file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        String jsonFileName = "model_outputs.json";
-        File json_file = new File(root, jsonFileName);
-        if (!json_file.exists()){
-            try(FileOutputStream out = new FileOutputStream(json_file)){
-                Log.i("model_outputs.json", "Json file created");
-            }catch(IOException e){
+            String imgFileName = historyItem.pred + "" + (int) (Math.random() * 10000) + historyItem.getModel() + ".png";
+            File img_file = new File(root, imgFileName);
+            try(FileOutputStream out = new FileOutputStream(img_file)){
+                historyItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                Log.i("Bitmap Saved!", "Bitmap save in " + img_file);
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-
-        JSONObject mainJsonObject = getJsonObject(json_file);
-
-        JSONObject similarityMap = new JSONObject();
-        JSONArray cnnTensor = new JSONArray();
-        String jsonString;
-
-        try {
-            if(historyItem instanceof SMSHistoryItem) {
-
-                for (String key : (((SMSHistoryItem) historyItem).getOutputCollection()).keySet()) {
-                    similarityMap.put(key, ((SMSHistoryItem) historyItem).getOutputCollection().get(key));
+            String jsonFileName = "model_outputs.json";
+            File json_file = new File(root, jsonFileName);
+            if (!json_file.exists()){
+                try(FileOutputStream out = new FileOutputStream(json_file)){
+                    Log.i("model_outputs.json", "Json file created");
+                }catch(IOException e){
+                    throw new RuntimeException(e);
                 }
-
-                mainJsonObject.put(imgFileName, similarityMap);
-            } else if (historyItem instanceof CNNHistoryItem) {
-                for(float[] row: ((CNNHistoryItem) historyItem).getOutputCollection()) {
-                    JSONArray rowJson = new JSONArray();
-                    for (float value : row){
-                        rowJson.put(value+"");
-                    }
-                    cnnTensor.put(rowJson);
-                }
-                mainJsonObject.put(imgFileName, cnnTensor);
             }
-            jsonString = mainJsonObject.toString(4);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
 
-        try(FileOutputStream out = new FileOutputStream(json_file)){
-            out.write(jsonString.getBytes(StandardCharsets.UTF_8));
-        }catch (IOException e){
-            throw new RuntimeException(e);
-        }
+            JSONObject mainJsonObject = getJsonObject(json_file);
+
+            JSONObject similarityMap = new JSONObject();
+            JSONArray cnnTensor = new JSONArray();
+            String jsonString;
+
+            try {
+                if(historyItem instanceof SMSHistoryItem) {
+
+                    for (String key : (((SMSHistoryItem) historyItem).getOutputCollection()).keySet()) {
+                        similarityMap.put(key, ((SMSHistoryItem) historyItem).getOutputCollection().get(key));
+                    }
+
+                    mainJsonObject.put(imgFileName, similarityMap);
+                } else if (historyItem instanceof CNNHistoryItem) {
+                    for(float[] row: ((CNNHistoryItem) historyItem).getOutputCollection()) {
+                        JSONArray rowJson = new JSONArray();
+                        for (float value : row){
+                            rowJson.put(value+"");
+                        }
+                        cnnTensor.put(rowJson);
+                    }
+                    mainJsonObject.put(imgFileName, cnnTensor);
+                }
+                jsonString = mainJsonObject.toString(4);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+
+            try(FileOutputStream out = new FileOutputStream(json_file)){
+                out.write(jsonString.getBytes(StandardCharsets.UTF_8));
+            }catch (IOException e){
+                throw new RuntimeException(e);
+            }
+    });
+        INSTANCE.addItem(historyItem);
     }
 
     @NonNull

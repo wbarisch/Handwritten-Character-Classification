@@ -6,24 +6,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
-
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.documentfile.provider.DocumentFile;
-import androidx.lifecycle.ViewModelProvider;
-
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
-import java.util.Objects;
 
 public class JHistoryActivity extends AppCompatActivity {
 
@@ -55,6 +44,12 @@ public class JHistoryActivity extends AppCompatActivity {
 
         // Observe history items from ViewModel
         viewModel.getHistoryItems().observe(this, this::updateAdapter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        viewModel.loadHistory();
     }
 
     private void setupGridView() {
