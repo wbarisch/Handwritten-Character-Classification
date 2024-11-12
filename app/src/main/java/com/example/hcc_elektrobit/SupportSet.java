@@ -7,6 +7,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,15 +20,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class SupportSet {
+public class SupportSet implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private static volatile SupportSet INSTANCE = null;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private Future<?> evaluationFuture;
+    private static transient ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private transient Future<?> evaluationFuture;
     private Set<SupportSetItem> SupportSetItems = new TreeSet<>(new SupportSetItemComparator());
     private Set<SupportSetItem> upperCaseLetters = new TreeSet<>(new SupportSetItemComparator());
     private Set<SupportSetItem> lowerCaseLetters = new TreeSet<>(new SupportSetItemComparator());
     private Set<SupportSetItem> digits = new TreeSet<>(new SupportSetItemComparator());
+    private static boolean supportSetLoaded = false;
 
     private SupportSet() {
     }
@@ -33,7 +38,9 @@ public class SupportSet {
     public static SupportSet getInstance() {
         if (INSTANCE == null) {
             synchronized (SupportSet.class) {
-                if (INSTANCE == null) {
+                loadSupportSet();
+                if (INSTANCE == null && !supportSetLoaded) {
+
                     INSTANCE = new SupportSet();
                 }
             }
@@ -89,6 +96,31 @@ public class SupportSet {
             throw new RuntimeException(e);
         }
         addItem(setItem);
+        saveSupportSet();
+    }
+
+    public void saveSupportSet() {
+        File file = new File(JFileProvider.getInternalDir(), "support_set_serialized");
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file))) {
+            out.writeObject(this);
+            Log.i("SupportSet Serialization", "SupportSet serialized successfully");
+        } catch (IOException e) {
+            Log.e("Serialization Error", "Failed to serialize SupportSet", e);
+        }
+    }
+
+    public static void loadSupportSet() {
+        File file = new File(JFileProvider.getInternalDir(), "support_set_serialized");
+        if (file.exists()) {
+            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+                INSTANCE = (SupportSet) in.readObject();
+                executorService = Executors.newSingleThreadExecutor();
+                Log.i("SupportSet Load", "SupportSet loaded from serialized file.");
+                supportSetLoaded = true;
+            } catch (IOException | ClassNotFoundException e) {
+                Log.e("Deserialization Error", "Failed to load SupportSet", e);
+            }
+        }
     }
 
     public void updateSet() {
@@ -97,10 +129,20 @@ public class SupportSet {
             return;
         }
 
-        //SupportSetItems.clear();
         evaluationFuture = executorService.submit(() -> {
+            if(supportSetLoaded){
+                Log.i("File test", "test");
+                for (SupportSetItem i : SupportSetItems) {
+                    i.loadBitmap();
+                }
+
+            }else{
+
             for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
                 try (FileInputStream in = new FileInputStream(file)) {
+
+
+
                     String fileName = file.getName();
                     if (checkItemLoaded(fileName)) {
                         continue;
@@ -126,7 +168,8 @@ public class SupportSet {
                     throw new RuntimeException(e);
                 }
             }
-        });
+            saveSupportSet();
+        }});
     }
     public boolean imagesLoaded() {
         if (evaluationFuture == null) {
@@ -181,6 +224,7 @@ public class SupportSet {
         } else {
             Log.e("Image Deletion Failed", "Could not delete file: " + fileName);
         }
+        saveSupportSet();
     }
 
     public void renameItem(SupportSetItem item, String newLabel) {
@@ -195,6 +239,7 @@ public class SupportSet {
         file.renameTo(newFile);
         item.setFileName(newFileName);
 
+        saveSupportSet();
 
     }
 }

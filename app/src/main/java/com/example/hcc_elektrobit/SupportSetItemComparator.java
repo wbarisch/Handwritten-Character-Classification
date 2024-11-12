@@ -1,8 +1,10 @@
 package com.example.hcc_elektrobit;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
-public class SupportSetItemComparator implements Comparator<SupportSetItem> {
+public class SupportSetItemComparator implements Comparator<SupportSetItem>, Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Override
     public int compare(SupportSetItem o1, SupportSetItem o2) {

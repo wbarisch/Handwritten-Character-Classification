@@ -1,13 +1,18 @@
 package com.example.hcc_elektrobit;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
 
+import java.io.File;
+import java.io.Serializable;
 import java.util.Objects;
 
 import ai.onnxruntime.OnnxTensor;
 
-public class SupportSetItem {
-    Bitmap bitmap;
+public class SupportSetItem implements Serializable {
+    private static final long serialVersionUID = 1L;
+    transient Bitmap bitmap;
     String labelId;
     String fileName;
     float[] embeddingValues;
@@ -32,6 +37,8 @@ public class SupportSetItem {
         return bitmap;
     }
 
+    public void setBitmap(Bitmap bitmap) {this.bitmap = bitmap;}
+
     public String getLabelId(){
         return labelId;
     }
@@ -46,6 +53,17 @@ public class SupportSetItem {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public void loadBitmap() {
+        if(bitmap == null){
+            File file = new File(JFileProvider.getInternalDir(), "support_set/" + fileName);
+            Log.i("File Loaded", fileName);
+            if (file.exists()) {
+                setBitmap(BitmapFactory.decodeFile(file.getAbsolutePath()));
+            }
+        }
+
     }
 
 
