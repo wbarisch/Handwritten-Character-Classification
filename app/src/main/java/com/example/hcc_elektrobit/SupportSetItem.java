@@ -58,7 +58,6 @@ public class SupportSetItem implements Serializable {
     public void loadBitmap() {
         if(bitmap == null){
             File file = new File(JFileProvider.getInternalDir(), "support_set/" + fileName);
-            Log.i("File Loaded", fileName);
             if (file.exists()) {
                 setBitmap(BitmapFactory.decodeFile(file.getAbsolutePath()));
             }

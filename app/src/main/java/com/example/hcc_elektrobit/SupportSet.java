@@ -38,7 +38,9 @@ public class SupportSet implements Serializable {
     public static SupportSet getInstance() {
         if (INSTANCE == null) {
             synchronized (SupportSet.class) {
-                loadSupportSet();
+                if(!supportSetLoaded){
+                    loadSupportSet();
+                }
                 if (INSTANCE == null && !supportSetLoaded) {
 
                     INSTANCE = new SupportSet();
@@ -131,12 +133,11 @@ public class SupportSet implements Serializable {
 
         evaluationFuture = executorService.submit(() -> {
             if(supportSetLoaded){
-                Log.i("File test", "test");
                 for (SupportSetItem i : SupportSetItems) {
                     i.loadBitmap();
                 }
-
-            }else{
+            return;
+            }
 
             for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
                 try (FileInputStream in = new FileInputStream(file)) {
@@ -169,7 +170,7 @@ public class SupportSet implements Serializable {
                 }
             }
             saveSupportSet();
-        }});
+        });
     }
     public boolean imagesLoaded() {
         if (evaluationFuture == null) {
