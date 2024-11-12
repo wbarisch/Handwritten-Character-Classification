@@ -1,7 +1,9 @@
 package com.example.hcc_elektrobit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import android.graphics.Bitmap;
 
@@ -31,8 +33,8 @@ public class SupportSetTest {
     public void itemInputModeTest() {
 
         SupportSetItem supsetItemLower = new SupportSetItem(null, "t");
-        SupportSetItem supsetItemUpper = new SupportSetItem(null, "t");
-        SupportSetItem supsetItemNumber = new SupportSetItem(null, "t");
+        SupportSetItem supsetItemUpper = new SupportSetItem(null, "U");
+        SupportSetItem supsetItemNumber = new SupportSetItem(null, "1");
 
         supset.addItem(supsetItemLower);
         supset.addItem(supsetItemNumber);
@@ -45,6 +47,21 @@ public class SupportSetTest {
         assertNotNull(itemsRetUpper);
         assertNotNull(itemsRetNumber);
         assertNotNull(itemsRetLower);
+
+    }
+
+    @Test
+    public void itemRemoveTest() {
+
+        SupportSetItem supsetItem1 = new SupportSetItem(null, "5");
+
+
+        supset.addItem(supsetItem1);
+        supset.removeItem(supsetItem1);
+
+        List<SupportSetItem> itemsRet = supset.getItems();
+
+        assertFalse(itemsRet.contains(supsetItem1));
 
     }
 
