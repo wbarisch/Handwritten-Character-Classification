@@ -104,15 +104,6 @@ public class SMSComaparisonOnnxModel {
         for (SupportSetItem item : supportSet) {
             String labelId = item.getLabelId();
             float[] supportEmbedding = item.getEmbeddingValues();
-            if (supportEmbedding == null) {
-                try {
-                    supportEmbedding = ((float[][]) item.getImgEmbedding().getValue())[0];
-                    item.setEmbeddingValues(supportEmbedding);
-                } catch (OrtException e) {
-                    e.printStackTrace();
-                    continue;
-                }
-            }
 
             float similarity = computeCosineSimilarity(embeddingToCompare, supportEmbedding);
             similarityMap.putIfAbsent(labelId, new ArrayList<>());
@@ -157,15 +148,6 @@ public class SMSComaparisonOnnxModel {
         for (SupportSetItem item : supportSet) {
             String labelId = item.getLabelId();
             float[] supportEmbedding = item.getEmbeddingValues();
-            if (supportEmbedding == null) {
-                try {
-                    supportEmbedding = ((float[][]) item.getImgEmbedding().getValue())[0];
-                    item.setEmbeddingValues(supportEmbedding);
-                } catch (OrtException e) {
-                    e.printStackTrace();
-                    continue;
-                }
-            }
 
             float similarity = computeCosineSimilarity(embeddingToCompare, supportEmbedding);
             similarityMap.putIfAbsent(labelId, new ArrayList<>());
