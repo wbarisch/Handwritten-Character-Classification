@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,8 +25,11 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     // UI components
     private DrawingCanvas drawingCanvas;
-    private LinearLayout outputView;
-    private TextView charTextView; // To show the result of character recognition
+
+    //private LinearLayout outputView;
+    //private TextView charTextView; // To show the result of character recognition
+
+    private EditText textEditor; // To show concatenated resulting text, cursor
 
     private SMSComaparisonOnnxModel model;
     private Bitmap bitmap;
@@ -51,8 +55,9 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         setContentView(R.layout.activity_main);
 
         drawingCanvas = findViewById(R.id.drawing_canvas);
-        outputView = findViewById(R.id.output_view);
-        charTextView = findViewById(R.id.char_view);
+        //outputView = findViewById(R.id.output_view);
+        //charTextView = findViewById(R.id.char_view);
+        textEditor = findViewById(R.id.text_editor);
 
         model = SMSComaparisonOnnxModel.getInstance();
         audioPlayer = new AudioPlayerManager(this);
@@ -64,18 +69,6 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
                 canvasTimer.cancel();
                 timerStarted = false;
             }
-
-            /*
-            drawingCanvas.onTouchEvent(event);
-
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-
-                canvasTimer = new CanvasTimer(this);
-                new Thread(canvasTimer).start();
-                timerStarted = true;
-
-            }
-             */
 
             if(drawingCanvas.onTouchEvent(event)){
                 isAfterControlGesture = false;
@@ -107,7 +100,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         // GestureDetector for controlling input mode
         ModeGestureDetector = new GestureDetector(this, new ModeGestureListener(this));
 
-        charTextView.setOnTouchListener(new View.OnTouchListener() {
+        textEditor.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 ModeGestureDetector.onTouchEvent(event);
                 return true;
@@ -148,10 +141,10 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
         // Undo output result
         drawingCanvas.clear();
-        charTextView.setText("");
-        outputView.setVisibility(View.INVISIBLE);
+        textEditor.setText("");
+        //outputView.setVisibility(View.INVISIBLE);
 
-        Toast.makeText(this, "Character Deleted", Toast.LENGTH_SHORT).show();
+        showMessage("Character deleted");
 
     }
 
@@ -209,8 +202,8 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         audioPlayer.play();
 
         runOnUiThread(() -> {
-            charTextView.setText(result);
-            outputView.setVisibility(View.VISIBLE);
+            textEditor.setText(result);
+            //outputView.setVisibility(View.VISIBLE);
         });
 
     }
