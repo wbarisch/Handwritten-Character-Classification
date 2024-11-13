@@ -3,7 +3,6 @@ package com.example.hcc_elektrobit;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -25,7 +24,6 @@ public class JHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jhistory);
-        History.getInstance().updateHistory(HCC_Application.getAppContext());
 
         viewModel = new HistoryViewModel();
 
@@ -99,6 +97,7 @@ public class JHistoryActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menuButton) {
             Intent intent = new Intent(JHistoryActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
             return true;
         }

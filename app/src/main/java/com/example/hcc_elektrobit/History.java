@@ -1,6 +1,5 @@
 package com.example.hcc_elektrobit;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -60,20 +59,19 @@ public class History {
     /***
      *
      * @param historyItem
-     * @param context
      *
      * Stores historyItem in internal storage as a lossless png under the name
      * "prediction"+random integer for uniqueness
      */
-    public void saveItem(HistoryItem historyItem, Context context){
+    public void saveItem(HistoryItem historyItem){
         exec.submit(()->{
-            File root = new File(context.getFilesDir(), "saved_bitmaps");
-            if(!root.exists()){
-                root.mkdir();
+            File cachedHistory = new File(JFileProvider.getCacheDir(), "history");
+            if(!cachedHistory.exists()){
+                cachedHistory.mkdir();
             }
 
             String imgFileName = historyItem.pred + "" + (int) (Math.random() * 10000) + historyItem.getModel() + ".png";
-            File img_file = new File(root, imgFileName);
+            File img_file = new File(cachedHistory, imgFileName);
             try(FileOutputStream out = new FileOutputStream(img_file)){
                 historyItem.bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
                 Log.i("Bitmap Saved!", "Bitmap save in " + img_file);
@@ -81,7 +79,7 @@ public class History {
                 throw new RuntimeException(e);
             }
             String jsonFileName = "model_outputs.json";
-            File json_file = new File(root, jsonFileName);
+            File json_file = new File(cachedHistory, jsonFileName);
             if (!json_file.exists()){
                 try(FileOutputStream out = new FileOutputStream(json_file)){
                     Log.i("model_outputs.json", "Json file created");
@@ -149,35 +147,6 @@ public class History {
     }
 
 
-    // fill the history set with the saved imgs
-    public void updateHistory(Context context){
-        File bitmapDir = new File(context.getFilesDir(), "saved_bitmaps");
-        File jsonFile = new File(bitmapDir, "model_outputs.json");
-        if(!bitmapDir.exists()){
-            return;
-        }
-        historyItems.clear();
-        for (File file: Objects.requireNonNull(bitmapDir.listFiles())) {
-            if(file.getName().equals("model_outputs.json")) continue;
-            try(FileInputStream in = new FileInputStream(file)){
-                Bitmap bmp = BitmapFactory.decodeStream(in);
-                String pred = new String(Character.toChars(file.getName().codePointAt(0)));;
-                if(file.getName().contains("SMS")){
-                    Map<String, Float> similarityMap = getSimilarityMapFromJSON(file, jsonFile);
-                    SMSHistoryItem _hi = new SMSHistoryItem(bmp, pred, similarityMap);
-                    historyItems.add(_hi);
-                } else if(file.getName().contains("CNN")){
-                    float[][] outputTensor = getTensorFromJSON(file,jsonFile);
-                    CNNHistoryItem _hi = new CNNHistoryItem(bmp, pred, outputTensor);
-                    historyItems.add(_hi);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-
     private float[][] getTensorFromJSON(File file, File source) {
         float[][] result;
         String jsonContent;
@@ -241,10 +210,10 @@ public class History {
         return resultMap;
     }
 
-    public void clearHistory(Context context) {
-        File bitmapDir = new File(context.getFilesDir(), "saved_bitmaps");
-        if (bitmapDir.exists()) {
-            for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
+    public void clearHistory() {
+        File cachedHistory = new File(JFileProvider.getCacheDir(), "history");
+        if (cachedHistory.exists()) {
+            for (File file : Objects.requireNonNull(cachedHistory.listFiles())) {
                 if (file.delete()) {
                     Log.i("File Deleted", "Deleted file: " + file.getName());
                 } else {
@@ -257,4 +226,35 @@ public class History {
             Log.i("No History Found", "No history to delete.");
         }
     }
+
+    public void updateHistoryFromCache() {
+        exec.submit(()-> {
+            File cached_history = new File(JFileProvider.getCacheDir(), "history");
+            if (!cached_history.exists()) {
+                return;
+            }
+            File jsonFile = new File(cached_history, "model_outputs.json");
+            historyItems.clear();
+            for (File file : Objects.requireNonNull(cached_history.listFiles())) {
+                if (file.getName().equals("model_outputs.json")) continue;
+                try (FileInputStream in = new FileInputStream(file)) {
+                    Bitmap bmp = BitmapFactory.decodeStream(in);
+                    String pred = new String(Character.toChars(file.getName().codePointAt(0)));
+                    ;
+                    if (file.getName().contains("SMS")) {
+                        Map<String, Float> similarityMap = getSimilarityMapFromJSON(file, jsonFile);
+                        SMSHistoryItem _hi = new SMSHistoryItem(bmp, pred, similarityMap);
+                        historyItems.add(_hi);
+                    } else if (file.getName().contains("CNN")) {
+                        float[][] outputTensor = getTensorFromJSON(file, jsonFile);
+                        CNNHistoryItem _hi = new CNNHistoryItem(bmp, pred, outputTensor);
+                        historyItems.add(_hi);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
 }

@@ -36,7 +36,7 @@ public class HistoryViewModel extends ViewModel {
     }
 
     public void clearHistory() {
-        History.getInstance().clearHistory(HCC_Application.getAppContext());
+        History.getInstance().clearHistory();
         loadHistory();
     }
 
