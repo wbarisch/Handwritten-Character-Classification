@@ -104,7 +104,7 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
         Log.i(modelName, result_pair.second.toString());
     }
     private void saveHistoryItem(HistoryItem _hi){
-        History.getInstance().saveItem(_hi, HCC_Application.getAppContext());
+        History.getInstance().saveItem(_hi);
     }
 
 
