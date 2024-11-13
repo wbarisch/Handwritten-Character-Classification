@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
 
         SupportSet.getInstance().updateSet();
+        History.getInstance().updateHistoryFromCache();
 
         siameseActivityButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SiameseTesterActivity.class);
