@@ -31,6 +31,8 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     private EditText textEditor; // To show concatenated resulting text, cursor
 
+    StringBuffer stringBuffer = new StringBuffer(); // For storing and manipulating the result characters
+
     private SMSComaparisonOnnxModel model;
     private Bitmap bitmap;
     private AudioPlayerManager audioPlayer;
@@ -129,7 +131,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
-            //enterSpace();
+            addSpace();
             isAfterControlGesture = true; // Prevent classification
             return true;
         }
@@ -140,11 +142,23 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
     private void backspace(){
 
         // Undo output result
-        drawingCanvas.clear();
-        textEditor.setText("");
+        //drawingCanvas.clear();
+        //charTextView.setText("");
         //outputView.setVisibility(View.INVISIBLE);
 
+        drawingCanvas.clear();
+        stringBuffer.deleteCharAt(stringBuffer.length()-1);
+        textEditor.setText(stringBuffer.toString());
+
         showMessage("Character deleted");
+
+    }
+
+    private void addSpace(){
+
+        stringBuffer.append(" ");
+        textEditor.setText(stringBuffer.toString());
+        showMessage("Space inserted");
 
     }
 
@@ -202,8 +216,18 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         audioPlayer.play();
 
         runOnUiThread(() -> {
-            textEditor.setText(result);
+            //charTextView.setText(result);
             //outputView.setVisibility(View.VISIBLE);
+
+            //textEditor.setText(result);
+
+            if(result != null && !result.isEmpty()){
+
+                stringBuffer.append(result);
+                textEditor.setText(stringBuffer.toString());
+
+            }
+
         });
 
     }
