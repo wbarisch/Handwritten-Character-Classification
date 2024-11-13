@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.GestureDetector;
@@ -41,6 +42,8 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     // Designates input mode in use
     private int inputMode = InputMode.DEFAULT;
+
+    private GestureDetector ModeGestureDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +104,16 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         // GestureDetector for handling SingleTap, DoubleTap, e.t.c.
         gestureDetector = new GestureDetector(this, new HCCGestureListener(this));
 
+        // GestureDetector for controlling input mode
+        ModeGestureDetector = new GestureDetector(this, new ModeGestureListener(this));
+
+        charTextView.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                ModeGestureDetector.onTouchEvent(event);
+                return true;
+            }
+        });
+
     }
 
     class HCCGestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -123,38 +136,10 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
-            toggleInputMode(); //enterSpace();
+            //enterSpace();
             isAfterControlGesture = true; // Prevent classification
             return true;
         }
-
-    }
-
-    // Toggle input modes
-    private void toggleInputMode(){
-
-        String message;
-
-        switch (inputMode){
-
-            case InputMode.DEFAULT:
-                inputMode = InputMode.UPPERCASE;
-                message = "Uppercase mode";
-                break;
-            case InputMode.UPPERCASE:
-                inputMode = InputMode.LOWERCASE;
-                message = "Lowercase mode";
-                break;
-            case InputMode.LOWERCASE:
-                inputMode = InputMode.NUMBER;
-                message = "Number mode";
-                break;
-            default:
-                inputMode = InputMode.DEFAULT;
-                message = "Default mode";
-        }
-
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
     }
 
@@ -227,6 +212,52 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
             charTextView.setText(result);
             outputView.setVisibility(View.VISIBLE);
         });
+
+    }
+
+    class ModeGestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        Context context;
+
+        public ModeGestureListener (Context context){
+            this.context = context;
+        }
+
+        @Override
+        public boolean onDown(@NonNull MotionEvent event) {return true;}
+
+        @Override
+        public boolean onDoubleTap(@NonNull MotionEvent event) {
+            inputMode = InputMode.UPPERCASE;
+            showMessage("Uppercase mode");
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(@NonNull MotionEvent event) {
+            inputMode = InputMode.LOWERCASE;
+            showMessage("Lowercase mode");
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent event1, @NonNull MotionEvent event2, float velocityX, float velocityY) {
+            inputMode = InputMode.NUMBER;
+            showMessage("Number mode");
+            return true;
+        }
+
+        @Override
+        public void onLongPress(@NonNull MotionEvent event) {
+            inputMode = InputMode.DEFAULT;
+            showMessage("Default mode");
+        }
+
+    }
+
+    private void showMessage(String message){
+
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
     }
 
