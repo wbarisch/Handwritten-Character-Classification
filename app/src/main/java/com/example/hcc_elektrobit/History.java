@@ -3,6 +3,7 @@ package com.example.hcc_elektrobit;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -64,6 +65,10 @@ public class History {
      * "prediction"+random integer for uniqueness
      */
     public void saveItem(HistoryItem historyItem){
+        if(historyItems.size() >= 256){
+            Toast.makeText(HCC_Application.getAppContext(), "History full! Can't save more than 256.", Toast.LENGTH_LONG).show();
+            return;
+        }
         exec.submit(()->{
             File cachedHistory = new File(JFileProvider.getCacheDir(), "history");
             if(!cachedHistory.exists()){
