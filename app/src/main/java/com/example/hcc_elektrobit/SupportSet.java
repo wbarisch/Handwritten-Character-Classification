@@ -1,5 +1,6 @@
 package com.example.hcc_elektrobit;
 
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -7,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -33,6 +35,7 @@ public class SupportSet implements Serializable {
     private static boolean supportSetLoaded = false;
 
     private SupportSet() {
+        initializeSupportSetDirectory();
     }
 
     public static SupportSet getInstance() {
@@ -49,6 +52,42 @@ public class SupportSet implements Serializable {
         }
         return INSTANCE;
     }
+
+    private void initializeSupportSetDirectory() {
+        File supportSetDir = new File(JFileProvider.getInternalDir(), "support_set");
+
+        if (!supportSetDir.exists()) {
+            supportSetDir.mkdir();
+            copyAssetsToInternal("support_set");
+            Log.i("Initialization", "Copied support_set folder from assets to internal storage.");
+        } else {
+            Log.i("Initialization", "support_set folder already exists in internal storage.");
+        }
+    }
+
+    private void copyAssetsToInternal(String folderName) {
+        AssetManager assetManager = JFileProvider.getAssets();
+        try {
+            String[] files = assetManager.list(folderName);
+            if (files != null) {
+                for (String fileName : files) {
+                    try (InputStream in = assetManager.open(folderName + "/" + fileName);
+                         FileOutputStream out = new FileOutputStream(new File(JFileProvider.getInternalDir(), folderName + "/" + fileName))) {
+
+                        byte[] buffer = new byte[1024];
+                        int read;
+                        while ((read = in.read(buffer)) != -1) {
+                            out.write(buffer, 0, read);
+                        }
+                    }
+                    Log.i("File Copied", "Copied " + fileName + " to internal storage.");
+                }
+            }
+        } catch (IOException e) {
+            Log.e("Asset Copy Error", "Error copying assets to internal storage", e);
+        }
+    }
+
 
     public void addItem(SupportSetItem _hi) {
         SupportSetItems.add(_hi);
