@@ -104,25 +104,23 @@ public class SMSComaparisonOnnxModel {
         for (SupportSetItem item : supportSet) {
             String labelId = item.getLabelId();
             float[] supportEmbedding = item.getEmbeddingValues();
-            if (supportEmbedding == null) {
-                try {
-                    supportEmbedding = ((float[][]) item.getImgEmbedding().getValue())[0];
-                    item.setEmbeddingValues(supportEmbedding);
-                } catch (OrtException e) {
-                    e.printStackTrace();
-                    continue;
-                }
-            }
 
             float similarity = computeCosineSimilarity(embeddingToCompare, supportEmbedding);
             similarityMap.putIfAbsent(labelId, new ArrayList<>());
             similarityMap.get(labelId).add(similarity);
         }
-
+        //Map<String, Float> averageSimilarityMap = new HashMap<>();
         Map<String, Float> maxSimilarityMap = new HashMap<>();
         for (Map.Entry<String, List<Float>> entry : similarityMap.entrySet()) {
             String labelId = entry.getKey();
             List<Float> similarities = entry.getValue();
+            /*float sum = 0;
+            for (Float similarity : similarities) {
+                sum += similarity;
+            }
+            float average = sum / similarities.size();
+            averageSimilarityMap.put(labelId, average);
+            Log.e(TAG, "Average Similarity: " + average + " for Label ID: " + labelId); */
             float maxSimilarity = Collections.max(similarities);
             maxSimilarityMap.put(labelId, maxSimilarity);
             Log.e(TAG, "Maximum Similarity: " + maxSimilarity + " for Label ID: " + labelId);
@@ -157,15 +155,6 @@ public class SMSComaparisonOnnxModel {
         for (SupportSetItem item : supportSet) {
             String labelId = item.getLabelId();
             float[] supportEmbedding = item.getEmbeddingValues();
-            if (supportEmbedding == null) {
-                try {
-                    supportEmbedding = ((float[][]) item.getImgEmbedding().getValue())[0];
-                    item.setEmbeddingValues(supportEmbedding);
-                } catch (OrtException e) {
-                    e.printStackTrace();
-                    continue;
-                }
-            }
 
             float similarity = computeCosineSimilarity(embeddingToCompare, supportEmbedding);
             similarityMap.putIfAbsent(labelId, new ArrayList<>());

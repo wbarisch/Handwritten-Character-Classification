@@ -1,23 +1,26 @@
 package com.example.hcc_elektrobit;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
 
+import java.io.File;
+import java.io.Serializable;
 import java.util.Objects;
 
 import ai.onnxruntime.OnnxTensor;
 
-public class SupportSetItem {
-    Bitmap bitmap;
+public class SupportSetItem implements Serializable {
+    private static final long serialVersionUID = 1L;
+    transient Bitmap bitmap;
     String labelId;
     String fileName;
-    OnnxTensor imgEmbedding;
     float[] embeddingValues;
 
     SupportSetItem(Bitmap bmp, String labelId) {
         this.bitmap = bmp;
         this.labelId = labelId;
         float[][] emb = SMSEmbeddingOnnxModel.getInstance().embedBitmap(bmp);
-        imgEmbedding = SMSComaparisonOnnxModel.getInstance().loadTensor(emb);
         embeddingValues = emb[0];
     }
 
@@ -33,6 +36,8 @@ public class SupportSetItem {
     public Bitmap getBitmap(){
         return bitmap;
     }
+
+    public void setBitmap(Bitmap bitmap) {this.bitmap = bitmap;}
 
     public String getLabelId(){
         return labelId;
@@ -50,13 +55,17 @@ public class SupportSetItem {
         this.fileName = fileName;
     }
 
-    public OnnxTensor getImgEmbedding() {
-        return imgEmbedding;
+    public void loadBitmap() {
+        if(bitmap == null){
+            File file = new File(JFileProvider.getInternalDir(), "support_set/" + fileName);
+            if (file.exists()) {
+                setBitmap(BitmapFactory.decodeFile(file.getAbsolutePath()));
+            }
+        }
+
     }
 
-    public void setImgEmbedding(OnnxTensor imgEmbedding) {
-        this.imgEmbedding = imgEmbedding;
-    }
+
 
 
 
