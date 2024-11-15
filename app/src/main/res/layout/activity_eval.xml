@@ -7,34 +7,53 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:id="@+id/buttons"
-        android:layout_centerHorizontal="true">
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/evaluateButton"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Evaluate Model"
-            android:backgroundTint="#BDBDF2" />
+            android:layout_centerHorizontal="true"
+
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/evaluateButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#BDBDF2"
+                android:text="Evaluate Model" />
+
+            <Button
+                android:id="@+id/cancel_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#BDBDF2"
+                android:text="Cancel Evaluation" />
+
+
+        </LinearLayout>
+
         <Button
-            android:id="@+id/cancel_button"
+            android:id="@+id/reload_test_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel Evaluation"
-            android:backgroundTint="#BDBDF2" />
-
+            android:backgroundTint="#BDBDF2"
+            android:text="Reload Test Data" />
     </LinearLayout>
+
 
 
     <Spinner
         android:id="@+id/model_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/buttons"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="20dp"
         android:minHeight="48dp" />
 
@@ -49,6 +68,7 @@
         android:textSize="12pt"/>
 
     <ScrollView
+        android:id="@+id/scrollView2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/resultTextView"
@@ -61,6 +81,8 @@
             android:orientation="vertical"
             android:padding="8dp" />
     </ScrollView>
+
+
 
 
 </RelativeLayout>

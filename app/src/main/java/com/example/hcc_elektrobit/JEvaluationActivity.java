@@ -24,6 +24,8 @@ public class JEvaluationActivity extends AppCompatActivity {
     LinearLayout mispred;
     Button cancel_button;
 
+    Button reloadTestData_button;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,9 +39,11 @@ public class JEvaluationActivity extends AppCompatActivity {
         modelSpinner = findViewById(R.id.model_spinner);
         mispred = findViewById(R.id.mispredictions);
         cancel_button = findViewById(R.id.cancel_button);
+        reloadTestData_button = findViewById(R.id.reload_test_data);
 
 
         viewModel.setupSpinner(modelSpinner);
+        viewModel.loadTestData();
 
         viewModel.getEvaluationResult().observe(this, result -> {
             result_text.setText("Results:\n " + result);
@@ -68,6 +72,12 @@ public class JEvaluationActivity extends AppCompatActivity {
         cancel_button.setOnClickListener(v1 ->{
             viewModel.cancelEval();
         });
+
+        reloadTestData_button.setOnClickListener(v1 ->{
+            viewModel.reinistializeTestData();
+        });
+
+
 
 
     }
