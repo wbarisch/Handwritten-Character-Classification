@@ -6,16 +6,16 @@
     <data>
         <variable
             name="viewModel"
-            type="com.example.hcc_elektrobit.MainViewModel" />
+            type="com.example.hcc_elektrobit.main.MainViewModel" />
     </data>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#87CEFA"
-        tools:context=".MainActivity">
+        tools:context=".main.MainActivity">
 
-        <com.example.hcc_elektrobit.DrawingCanvas
+        <com.example.hcc_elektrobit.shared.DrawingCanvas
             android:id="@+id/drawing_canvas"
             android:layout_width="match_parent"
             android:layout_height="0dp"

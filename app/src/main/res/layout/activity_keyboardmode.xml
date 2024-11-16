@@ -6,9 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#87CEFA"
-    tools:context=".DrivingMode">
+    tools:context=".driving_mode.DrivingMode">
 
-    <com.example.hcc_elektrobit.DrawingCanvas
+    <com.example.hcc_elektrobit.shared.DrawingCanvas
         android:id="@+id/drawing_canvas"
         android:background="#FFFFFF"
         android:layout_width="match_parent"

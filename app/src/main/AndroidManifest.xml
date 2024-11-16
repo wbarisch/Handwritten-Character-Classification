@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
     <application
-        android:name=".HCC_Application"
+        android:name=".shared.HCC_Application"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -24,12 +24,12 @@
         android:theme="@style/Theme.HCC_Elektrobit.NoActionBar"
         tools:targetApi="31">
         <activity
-            android:name=".DrivingMode"
+            android:name=".driving_mode.DrivingMode"
             android:exported="true">
         </activity>
 
         <provider
-            android:name="com.example.hcc_elektrobit.JFileProvider"
+            android:name="com.example.hcc_elektrobit.shared.JFileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -39,7 +39,7 @@
         </provider>
 
         <activity
-            android:name=".MainActivity"
+            android:name=".main.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.HCC_Elektrobit.ActionBar">
             <intent-filter>
@@ -47,24 +47,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".JHistoryActivity"
+        <activity android:name=".history.JHistoryActivity"
             android:theme="@style/Theme.HCC_Elektrobit.ActionBar"
             android:exported="true" >
 
         </activity>
         <activity
-            android:name=".TrainingActivity"
+            android:name=".training.TrainingActivity"
             android:theme="@style/Theme.HCC_Elektrobit.ActionBar"
             android:exported="true" />
-        <activity android:name=".SiameseTesterActivity" />
+        <activity android:name=".evaluation.SiameseTesterActivity" />
         <activity
-            android:name=".ReviewActivity"
+            android:name=".training.ReviewActivity"
             android:theme="@style/Theme.HCC_Elektrobit.ActionBar"
             android:exported="true" />
-        <activity android:name=".SupportSetActivity" />
-        <activity android:name=".SupportSetDrawingActivity" />
-        <activity android:name=".KeyboardModeActivity" />
-        <activity android:name=".JEvaluationActivity"/>
+        <activity android:name=".support_set.SupportSetActivity" />
+        <activity android:name=".support_set.SupportSetDrawingActivity" />
+        <activity android:name=".keyboard_mode.KeyboardModeActivity" />
+        <activity android:name=".evaluation.JEvaluationActivity"/>
     </application>
 
 </manifest>
