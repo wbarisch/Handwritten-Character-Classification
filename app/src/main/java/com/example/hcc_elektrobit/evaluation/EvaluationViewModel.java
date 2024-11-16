@@ -1,6 +1,7 @@
 package com.example.hcc_elektrobit.evaluation;
 
 import android.app.Application;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -21,6 +22,7 @@ import com.example.hcc_elektrobit.shared.JFileProvider;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -72,6 +74,14 @@ public class EvaluationViewModel extends AndroidViewModel {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         modelSpinner.setAdapter(adapter);
     }
+
+    protected void reinistializeTestData(){
+        deletedFolder("test_data");
+        loadTestData();
+
+    }
+
+
 
     protected void start_test(String model) {
         if(!testRunning) {
@@ -312,6 +322,68 @@ public class EvaluationViewModel extends AndroidViewModel {
         Toast.makeText(HCC_Application.getAppContext(), "Cancelling evaluation... (can take up to 3 seconds)", Toast.LENGTH_LONG).show();
         if (evaluationFuture != null && !evaluationFuture.isDone()) {
             evaluationFuture.cancel(true); // Cancel the task if it’s running
+        }
+    }
+
+    public void loadTestData() {
+        File supportSetDir = new File(JFileProvider.getInternalDir(), "test_data");
+
+        if (!supportSetDir.exists()) {
+            supportSetDir.mkdir();
+            copyAssetsToInternal("test_data");
+            Log.i("Initialization", "Copied test_data folder from assets to internal storage.");
+        } else {
+            Log.i("Initialization", "test_data folder already exists in internal storage.");
+        }
+    }
+
+    private void deletedFolder(String folderName) {
+        File dir = new File(JFileProvider.getInternalDir(), folderName);
+
+        if (dir.exists() && dir.isDirectory()) {
+            deleteRecursive(dir);
+            Log.i("Folder Deleted", "Folder " + folderName + " and all its contents have been deleted.");
+        } else {
+            Log.e("Folder Not Found", "Folder " + folderName + " does not exist or is not a directory.");
+        }
+
+    }
+    private void deleteRecursive(File fileOrDirectory) {
+        if (fileOrDirectory.isDirectory()) {
+            File[] children = fileOrDirectory.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    deleteRecursive(child);
+                }
+            }
+        }
+        if (fileOrDirectory.delete()) {
+            Log.i("File Deleted", "Deleted: " + fileOrDirectory.getName());
+        } else {
+            Log.e("File Deletion Failed", "Failed to delete: " + fileOrDirectory.getName());
+        }
+    }
+
+    private void copyAssetsToInternal(String folderName) {
+        AssetManager assetManager = JFileProvider.getAssets();
+        try {
+            String[] files = assetManager.list(folderName);
+            if (files != null) {
+                for (String fileName : files) {
+                    try (InputStream in = assetManager.open(folderName + "/" + fileName);
+                         FileOutputStream out = new FileOutputStream(new File(JFileProvider.getInternalDir(), folderName + "/" + fileName))) {
+
+                        byte[] buffer = new byte[1024];
+                        int read;
+                        while ((read = in.read(buffer)) != -1) {
+                            out.write(buffer, 0, read);
+                        }
+                    }
+                    Log.i("File Copied", "Copied " + fileName + " to internal storage.");
+                }
+            }
+        } catch (IOException e) {
+            Log.e("Asset Copy Error", "Error copying assets to internal storage", e);
         }
     }
 }
