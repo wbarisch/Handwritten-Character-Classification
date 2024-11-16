@@ -7,6 +7,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.NonNull;
 
+import com.example.hcc_elektrobit.utils.BitmapUtils;
+
 public class DrawingCanvas extends View {
     private Paint paint;
     private Path path;

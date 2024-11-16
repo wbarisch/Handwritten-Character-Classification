@@ -1,4 +1,4 @@
-package com.example.hcc_elektrobit;
+package com.example.hcc_elektrobit.utils;
 
 public class InputMode {
 

@@ -8,6 +8,10 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import static org.junit.Assert.*;
 
+import com.example.hcc_elektrobit.model.SMSComaparisonOnnxModel;
+import com.example.hcc_elektrobit.shared.HCC_Application;
+import com.example.hcc_elektrobit.support_set.SupportSetItem;
+
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;

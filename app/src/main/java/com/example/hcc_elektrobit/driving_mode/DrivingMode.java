@@ -19,12 +19,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.GestureDetector;
 
+import com.example.hcc_elektrobit.model.SMSComaparisonOnnxModel;
 import com.example.hcc_elektrobit.shared.DrawingCanvas;
 import com.example.hcc_elektrobit.R;
 import com.example.hcc_elektrobit.main.MainActivity;
 import com.example.hcc_elektrobit.model.SMSonnxQuantisedModel;
 import com.example.hcc_elektrobit.support_set.SupportSet;
 import com.example.hcc_elektrobit.utils.AudioPlayerManager;
+import com.example.hcc_elektrobit.utils.InputMode;
 import com.example.hcc_elektrobit.utils.TimeoutActivity;
 import com.example.hcc_elektrobit.utils.Timer;
 

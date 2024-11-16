@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.example.hcc_elektrobit.shared.JFileProvider;
+import com.example.hcc_elektrobit.utils.InputMode;
+import com.example.hcc_elektrobit.utils.SupportSetItemComparator;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,7 +59,7 @@ public class SupportSet implements Serializable {
     }
 
     private void initializeSupportSetDirectory() {
-        File supportSetDir = new File(JFileProvider.getInternalDir(), "support_set");
+        File supportSetDir = new File(JFileProvider.getInstance().getInternalDir(), "support_set");
 
         if (!supportSetDir.exists()) {
             supportSetDir.mkdir();
@@ -69,13 +71,13 @@ public class SupportSet implements Serializable {
     }
 
     private void copyAssetsToInternal(String folderName) {
-        AssetManager assetManager = JFileProvider.getAssets();
+        AssetManager assetManager = JFileProvider.getInstance().getAssets();
         try {
             String[] files = assetManager.list(folderName);
             if (files != null) {
                 for (String fileName : files) {
                     try (InputStream in = assetManager.open(folderName + "/" + fileName);
-                         FileOutputStream out = new FileOutputStream(new File(JFileProvider.getInternalDir(), folderName + "/" + fileName))) {
+                         FileOutputStream out = new FileOutputStream(new File(JFileProvider.getInstance().getInternalDir(), folderName + "/" + fileName))) {
 
                         byte[] buffer = new byte[1024];
                         int read;
@@ -116,7 +118,7 @@ public class SupportSet implements Serializable {
     }
 
     public void saveItem(SupportSetItem setItem) {
-        File dir  = new File(JFileProvider.getInternalDir(), "support_set");
+        File dir  = new File(JFileProvider.getInstance().getInternalDir(), "support_set");
         if (!dir.exists()) {
             dir.mkdir();
         }
@@ -144,7 +146,7 @@ public class SupportSet implements Serializable {
     }
 
     public void saveSupportSet() {
-        File file = new File(JFileProvider.getInternalDir(), "support_set_serialized");
+        File file = new File(JFileProvider.getInstance().getInternalDir(), "support_set_serialized");
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file))) {
             out.writeObject(this);
             Log.i("SupportSet Serialization", "SupportSet serialized successfully");
@@ -154,7 +156,7 @@ public class SupportSet implements Serializable {
     }
 
     public static void loadSupportSet() {
-        File file = new File(JFileProvider.getInternalDir(), "support_set_serialized");
+        File file = new File(JFileProvider.getInstance().getInternalDir(), "support_set_serialized");
         if (file.exists()) {
             try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
                 INSTANCE = (SupportSet) in.readObject();
@@ -168,7 +170,8 @@ public class SupportSet implements Serializable {
     }
 
     public void updateSet() {
-        File bitmapDir = new File(JFileProvider.getInternalDir(), "support_set");
+
+        File bitmapDir = new File(JFileProvider.getInstance().getInternalDir(), "support_set");
         if (!bitmapDir.exists()) {
             return;
         }
@@ -231,7 +234,7 @@ public class SupportSet implements Serializable {
     }
 
     public void clearSet() {
-        File bitmapDir = new File(JFileProvider.getInternalDir(), "support_set");
+        File bitmapDir = new File(JFileProvider.getInstance().getInternalDir(), "support_set");
         if (bitmapDir.exists()) {
             for (File file : Objects.requireNonNull(bitmapDir.listFiles())) {
                 if (file.delete()) {
@@ -257,7 +260,7 @@ public class SupportSet implements Serializable {
             Log.e("Item Removal Failed", "Item was not found in the SupportSetItems set.");
         }
 
-        File fileDir = new File(JFileProvider.getInternalDir(), "support_set");
+        File fileDir = new File(JFileProvider.getInstance().getInternalDir(), "support_set");
         String fileName = item.getFileName();
         Log.i("File Name", fileName);
         File file = new File(fileDir, fileName);
@@ -271,7 +274,7 @@ public class SupportSet implements Serializable {
     }
 
     public void renameItem(SupportSetItem item, String newLabel) {
-        File dir = new File(JFileProvider.getInternalDir(), "support_set");
+        File dir = new File(JFileProvider.getInstance().getInternalDir(), "support_set");
 
 
         String fileName = item.getFileName();

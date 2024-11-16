@@ -3,6 +3,8 @@ package com.example.hcc_elektrobit.shared;
 import android.app.Application;
 import android.content.Context;
 
+import com.example.hcc_elektrobit.support_set.SupportSet;
+
 
 // Application class to provide to context to the file provider
 public class HCC_Application extends Application {

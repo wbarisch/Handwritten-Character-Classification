@@ -1,4 +1,6 @@
-package com.example.hcc_elektrobit;
+package com.example.hcc_elektrobit.utils;
+
+import com.example.hcc_elektrobit.support_set.SupportSetItem;
 
 import java.io.Serializable;
 import java.util.Comparator;

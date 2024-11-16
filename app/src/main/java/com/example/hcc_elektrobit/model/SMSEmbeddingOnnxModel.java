@@ -53,11 +53,11 @@ public class SMSEmbeddingOnnxModel {
 
     private String copyModelToCache() throws IOException {
         String modelFileName = "siamese_embedding_model_500.onnx";
-        File cacheDir = JFileProvider.getCacheDir();
+        File cacheDir = JFileProvider.getInstance().getCacheDir();
         File modelFile = new File(cacheDir, modelFileName);
 
         if (!modelFile.exists()) {
-            try (InputStream is = JFileProvider.getAssets().open(modelFileName);
+            try (InputStream is = JFileProvider.getInstance().getAssets().open(modelFileName);
                  FileOutputStream fos = new FileOutputStream(modelFile)) {
                 byte[] buffer = new byte[1024];
                 int length;

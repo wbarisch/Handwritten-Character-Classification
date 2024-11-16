@@ -6,6 +6,8 @@ import android.util.Log;
 
 import com.example.hcc_elektrobit.model.SMSComaparisonOnnxModel;
 import com.example.hcc_elektrobit.model.SMSEmbeddingOnnxModel;
+import com.example.hcc_elektrobit.shared.JFileProvider;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.Objects;
@@ -59,7 +61,7 @@ public class SupportSetItem implements Serializable {
 
     public void loadBitmap() {
         if(bitmap == null){
-            File file = new File(JFileProvider.getInternalDir(), "support_set/" + fileName);
+            File file = new File(JFileProvider.getInstance().getInternalDir(), "support_set/" + fileName);
             if (file.exists()) {
                 setBitmap(BitmapFactory.decodeFile(file.getAbsolutePath()));
             }

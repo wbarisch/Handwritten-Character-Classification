@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.example.hcc_elektrobit.MainViewModel" />
+            type="com.example.hcc_elektrobit.main.MainViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -16,7 +16,7 @@
         android:background="#87CEFA"
         tools:context=".driving_mode.DrivingMode">
 
-        <com.example.hcc_elektrobit.DrawingCanvas
+        <com.example.hcc_elektrobit.shared.DrawingCanvas
             android:id="@+id/drawing_canvas"
             android:background="#FFFFFF"
             android:layout_width="match_parent"

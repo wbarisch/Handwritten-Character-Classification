@@ -326,7 +326,7 @@ public class EvaluationViewModel extends AndroidViewModel {
     }
 
     public void loadTestData() {
-        File supportSetDir = new File(JFileProvider.getInternalDir(), "test_data");
+        File supportSetDir = new File(JFileProvider.getInstance().getInternalDir(), "test_data");
 
         if (!supportSetDir.exists()) {
             supportSetDir.mkdir();
@@ -338,7 +338,7 @@ public class EvaluationViewModel extends AndroidViewModel {
     }
 
     private void deletedFolder(String folderName) {
-        File dir = new File(JFileProvider.getInternalDir(), folderName);
+        File dir = new File(JFileProvider.getInstance().getInternalDir(), folderName);
 
         if (dir.exists() && dir.isDirectory()) {
             deleteRecursive(dir);
@@ -365,13 +365,13 @@ public class EvaluationViewModel extends AndroidViewModel {
     }
 
     private void copyAssetsToInternal(String folderName) {
-        AssetManager assetManager = JFileProvider.getAssets();
+        AssetManager assetManager = JFileProvider.getInstance().getAssets();
         try {
             String[] files = assetManager.list(folderName);
             if (files != null) {
                 for (String fileName : files) {
                     try (InputStream in = assetManager.open(folderName + "/" + fileName);
-                         FileOutputStream out = new FileOutputStream(new File(JFileProvider.getInternalDir(), folderName + "/" + fileName))) {
+                         FileOutputStream out = new FileOutputStream(new File(JFileProvider.getInstance().getInternalDir(), folderName + "/" + fileName))) {
 
                         byte[] buffer = new byte[1024];
                         int read;
