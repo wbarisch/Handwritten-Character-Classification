@@ -6,11 +6,13 @@ public class HistoryItem {
     Object model_tensor;
     Bitmap bitmap;
     String pred;
+    long timeCreated;
 
     HistoryItem(Bitmap bmp, String prediction, Object prediction_tensor){
         this.bitmap = bmp;
         this.pred = prediction;
         this.model_tensor = prediction_tensor;
+        this.timeCreated = System.currentTimeMillis();
     }
 
     public Bitmap getBitmap(){
@@ -27,5 +29,9 @@ public class HistoryItem {
 
     public String getModel(){
         return null;
+    }
+
+    public long getCreationTime() {
+        return timeCreated;
     }
 }
