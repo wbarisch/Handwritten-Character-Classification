@@ -84,8 +84,8 @@ public class SMSEmbeddingOnnxModel {
             float[][] output = (float[][]) result.get(0).getValue();
 
             // Log output information for debugging
-            Log.i(TAG, "Output Tensor Shape: [" + output.length + ", " + output[0].length + "]");
-            Log.i(TAG, "Output Tensor Values: " + java.util.Arrays.toString(output[0]));
+            //Log.i(TAG, "Output Tensor Shape: [" + output.length + ", " + output[0].length + "]");
+            //Log.i(TAG, "Output Tensor Values: " + java.util.Arrays.toString(output[0]));
 
 
             return output;
