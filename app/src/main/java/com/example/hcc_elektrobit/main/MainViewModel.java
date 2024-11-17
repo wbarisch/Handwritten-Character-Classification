@@ -13,7 +13,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.hcc_elektrobit.support_set.SupportSet;
 import com.example.hcc_elektrobit.utils.AudioPlayerManager;
-import com.example.hcc_elektrobit.model.SMSComaparisonOnnxModel;
+import com.example.hcc_elektrobit.model.SMSComaparison;
 import com.example.hcc_elektrobit.utils.TimeoutActivity;
 import com.example.hcc_elektrobit.utils.Timer;
 import com.example.hcc_elektrobit.history.History;
@@ -104,7 +104,7 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
         Pair<String, Map<String, Float>> result_pair;
 
 
-        result_pair = SMSComaparisonOnnxModel.getInstance().classifyAndReturnPredAndSimilarityMap(canvasBitmap);
+        result_pair = SMSComaparison.getInstance().classifyAndReturnPredAndSimilarityMap(canvasBitmap);
 
         SMSHistoryItem historyItem = new SMSHistoryItem(canvasBitmap, result_pair.first.toString(), result_pair.second);
         history.saveItem(historyItem, mainContext);

@@ -5,78 +5,36 @@ import android.util.Log;
 import android.util.Pair;
 
 
-import com.example.hcc_elektrobit.shared.JFileProvider;
 import com.example.hcc_elektrobit.support_set.SupportSet;
 import com.example.hcc_elektrobit.support_set.SupportSetItem;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ai.onnxruntime.OnnxTensor;
-import ai.onnxruntime.OrtEnvironment;
-import ai.onnxruntime.OrtException;
-import ai.onnxruntime.OrtSession;
-
-public class SMSComaparisonOnnxModel {
-    private static SMSComaparisonOnnxModel INSTANCE = null;
-
-    private OrtEnvironment env;
-    private OrtSession session;
+public class SMSComaparison {
+    private static SMSComaparison INSTANCE = null;
 
     private boolean quantized = false;
 
     private static final String TAG = "SMSonnxModel_Comp";
 
-    private SMSComaparisonOnnxModel() {
-        try {
-            String modelPath = copyModelToCache();
-            env = OrtEnvironment.getEnvironment();
-            session = env.createSession(modelPath, new OrtSession.SessionOptions());
-            Log.i(TAG, "ONNX session created successfully.");
-        } catch (OrtException e) {
-            Log.e(TAG, "Error creating ONNX session", e);
-        } catch (IOException e) {
-            Log.e(TAG, "Error reading ONNX model from assets", e);
-        }
+    private SMSComaparison() {
     }
 
-    public static SMSComaparisonOnnxModel getInstance() {
+    public static SMSComaparison getInstance() {
         if (INSTANCE == null) {
-            synchronized (SMSComaparisonOnnxModel.class) {
+            synchronized (SMSComaparison.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new SMSComaparisonOnnxModel();
+                    INSTANCE = new SMSComaparison();
                 }
             }
         }
         return INSTANCE;
     }
 
-
-    private String copyModelToCache() throws IOException {
-        String modelFileName = "siamese_comparison_model_500.onnx";
-        File cacheDir = JFileProvider.getInstance().getCacheDir();
-        File modelFile = new File(cacheDir, modelFileName);
-
-        if (!modelFile.exists()) {
-            try (InputStream is = JFileProvider.getInstance().getAssets().open(modelFileName);
-                 FileOutputStream fos = new FileOutputStream(modelFile)) {
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = is.read(buffer)) > 0) {
-                    fos.write(buffer, 0, length);
-                }
-            }
-        }
-        return modelFile.getAbsolutePath();
-    }
 
     public void setQuantized(boolean quantized) {
         this.quantized = quantized;
@@ -189,25 +147,6 @@ public class SMSComaparisonOnnxModel {
     }
 
     public void close() {
-        try {
-            if (session != null) {
-                session.close();
-            }
-            if (env != null) {
-                env.close();
-            }
-        } catch (OrtException e) {
-            Log.e(TAG, "Error closing ONNX environment or session", e);
-        }
     }
 
-    public OnnxTensor loadTensor(float[][] emb) {
-        OnnxTensor returnTensor;
-        try {
-            returnTensor = OnnxTensor.createTensor(env, FloatBuffer.wrap(emb[0]), new long[]{1, 4096});
-        } catch (OrtException e) {
-            throw new RuntimeException(e);
-        }
-        return returnTensor;
-    }
 }

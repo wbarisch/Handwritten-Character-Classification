@@ -14,7 +14,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.hcc_elektrobit.model.SMSComaparisonOnnxModel;
+import com.example.hcc_elektrobit.model.SMSComaparison;
 import com.example.hcc_elektrobit.model.SMSonnxModel;
 import com.example.hcc_elektrobit.model.SMSonnxQuantisedModel;
 import com.example.hcc_elektrobit.shared.HCC_Application;
@@ -44,8 +44,8 @@ public class EvaluationViewModel extends AndroidViewModel {
 
     private SMSonnxModel singleStepModel;
     private SMSonnxQuantisedModel singleStepQuanModel;
-    private SMSComaparisonOnnxModel twoStepModel;
-    private SMSComaparisonOnnxModel twoStepQuanModel;
+    private SMSComaparison twoStepModel;
+    private SMSComaparison twoStepQuanModel;
 
     private int TEST_SIZE = 0;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -126,8 +126,8 @@ public class EvaluationViewModel extends AndroidViewModel {
                         break;
                     }
                     case "2-step": {
-                        SMSComaparisonOnnxModel.getInstance().setQuantized(false);
-                        twoStepModel = SMSComaparisonOnnxModel.getInstance();
+                        SMSComaparison.getInstance().setQuantized(false);
+                        twoStepModel = SMSComaparison.getInstance();
                         long startTime = System.currentTimeMillis();
 
                         returned_pair = test(twoStepModel);
@@ -143,8 +143,8 @@ public class EvaluationViewModel extends AndroidViewModel {
                         break;
                     }
                     case "2-step quantized": {
-                        SMSComaparisonOnnxModel.getInstance().setQuantized(true);
-                        twoStepQuanModel = SMSComaparisonOnnxModel.getInstance();
+                        SMSComaparison.getInstance().setQuantized(true);
+                        twoStepQuanModel = SMSComaparison.getInstance();
                         long startTime = System.currentTimeMillis();
 
                         returned_pair = test(twoStepQuanModel);
@@ -263,7 +263,7 @@ public class EvaluationViewModel extends AndroidViewModel {
         return new Pair<>((float)correctPrediction / TEST_SIZE, misPredictions_value);
     }
 
-    private Pair<Float, Map<String, List<String>>> test(SMSComaparisonOnnxModel twoStep) {
+    private Pair<Float, Map<String, List<String>>> test(SMSComaparison twoStep) {
         int correctPrediction = 0;
         TEST_SIZE = 0;
         Map<String, List<String>> misPredictions_value = new HashMap<>();

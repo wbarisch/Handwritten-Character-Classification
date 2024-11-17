@@ -19,11 +19,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.GestureDetector;
 
-import com.example.hcc_elektrobit.model.SMSComaparisonOnnxModel;
+import com.example.hcc_elektrobit.model.SMSComaparison;
 import com.example.hcc_elektrobit.shared.DrawingCanvas;
 import com.example.hcc_elektrobit.R;
 import com.example.hcc_elektrobit.main.MainActivity;
-import com.example.hcc_elektrobit.model.SMSonnxQuantisedModel;
 import com.example.hcc_elektrobit.support_set.SupportSet;
 import com.example.hcc_elektrobit.utils.AudioPlayerManager;
 import com.example.hcc_elektrobit.utils.InputMode;
@@ -37,7 +36,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
     private LinearLayout outputView;
     private TextView charTextView; // To show the result of character recognition
 
-    private SMSComaparisonOnnxModel model;
+    private SMSComaparison model;
     private Bitmap bitmap;
     private AudioPlayerManager audioPlayer;
 
@@ -62,7 +61,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         outputView = findViewById(R.id.output_view);
         charTextView = findViewById(R.id.char_view);
 
-        model = SMSComaparisonOnnxModel.getInstance();
+        model = SMSComaparison.getInstance();
         audioPlayer = new AudioPlayerManager(this);
         SupportSet.getInstance().updateSet();
 
@@ -229,7 +228,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
             return;
         }
 
-        String result = model.classifyAndReturnPredAndSimilarityMap(bitmap, inputMode).first;
+        String result = String.valueOf(model.classifyAndReturnPredAndSimilarityMap(bitmap, inputMode).first.charAt(0));
 
         audioPlayer.setDataSource(result);
         audioPlayer.play();

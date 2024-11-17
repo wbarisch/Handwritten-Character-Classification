@@ -2,17 +2,12 @@ package com.example.hcc_elektrobit.support_set;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
-import com.example.hcc_elektrobit.model.SMSComaparisonOnnxModel;
 import com.example.hcc_elektrobit.model.SMSEmbeddingOnnxModel;
 import com.example.hcc_elektrobit.shared.JFileProvider;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.Objects;
-
-import ai.onnxruntime.OnnxTensor;
 
 public class SupportSetItem implements Serializable {
     private static final long serialVersionUID = 1L;

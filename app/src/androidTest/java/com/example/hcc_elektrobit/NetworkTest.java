@@ -8,7 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import static org.junit.Assert.*;
 
-import com.example.hcc_elektrobit.model.SMSComaparisonOnnxModel;
+import com.example.hcc_elektrobit.model.SMSComaparison;
 import com.example.hcc_elektrobit.shared.HCC_Application;
 import com.example.hcc_elektrobit.support_set.SupportSetItem;
 
@@ -25,7 +25,7 @@ public class NetworkTest {
     private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     // The neural network model
-    private static final SMSComaparisonOnnxModel model = SMSComaparisonOnnxModel.getInstance();
+    private static final SMSComaparison model = SMSComaparison.getInstance();
 
     // Use the app's SupportSet items as a sample data
     private final List<SupportSetItem> sampleData = HCC_Application.getSupportSet().getItems();

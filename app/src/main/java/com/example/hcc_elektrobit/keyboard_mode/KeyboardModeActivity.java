@@ -24,7 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.hcc_elektrobit.R;
 import com.example.hcc_elektrobit.main.MainActivity;
-import com.example.hcc_elektrobit.model.SMSComaparisonOnnxModel;
+import com.example.hcc_elektrobit.model.SMSComaparison;
 import com.example.hcc_elektrobit.shared.DrawingCanvas;
 import com.example.hcc_elektrobit.support_set.SupportSet;
 import com.example.hcc_elektrobit.utils.AudioPlayerManager;
@@ -39,7 +39,7 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
     private TextView charTextView;
     private EditText textBox; // New cumulative output text box
 
-    private SMSComaparisonOnnxModel model;
+    private SMSComaparison model;
     private Bitmap bitmap;
     private AudioPlayerManager audioPlayer;
 
@@ -61,7 +61,7 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
         charTextView = findViewById(R.id.char_view);
         textBox = findViewById(R.id.text_box); // Initialize cumulative text box
 
-        model = SMSComaparisonOnnxModel.getInstance();
+        model = SMSComaparison.getInstance();
         audioPlayer = new AudioPlayerManager(this);
         SupportSet.getInstance().updateSet();
 
