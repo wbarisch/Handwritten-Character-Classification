@@ -12,8 +12,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,9 +23,6 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     // UI components
     private DrawingCanvas drawingCanvas;
-
-    //private LinearLayout outputView;
-    //private TextView charTextView; // To show the result of character recognition
 
     private EditText textEditor; // To show concatenated resulting text, cursor
 
@@ -57,8 +52,6 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         setContentView(R.layout.activity_main);
 
         drawingCanvas = findViewById(R.id.drawing_canvas);
-        //outputView = findViewById(R.id.output_view);
-        //charTextView = findViewById(R.id.char_view);
         textEditor = findViewById(R.id.text_editor);
 
         model = SMSComaparisonOnnxModel.getInstance();
@@ -140,26 +133,16 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     // Delete the last character
     private void backspace(){
-
-        // Undo output result
-        //drawingCanvas.clear();
-        //charTextView.setText("");
-        //outputView.setVisibility(View.INVISIBLE);
-
         drawingCanvas.clear();
         stringBuffer.deleteCharAt(stringBuffer.length()-1);
         textEditor.setText(stringBuffer.toString());
-
         showMessage("Character deleted");
-
     }
 
     private void addSpace(){
-
         stringBuffer.append(" ");
         textEditor.setText(stringBuffer.toString());
         showMessage("Space inserted");
-
     }
 
     // Set menu resource for toolbar
@@ -216,10 +199,6 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         audioPlayer.play();
 
         runOnUiThread(() -> {
-            //charTextView.setText(result);
-            //outputView.setVisibility(View.VISIBLE);
-
-            //textEditor.setText(result);
 
             if(result != null && !result.isEmpty()){
 
