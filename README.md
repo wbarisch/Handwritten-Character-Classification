@@ -40,3 +40,13 @@ The required dev files for the Pytorch environment are in the `Neural-network-ba
 Since the main scope of our project is to have a backbone ready for further refinement, this repo is easily expandable and loosely coupled. As a design pattern, we used MVVM for Android development.
 
 For more details on how the different components are coupled, check out Section 5.2.1 of our documentation that properly explains it.
+
+## Using the APP
+
+### Add weights to the project before compiling
+
+Make sure that the ONNX files for both `comparison` and `embedding` are present under the `assets` folder in the project.
+
+### Setting up the support set
+
+To setup the support set, you will need to manually enter the characters you want to recognize. Simple go to the `Support set` menu and add as many characters as needed. Keep in mind that the label only needs to be set one, and then every drawing will be linked to that character.
