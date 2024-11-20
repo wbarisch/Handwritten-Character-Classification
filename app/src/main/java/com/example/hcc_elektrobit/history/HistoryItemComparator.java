@@ -1,6 +1,4 @@
-package com.example.hcc_elektrobit;
-
-import android.util.Log;
+package com.example.hcc_elektrobit.history;
 
 import java.util.Comparator;
 

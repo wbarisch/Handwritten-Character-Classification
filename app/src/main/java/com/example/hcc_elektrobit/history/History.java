@@ -7,6 +7,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.example.hcc_elektrobit.shared.HCC_Application;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,7 +20,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import com.example.hcc_elektrobit.shared.JFileProvider;
 
 public class History {
 
@@ -71,7 +73,7 @@ public class History {
             return;
         }
         exec.submit(() -> {
-            File cachedHistory = new File(JFileProvider.getCacheDir(), "history");
+            File cachedHistory = new File(JFileProvider.getInstance().getCacheDir(), "history");
             if (!cachedHistory.exists()) {
                 cachedHistory.mkdir();
             }
@@ -218,7 +220,7 @@ public class History {
     }
 
     public void clearHistory() {
-        File cachedHistory = new File(JFileProvider.getCacheDir(), "history");
+        File cachedHistory = new File(JFileProvider.getInstance().getCacheDir(), "history");
         if (cachedHistory.exists()) {
             for (File file : Objects.requireNonNull(cachedHistory.listFiles())) {
                 if (file.delete()) {
@@ -236,7 +238,7 @@ public class History {
 
     public void updateHistoryFromCache() {
         exec.submit(() -> {
-            File cachedHistory = new File(JFileProvider.getCacheDir(), "history");
+            File cachedHistory = new File(JFileProvider.getInstance().getCacheDir(), "history");
             if (!cachedHistory.exists()) {
                 return;
             }

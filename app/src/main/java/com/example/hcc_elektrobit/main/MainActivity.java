@@ -37,6 +37,7 @@ import com.example.hcc_elektrobit.support_set.SupportSetActivity;
 import com.example.hcc_elektrobit.databinding.ActivityJmainBinding;
 import com.example.hcc_elektrobit.databinding.ActivityMainBinding;
 import com.example.hcc_elektrobit.history.JHistoryActivity;
+import com.example.hcc_elektrobit.history.History;
 
 import java.io.IOException;
 import java.io.OutputStream;
