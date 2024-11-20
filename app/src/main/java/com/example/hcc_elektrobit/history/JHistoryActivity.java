@@ -31,7 +31,6 @@ public class JHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jhistory);
-        History.getInstance().updateHistory(HCC_Application.getAppContext());
 
         viewModel = new HistoryViewModel();
 
@@ -50,6 +49,12 @@ public class JHistoryActivity extends AppCompatActivity {
 
         // Observe history items from ViewModel
         viewModel.getHistoryItems().observe(this, this::updateAdapter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        viewModel.loadHistory();
     }
 
     private void setupGridView() {
@@ -99,6 +104,7 @@ public class JHistoryActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menuButton) {
             Intent intent = new Intent(JHistoryActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
             return true;
         }

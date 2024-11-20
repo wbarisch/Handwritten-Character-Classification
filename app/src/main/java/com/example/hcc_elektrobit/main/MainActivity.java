@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         Button supportsetActivityButton = findViewById(R.id.support_set_gen);
 
         SupportSet.getInstance().updateSet();
+        History.getInstance().updateHistoryFromCache();
 
         siameseActivityButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SiameseTesterActivity.class);
@@ -197,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
         if(id == R.id.menuButton) {
 
             Intent intent = new Intent(MainActivity.this, JHistoryActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             startActivity(intent);
             return true;
         }

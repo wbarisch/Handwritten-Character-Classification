@@ -3,7 +3,6 @@ package com.example.hcc_elektrobit.history;
 
 import android.net.Uri;
 import android.util.Log;
-
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -39,7 +38,7 @@ public class HistoryViewModel extends ViewModel {
     }
 
     public void clearHistory() {
-        History.getInstance().clearHistory(HCC_Application.getAppContext());
+        History.getInstance().clearHistory();
         loadHistory();
     }
 

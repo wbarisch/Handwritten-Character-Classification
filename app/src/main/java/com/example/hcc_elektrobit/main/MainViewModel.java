@@ -16,9 +16,9 @@ import com.example.hcc_elektrobit.utils.AudioPlayerManager;
 import com.example.hcc_elektrobit.model.SMSComaparison;
 import com.example.hcc_elektrobit.utils.TimeoutActivity;
 import com.example.hcc_elektrobit.utils.Timer;
-import com.example.hcc_elektrobit.history.History;
 import com.example.hcc_elektrobit.history.SMSHistoryItem;
 import com.example.hcc_elektrobit.shared.HCC_Application;
+import com.example.hcc_elektrobit.history.*;
 
 import java.util.Map;
 
@@ -37,6 +37,8 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
     private MutableLiveData<Integer> bitmapSize = new MutableLiveData<>(105);
     private final Context mainContext;
     private String modelName = "SMS";
+
+    private HistoryItem itemToSave;
 
 
     public MainViewModel(Application application){
@@ -85,9 +87,9 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
         classifyCharacterSMS(canvasBitmap);
 
 
-
-
         long endTime = System.nanoTime();
+
+        saveHistoryItem(itemToSave);
 
         Log.i(modelName, classifiedCharacter.getValue());
         Double time = Math.round((endTime - startTime) / 1_000_000.0) / 1_000.0;
@@ -106,10 +108,12 @@ public class MainViewModel extends AndroidViewModel implements TimeoutActivity {
 
         result_pair = SMSComaparison.getInstance().classifyAndReturnPredAndSimilarityMap(canvasBitmap);
 
-        SMSHistoryItem historyItem = new SMSHistoryItem(canvasBitmap, result_pair.first.toString(), result_pair.second);
-        history.saveItem(historyItem, mainContext);
+        itemToSave = new SMSHistoryItem(canvasBitmap, result_pair.first.toString(), result_pair.second);
         _classifiedCharacter.setValue(result_pair.first);
         Log.i(modelName, result_pair.second.toString());
+    }
+    private void saveHistoryItem(HistoryItem _hi){
+        History.getInstance().saveItem(_hi);
     }
 
 
