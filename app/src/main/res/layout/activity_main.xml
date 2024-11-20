@@ -24,6 +24,24 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintDimensionRatio="1" />
 
+        <TextView
+            android:id="@+id/mode_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recognition Mode: "
+            android:textSize="9pt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/drawing_canvas" />
+        <TextView
+            android:id="@+id/mode_as"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Defualt"
+            android:textSize="9pt"
+            android:textColor="@color/purple_500"
+            app:layout_constraintStart_toEndOf="@+id/mode_text"
+            app:layout_constraintTop_toBottomOf="@+id/drawing_canvas" />
+
         <!--
         <ImageView
             android:id="@+id/bitmap_display"

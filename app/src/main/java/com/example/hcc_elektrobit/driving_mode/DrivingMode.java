@@ -39,6 +39,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
     private SMSComaparison model;
     private Bitmap bitmap;
     private AudioPlayerManager audioPlayer;
+    private TextView modeTextView;
 
     //
     Timer canvasTimer;
@@ -60,6 +61,7 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         drawingCanvas = findViewById(R.id.drawing_canvas);
         outputView = findViewById(R.id.output_view);
         charTextView = findViewById(R.id.char_view);
+        modeTextView = findViewById(R.id.mode_as);
 
         model = SMSComaparison.getInstance();
         audioPlayer = new AudioPlayerManager(this);
@@ -164,7 +166,10 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
                 message = "Default mode";
         }
 
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+
+        runOnUiThread(() -> {
+            modeTextView.setText(message);
+        });
 
     }
 
