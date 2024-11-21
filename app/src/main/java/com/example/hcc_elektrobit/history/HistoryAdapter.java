@@ -2,6 +2,7 @@ package com.example.hcc_elektrobit.history;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -87,6 +88,8 @@ public class HistoryAdapter extends ArrayAdapter<HistoryItem> {
                 } else if (Objects.equals(item.getModel(), "CNN")) {
                     tensor.setText(Arrays.deepToString(((CNNHistoryItem) item).getOutputCollection()));
                 }
+
+                tensor.setMovementMethod(new ScrollingMovementMethod());
 
                 // Set up close button functionality
                 Button closeButton = dialogView.findViewById(R.id.closeButton);
