@@ -56,7 +56,7 @@ public class AudioPlayerManager {
 
     public void play(){
         if(mediaPlayer != null && !mediaPlayer.isPlaying()){
-            mediaPlayer.start();
+            //mediaPlayer.start();
         }
     }
 
