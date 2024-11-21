@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -50,6 +53,8 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
     private GestureDetector gestureDetector;
     private SpellCheckerSession spellCheckerSession;
 
+    private boolean isCanvasLocked = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,6 +78,11 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
 
         // Set up touch listener for drawingCanvas
         drawingCanvas.setOnTouchListener((v, event) -> {
+
+            if (isCanvasLocked) {
+                return true;
+            }
+
             if (timerStarted) {
                 canvasTimer.cancel();
                 timerStarted = false;
@@ -120,8 +130,17 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
 
         @Override
         public boolean onDoubleTap(MotionEvent event) {
+            if (isCanvasLocked) {
+                // If canvas is already locked, ignore additional double-taps
+                return true;
+            }
+
             handleBackspace();
             isAfterControlGesture = true;  // Prevent classification
+
+            // Lock the canvas to prevent further processing
+            lockCanvasTemporarily();
+
             return true;
         }
 
@@ -135,12 +154,24 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
 
     @Override
     public void onTimeout() {
-        if (!isAfterControlGesture) {
+        if (!isAfterControlGesture && !isCanvasLocked) {
             classifyCharacter();
         }
         drawingCanvas.clear();
         timerStarted = false;
         isAfterControlGesture = false;
+    }
+
+    private void lockCanvasTemporarily() {
+        isCanvasLocked = true;
+
+        disableAutocorrectTemporarily();
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            isCanvasLocked = false;
+            isAfterControlGesture = false;
+            enableAutocorrect();
+        }, 100);
     }
 
     private void classifyCharacter() {
@@ -197,6 +228,18 @@ public class KeyboardModeActivity extends AppCompatActivity implements TimeoutAc
         if (spellCheckerSession != null) {
             spellCheckerSession.getSuggestions(new TextInfo(lastWord), 5);
         }
+    }
+
+    private void disableAutocorrectTemporarily() {
+        runOnUiThread(() -> {
+            textBox.setInputType(textBox.getInputType() & ~InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
+        });
+    }
+
+    private void enableAutocorrect() {
+        runOnUiThread(() -> {
+            textBox.setInputType(textBox.getInputType() | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT);
+        });
     }
 
     // Implementing the spell checker session listener
