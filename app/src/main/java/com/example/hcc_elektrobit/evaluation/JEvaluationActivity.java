@@ -1,5 +1,6 @@
 package com.example.hcc_elektrobit.evaluation;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.hcc_elektrobit.R;
+import com.example.hcc_elektrobit.main.MainActivity;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,8 @@ public class JEvaluationActivity extends AppCompatActivity {
 
     Button reloadTestData_button;
 
+    Button siameseTester_button;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,7 +45,12 @@ public class JEvaluationActivity extends AppCompatActivity {
         mispred = findViewById(R.id.mispredictions);
         cancel_button = findViewById(R.id.cancel_button);
         reloadTestData_button = findViewById(R.id.reload_test_data);
+        Button siameseTester_button = findViewById(R.id.siamese_test_screen_button);
 
+        siameseTester_button.setOnClickListener(v -> {
+            Intent intent = new Intent(JEvaluationActivity.this, SiameseTesterActivity.class);
+            startActivity(intent);
+        });
 
         viewModel.setupSpinner(modelSpinner);
         viewModel.loadTestData();

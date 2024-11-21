@@ -5,17 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/purple_200">
-    <Button
-        android:id="@+id/clear_set"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Clear Set" />
+
     <Button
         android:id="@+id/draw_item"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Create"
-        app:layout_constraintLeft_toRightOf="@id/clear_set"/>
+        app:layout_constraintStart_toStartOf="@+id/grid_view" />
     <GridView
         android:id="@+id/grid_view"
         android:layout_width="match_parent"

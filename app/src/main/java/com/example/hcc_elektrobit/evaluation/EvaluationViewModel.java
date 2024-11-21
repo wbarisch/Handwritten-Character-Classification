@@ -65,7 +65,7 @@ public class EvaluationViewModel extends AndroidViewModel {
     }
 
     protected void setupSpinner(Spinner modelSpinner) {
-        List<String> modelList = Arrays.asList("normal", "quantized", "2-step", "2-step quantized");
+        List<String> modelList = Arrays.asList( "2-step");
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 HCC_Application.getAppContext(),
                 android.R.layout.simple_spinner_item,

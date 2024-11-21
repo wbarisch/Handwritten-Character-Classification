@@ -36,13 +36,26 @@
 
 
         </LinearLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
 
+        android:orientation="horizontal">
         <Button
             android:id="@+id/reload_test_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="#BDBDF2"
             android:text="Reload Test Data" />
+        <Button
+            android:id="@+id/siamese_test_screen_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#BDBDF2"
+            android:text="Siamese Tester" />
+
+    </LinearLayout>
     </LinearLayout>
 
 
@@ -67,6 +80,7 @@
         android:text="Result will appear here"
         android:textSize="12pt"/>
 
+
     <ScrollView
         android:id="@+id/scrollView2"
         android:layout_width="match_parent"
@@ -81,6 +95,7 @@
             android:orientation="vertical"
             android:padding="8dp" />
     </ScrollView>
+
 
 
 

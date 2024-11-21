@@ -21,13 +21,6 @@
         app:layout_constraintStart_toEndOf="@+id/clear_history"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/eval_button_act"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Evaluate models"
-        app:layout_constraintStart_toEndOf="@+id/export_history"
-        app:layout_constraintTop_toTopOf="parent"/>
 
     <GridView
         android:id="@+id/grid_view"

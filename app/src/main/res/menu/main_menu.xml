@@ -10,35 +10,28 @@
         android:title="" />
 
     <item
-        android:id="@+id/action_toggle_antialias"
-        android:title="Anti-Alias"
-        android:checkable="true"
-        android:checked="true"
-        android:orderInCategory="102"
+        android:id="@+id/action_canvas_settings"
+        android:title="Canvas Settings"
+        android:orderInCategory="101"
         app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_set_bitmap_size"
-        android:title="Set Bitmap Size"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_select_stroke_width"
-        android:title="Select Stroke Width"
-        android:orderInCategory="103"
-        app:showAsAction="never">
-    </item>
 
     <item
         android:id="@+id/driver_mode"
         android:title="Driver Mode"
-        android:orderInCategory="104"
+        android:orderInCategory="102"
         app:showAsAction="never">
     </item>
 
     <item
         android:id="@+id/keyboard_mode"
         android:title="Keyboard Mode"
+        android:orderInCategory="103"
+        app:showAsAction="never">
+    </item>
+
+    <item
+        android:id="@+id/evalutation_mode"
+        android:title="Evalutation Screen"
         android:orderInCategory="104"
         app:showAsAction="never">
     </item>

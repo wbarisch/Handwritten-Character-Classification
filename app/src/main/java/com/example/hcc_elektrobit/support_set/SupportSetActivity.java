@@ -57,7 +57,7 @@ public class SupportSetActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(SupportSetViewModel.class);
 
         gridView = findViewById(R.id.grid_view);
-        Button clearHistory = findViewById(R.id.clear_set);
+
         Button createImgButton = findViewById(R.id.draw_item);
 
         viewModel.updateSet();
@@ -80,13 +80,6 @@ public class SupportSetActivity extends AppCompatActivity {
             }
         });
 
-        clearHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //viewModel.clearSet();
-                updateGridView();
-            }
-        });
     }
 
     private void showItemOptionsDialog(SupportSetItem item) {

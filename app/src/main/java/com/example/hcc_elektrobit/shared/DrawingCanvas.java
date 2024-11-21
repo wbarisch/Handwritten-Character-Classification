@@ -12,6 +12,9 @@ import com.example.hcc_elektrobit.utils.BitmapUtils;
 public class DrawingCanvas extends View {
     private Paint paint;
     private Path path;
+
+
+
     private float currentStrokeWidth = 50f;
 
     public DrawingCanvas(Context context, AttributeSet attributeSet) {
@@ -110,5 +113,9 @@ public class DrawingCanvas extends View {
         canvas.drawColor(Color.WHITE);
         this.draw(canvas);
         return bitmap;
+    }
+
+    public int getCurrentStrokeWidth() {
+        return (int) currentStrokeWidth;
     }
 }
