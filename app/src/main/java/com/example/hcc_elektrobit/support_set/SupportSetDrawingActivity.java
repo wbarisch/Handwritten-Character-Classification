@@ -71,58 +71,12 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
         optionsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LayoutInflater inflater = getLayoutInflater();
-                View dialogView = inflater.inflate(R.layout.popup_dialog, null);
-
-                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(SupportSetDrawingActivity.this);
-                dialogBuilder.setView(dialogView);
-
-                final EditText imageIdInput = dialogView.findViewById(R.id.image_id);
-                final EditText bitmapSizeInput = dialogView.findViewById(R.id.bitmap_size);
-
-                bitmapSizeInput.setText(String.valueOf(bitmapSize));
-
-                dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                        String imageId = imageIdInput.getText().toString();
-                        String bitmapSizeStr = bitmapSizeInput.getText().toString();
-
-                        if (!imageId.isEmpty()) {
-                            labelId = imageId;
-                        }
-
-                        if (!bitmapSizeStr.isEmpty()) {
-                            bitmapSize = Integer.parseInt(bitmapSizeStr);
-                        }
-
-
-                        labelTextView.setText(String.valueOf(labelId));
-
-                        Toast.makeText(SupportSetDrawingActivity.this, "Image ID: " + imageId + "\nBitmap Size: " + bitmapSize, Toast.LENGTH_SHORT).show();
-                    }
-                });
-
-                dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-
-                // Create and show the dialog
-                AlertDialog dialog = dialogBuilder.create();
-                dialog.show();
+                showOptionsDialog();
             }
         });
 
-
-
-
         drawingCanvas.setOnTouchListener((v, event) -> {
-
-            if(timerStarted){
+            if (timerStarted) {
                 canvasTimer.cancel();
                 timerStarted = false;
             }
@@ -141,9 +95,52 @@ public class SupportSetDrawingActivity extends AppCompatActivity implements Time
 
             return true;
         });
-
+        showOptionsDialog();
     }
 
+    private void showOptionsDialog() {
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.popup_dialog, null);
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(SupportSetDrawingActivity.this);
+        dialogBuilder.setView(dialogView);
+
+        final EditText imageIdInput = dialogView.findViewById(R.id.image_id);
+        final EditText bitmapSizeInput = dialogView.findViewById(R.id.bitmap_size);
+
+        bitmapSizeInput.setText(String.valueOf(bitmapSize));
+
+        dialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String imageId = imageIdInput.getText().toString();
+                String bitmapSizeStr = bitmapSizeInput.getText().toString();
+
+                if (!imageId.isEmpty()) {
+                    labelId = imageId;
+                }
+
+                if (!bitmapSizeStr.isEmpty()) {
+                    bitmapSize = Integer.parseInt(bitmapSizeStr);
+                }
+
+                labelTextView.setText(String.valueOf(labelId));
+
+                Toast.makeText(SupportSetDrawingActivity.this, "Image ID: " + imageId + "\nBitmap Size: " + bitmapSize, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        // Create and show the dialog
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
+    }
 
     public void onTimeout(){
 
