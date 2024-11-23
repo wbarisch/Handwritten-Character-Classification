@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">HCC_Elektrobit</string>
+    <string name="user_tip">Draw on the canvas to write here.\n\nSingle tap, double tap, swipe or press and hold this text box to select lowercase, uppercase, number or default mode.</string>
 </resources>

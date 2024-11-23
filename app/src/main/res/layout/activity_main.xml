@@ -37,7 +37,7 @@
             android:focusableInTouchMode="true"
             android:clickable="false"
             android:longClickable="false"
-            android:hint="Draw on the canvas to write here"
+            android:hint="@string/user_tip"
             android:layout_margin="20dp"
             android:padding="10dp"
             android:textColor="@color/black"
