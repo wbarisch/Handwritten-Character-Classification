@@ -15,8 +15,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.hcc_elektrobit.model.SMSComaparison;
-import com.example.hcc_elektrobit.model.SMSonnxModel;
-import com.example.hcc_elektrobit.model.SMSonnxQuantisedModel;
 import com.example.hcc_elektrobit.shared.HCC_Application;
 import com.example.hcc_elektrobit.shared.JFileProvider;
 
@@ -42,10 +40,7 @@ public class EvaluationViewModel extends AndroidViewModel {
     private MutableLiveData<Map<String, List<String>>> mispredictions = new MutableLiveData<>();
 
 
-    private SMSonnxModel singleStepModel;
-    private SMSonnxQuantisedModel singleStepQuanModel;
     private SMSComaparison twoStepModel;
-    private SMSComaparison twoStepQuanModel;
 
     private int TEST_SIZE = 0;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -93,38 +88,7 @@ public class EvaluationViewModel extends AndroidViewModel {
                 float elapsed = 0f;
 
                 switch (model) {
-                    case "normal": {
-                        singleStepModel = SMSonnxModel.getInstance(HCC_Application.getAppContext());
-                        long startTime = System.currentTimeMillis();
 
-                        returned_pair = test(singleStepModel);
-                        if (returned_pair != null)
-                            accuracy = returned_pair.first;
-
-                        long endTime = System.currentTimeMillis();
-                        elapsed = endTime - startTime;
-
-                        Log.e("Test", "Time it took was " + elapsed / 1000 + " s");
-                        Log.e("Test", "Time per classification was " + (elapsed / 1000) / TEST_SIZE + " s");
-
-                        break;
-                    }
-                    case "quantized": {
-                        singleStepQuanModel = SMSonnxQuantisedModel.getInstance(HCC_Application.getAppContext());
-                        long startTime = System.currentTimeMillis();
-
-                        returned_pair = test(singleStepQuanModel);
-                        if (returned_pair != null)
-                            accuracy = returned_pair.first;
-
-
-                        long endTime = System.currentTimeMillis();
-                        elapsed = endTime - startTime;
-
-                        Log.e("Test", "Time it took was " + elapsed / 1000 + " s");
-                        Log.e("Test", "Time per classification was " + (elapsed / 1000) / TEST_SIZE + " s");
-                        break;
-                    }
                     case "2-step": {
                         SMSComaparison.getInstance().setQuantized(false);
                         twoStepModel = SMSComaparison.getInstance();
@@ -142,23 +106,7 @@ public class EvaluationViewModel extends AndroidViewModel {
                         Log.e("Test", "Time per classification was " + (elapsed / 1000) / TEST_SIZE + " s");
                         break;
                     }
-                    case "2-step quantized": {
-                        SMSComaparison.getInstance().setQuantized(true);
-                        twoStepQuanModel = SMSComaparison.getInstance();
-                        long startTime = System.currentTimeMillis();
 
-                        returned_pair = test(twoStepQuanModel);
-                        if (returned_pair != null)
-                            accuracy = returned_pair.first;
-
-
-                        long endTime = System.currentTimeMillis();
-                        elapsed = endTime - startTime;
-
-                        Log.e("Test", "Time it took was " + elapsed / 1000 + " s");
-                        Log.e("Test", "Time per classification was " + (elapsed / 1000) / TEST_SIZE + " s");
-                        break;
-                    }
                     default:
                         break;
                 }
@@ -173,94 +121,6 @@ public class EvaluationViewModel extends AndroidViewModel {
                 testRunning = false;
             });
         }
-    }
-
-    private Pair<Float, Map<String, List<String>>> test(SMSonnxModel singleStep) {
-        int correctPrediction = 0;
-        Map<String, List<String>> misPredictions_value = new HashMap<>();
-        File testDataFolder = new File(JFileProvider.getInstance().getInternalDir(), "test_data");
-        if (testDataFolder.exists() && testDataFolder.isDirectory()) {
-            File[] pngs = testDataFolder.listFiles();
-
-            if (pngs != null) {
-                for (File png : pngs) {
-
-                    if (Thread.currentThread().isInterrupted()) {
-                        Log.d("Test", "Evaluation canceled");
-                        return null;
-                    }
-
-                    try (InputStream is = new FileInputStream(png)) {
-                        Bitmap bitmap = BitmapFactory.decodeStream(is);
-
-                        if (bitmap != null) {
-                            String result = singleStep.classify_id(bitmap);
-                            String expected = png.getName().charAt(0) + "";
-                            if (result.equals(expected)) {
-                                correctPrediction++;
-                            }else{
-                                if(!misPredictions_value.containsKey(expected)){
-                                    List<String> tempArray = new ArrayList<>();
-                                    tempArray.add(result);
-                                    misPredictions_value.put(expected, tempArray);
-                                }else{
-                                    misPredictions_value.get(expected).add(result);
-                                }
-                            }
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        }else{
-            Log.e("Model Evaluation", "No test folder found!");
-        }
-        return new Pair<>((float)correctPrediction / TEST_SIZE, misPredictions_value);
-    }
-
-    private Pair<Float, Map<String, List<String>>> test(SMSonnxQuantisedModel singleStep_quan) {
-        int correctPrediction = 0;
-        Map<String, List<String>> misPredictions_value = new HashMap<>();
-        File testDataFolder = new File(JFileProvider.getInstance().getInternalDir(), "test_data");
-        if (testDataFolder.exists() && testDataFolder.isDirectory()) {
-            File[] pngs = testDataFolder.listFiles();
-
-            if (pngs != null) {
-                for (File png : pngs) {
-
-                    if (Thread.currentThread().isInterrupted()) {
-                        Log.d("Test", "Evaluation canceled");
-                        return null;
-                    }
-
-                    try (InputStream is = new FileInputStream(png)) {
-                        Bitmap bitmap = BitmapFactory.decodeStream(is);
-
-                        if (bitmap != null) {
-                            String result = singleStep_quan.classify_id(bitmap);
-                            String expected = png.getName().charAt(0) + "";
-                            if (result.equals(expected)) {
-                                correctPrediction++;
-                            }else{
-                                if(!misPredictions_value.containsKey(expected)){
-                                    List<String> tempArray = new ArrayList<>();
-                                    tempArray.add(result);
-                                    misPredictions_value.put(expected, tempArray);
-                                }else{
-                                    misPredictions_value.get(expected).add(result);
-                                }
-                            }
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        }else{
-            Log.e("Model Evaluation", "No test folder found!");
-        }
-        return new Pair<>((float)correctPrediction / TEST_SIZE, misPredictions_value);
     }
 
     private Pair<Float, Map<String, List<String>>> test(SMSComaparison twoStep) {

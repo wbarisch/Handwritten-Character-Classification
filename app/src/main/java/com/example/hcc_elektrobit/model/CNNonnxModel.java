@@ -44,11 +44,11 @@ public class CNNonnxModel {
 
     public static CNNonnxModel getInstance(Context context) {
         if (INSTANCE == null) {
-            synchronized (SMSonnxModel.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new CNNonnxModel(context.getApplicationContext());
-                }
-            }
+
+
+            INSTANCE = new CNNonnxModel(context.getApplicationContext());
+
+
         }
         return INSTANCE;
     }

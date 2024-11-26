@@ -146,6 +146,23 @@ public class SMSComaparison {
         return new Pair<>(maxLabelId, maxSimilarityMap);
     }
 
+    public float computeCosineSimilarityBitmap(Bitmap bm1, Bitmap bm2) {
+        float[] emb1 = SMSEmbeddingOnnxModel.getInstance().embedBitmap(bm1)[0];
+        float[] emb2 = SMSEmbeddingOnnxModel.getInstance().embedBitmap(bm2)[0];
+
+        float dotProduct = 0.0f;
+        float normA = 0.0f;
+        float normB = 0.0f;
+
+        for (int i = 0; i < emb1.length; i++) {
+            dotProduct += emb1[i] * emb2[i];
+            normA += emb1[i] * emb1[i];
+            normB += emb2[i] * emb2[i];
+        }
+
+        return dotProduct / ((float) Math.sqrt(normA) * (float) Math.sqrt(normB) + 1e-10f); // Added small epsilon to prevent division by zero
+    }
+
     public void close() {
     }
 
