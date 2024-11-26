@@ -5,6 +5,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
+import com.example.hcc_elektrobit.utils.TimeoutActivity;
+import com.example.hcc_elektrobit.utils.Timer;
+
 public class TimerTest {
 
     private Timer timer;
