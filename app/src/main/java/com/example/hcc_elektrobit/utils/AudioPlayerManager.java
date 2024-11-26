@@ -16,6 +16,9 @@ public class AudioPlayerManager {
     private String currentFileName;
     private AssetManager assetManager;
 
+    public boolean isPlaying(){ // for testing
+        return mediaPlayer != null && mediaPlayer.isPlaying();
+    }
     /**
      * The class is responsible for Audio playing functions and managing which of the audio files to use.
      * @param appContext Needed to access the resources of the project
