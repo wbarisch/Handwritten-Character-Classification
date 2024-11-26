@@ -1,20 +1,13 @@
-package com.example.hcc_elektrobit;
+package com.example.hcc_elektrobit.training;
 
-import com.example.hcc_elektrobit.Event;
 import android.app.Application;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import org.opencv.android.Utils;
-import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
-import java.io.File;
-import java.util.*;
+
+import com.example.hcc_elektrobit.utils.CharacterMapping;
 
 
 public class TrainingActivityViewModel extends AndroidViewModel {
@@ -27,7 +20,7 @@ public class TrainingActivityViewModel extends AndroidViewModel {
     private final MutableLiveData<Event<Void>> noImagesDialogEvent = new MutableLiveData<>();
 
     private final CharacterMapping characterMapping;
-    private int bitmapSize = 28;
+    private int bitmapSize = 105;
     private boolean saveAsWhiteCharacterOnBlack = true;
     private String selectedCharacter = "";
     private int selectedCharacterId = -1;

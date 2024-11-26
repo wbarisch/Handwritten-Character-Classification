@@ -1,4 +1,4 @@
-package com.example.hcc_elektrobit;
+package com.example.hcc_elektrobit.training;
 
 import androidx.annotation.Nullable;
 

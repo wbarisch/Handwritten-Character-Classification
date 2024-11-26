@@ -4,10 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -20,10 +16,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 
 import com.example.hcc_elektrobit.shared.DrawingCanvas;
@@ -35,27 +30,15 @@ import com.example.hcc_elektrobit.utils.CharacterMapping;
 import com.example.hcc_elektrobit.utils.DialogManager;
 import com.example.hcc_elektrobit.utils.ImageSavingManager;
 
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
 import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class TrainingActivity extends AppCompatActivity implements TimeoutActivity {
-    private static final int REVIEW_IMAGES_REQUEST = 1;
 
-    private int bitmapSize = 28;
+    private static final String TAG = "TrainingViewModel";
+    private static final int REVIEW_IMAGES_REQUEST = 1;
 
     private Bitmap bitmap;
     private Timer canvasTimer;
@@ -71,6 +54,7 @@ public class TrainingActivity extends AppCompatActivity implements TimeoutActivi
     private Button reviewButton;
     private EditText characterIdInput;
     private List<Bitmap> bitmapsToSave;
+    private TrainingActivityViewModel viewModel;
 
     static {
         try {

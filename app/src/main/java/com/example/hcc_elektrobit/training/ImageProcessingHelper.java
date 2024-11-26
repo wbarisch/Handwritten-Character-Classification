@@ -1,4 +1,4 @@
-package com.example.hcc_elektrobit;
+package com.example.hcc_elektrobit.training;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
