@@ -11,10 +11,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.GestureDetector;
@@ -33,8 +33,10 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
     // UI components
     private DrawingCanvas drawingCanvas;
-    private LinearLayout outputView;
-    private TextView charTextView; // To show the result of character recognition
+
+    private EditText textEditor; // To show concatenated resulting text, cursor
+
+    StringBuffer stringBuffer = new StringBuffer(); // For storing and manipulating the result characters
 
     private SMSComaparison model;
     private Bitmap bitmap;
@@ -53,15 +55,16 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
     // Designates input mode in use
     private int inputMode = InputMode.DEFAULT;
 
+    private GestureDetector ModeGestureDetector;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         drawingCanvas = findViewById(R.id.drawing_canvas);
-        outputView = findViewById(R.id.output_view);
-        charTextView = findViewById(R.id.char_view);
         modeTextView = findViewById(R.id.mode_as);
+        textEditor = findViewById(R.id.text_editor);
 
         model = SMSComaparison.getInstance();
         audioPlayer = new AudioPlayerManager(this);
@@ -73,18 +76,6 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
                 canvasTimer.cancel();
                 timerStarted = false;
             }
-
-            /*
-            drawingCanvas.onTouchEvent(event);
-
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-
-                canvasTimer = new CanvasTimer(this);
-                new Thread(canvasTimer).start();
-                timerStarted = true;
-
-            }
-             */
 
             if(drawingCanvas.onTouchEvent(event)){
                 isAfterControlGesture = false;
@@ -113,6 +104,16 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         // GestureDetector for handling SingleTap, DoubleTap, e.t.c.
         gestureDetector = new GestureDetector(this, new HCCGestureListener(this));
 
+        // GestureDetector for controlling input mode
+        ModeGestureDetector = new GestureDetector(this, new ModeGestureListener(this));
+
+        textEditor.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                ModeGestureDetector.onTouchEvent(event);
+                return true;
+            }
+        });
+
     }
 
     class HCCGestureListener extends GestureDetector.SimpleOnGestureListener {
@@ -135,54 +136,25 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
-            toggleInputMode(); //enterSpace();
+            addSpace();
             isAfterControlGesture = true; // Prevent classification
             return true;
         }
 
     }
 
-    // Toggle input modes
-    private void toggleInputMode(){
-
-        String message;
-
-        switch (inputMode){
-
-            case InputMode.DEFAULT:
-                inputMode = InputMode.UPPERCASE;
-                message = "Uppercase mode";
-                break;
-            case InputMode.UPPERCASE:
-                inputMode = InputMode.LOWERCASE;
-                message = "Lowercase mode";
-                break;
-            case InputMode.LOWERCASE:
-                inputMode = InputMode.NUMBER;
-                message = "Number mode";
-                break;
-            default:
-                inputMode = InputMode.DEFAULT;
-                message = "Default mode";
-        }
-
-
-        runOnUiThread(() -> {
-            modeTextView.setText(message);
-        });
-
-    }
-
     // Delete the last character
     private void backspace(){
-
-        // Undo output result
         drawingCanvas.clear();
-        charTextView.setText("");
-        outputView.setVisibility(View.INVISIBLE);
+        stringBuffer.deleteCharAt(stringBuffer.length()-1);
+        textEditor.setText(stringBuffer.toString());
+        showMessage("Character deleted");
+    }
 
-        Toast.makeText(this, "Character Deleted", Toast.LENGTH_SHORT).show();
-
+    private void addSpace(){
+        stringBuffer.append(" ");
+        textEditor.setText(stringBuffer.toString());
+        showMessage("Space inserted");
     }
 
     // Set menu resource for toolbar
@@ -239,10 +211,64 @@ public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
         audioPlayer.play();
 
         runOnUiThread(() -> {
-            charTextView.setText(result);
-            outputView.setVisibility(View.VISIBLE);
+
+            if(result != null && !result.isEmpty()){
+
+                stringBuffer.append(result);
+                textEditor.setText(stringBuffer.toString());
+
+            }
+
         });
 
+    }
+
+    class ModeGestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        Context context;
+
+        public ModeGestureListener (Context context){
+            this.context = context;
+        }
+
+        @Override
+        public boolean onDown(@NonNull MotionEvent event) {return true;}
+
+        @Override
+        public boolean onDoubleTap(@NonNull MotionEvent event) {
+            inputMode = InputMode.UPPERCASE;
+            showMessage("Uppercase mode");
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(@NonNull MotionEvent event) {
+            inputMode = InputMode.LOWERCASE;
+            showMessage("Lowercase mode");
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent event1, @NonNull MotionEvent event2, float velocityX, float velocityY) {
+            inputMode = InputMode.NUMBER;
+            showMessage("Number mode");
+            return true;
+        }
+
+        @Override
+        public void onLongPress(@NonNull MotionEvent event) {
+            inputMode = InputMode.DEFAULT;
+            showMessage("Default mode");
+        }
+
+    }
+
+    private void showMessage(String message){
+
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        runOnUiThread(() -> {
+            modeTextView.setText(message);
+        });
     }
 
 }
