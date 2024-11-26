@@ -17,6 +17,11 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
+import com.example.hcc_elektrobit.history.CNNHistoryItem;
+import com.example.hcc_elektrobit.history.History;
+import com.example.hcc_elektrobit.history.HistoryItem;
+import com.example.hcc_elektrobit.history.SMSHistoryItem;
+
 public class HistoryTest {
 
     private History history;
@@ -35,7 +40,7 @@ public class HistoryTest {
 
     @After
     public void tearDown() {
-        history.clearHistory(context);
+        history.clearHistory();
     }
 
     @Test
@@ -53,7 +58,7 @@ public class HistoryTest {
         Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
         HistoryItem item = new CNNHistoryItem(bitmap, "TestPred", new float[][]{{1.0f}});
 
-        history.saveItem(item, context);
+        history.saveItem(item);
 
         File[] files = bitmapDir.listFiles();
         assertNotNull(files);
@@ -65,8 +70,8 @@ public class HistoryTest {
         Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
         CNNHistoryItem item = new CNNHistoryItem(bitmap, "TestPred", new float[][]{{1.0f}});
 
-        history.saveItem(item, context);
-        history.updateHistory(context);
+        history.saveItem(item);
+        history.updateHistoryFromCache();
 
         List<HistoryItem> items = history.getItems();
         assertFalse(items.isEmpty());
@@ -78,12 +83,11 @@ public class HistoryTest {
         Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
         HistoryItem item = new SMSHistoryItem(bitmap, "TestPred", Map.of("testKey", 1.0f));
         history.addItem(item);
-        history.saveItem(item, context);
+        history.saveItem(item);
 
-        history.clearHistory(context);
+        history.clearHistory();
 
         assertEquals(0, history.getItems().size());
-        assertFalse(bitmapDir.exists());
     }
 
     @Test

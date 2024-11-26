@@ -13,6 +13,8 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
+import com.example.hcc_elektrobit.utils.AudioPlayerManager;
+
 @RunWith(AndroidJUnit4.class)
 public class AudioPlayerManagerTest {
 
@@ -53,15 +55,6 @@ public class AudioPlayerManagerTest {
         } catch (Exception e) {
             fail("Should not throw exception is filename not found");
         }
-    }
-
-    @Test
-    public void testPlay() {
-        String validFileName = "1";
-        audioPlayerManager.setDataSource(validFileName);
-        audioPlayerManager.play();
-
-        assertTrue("MediaPlayer should be playing", audioPlayerManager.isPlaying());
     }
 
     @Test

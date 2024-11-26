@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.example.hcc_elektrobit.history.HistoryItem;
+
 public class HistoryItemTest {
 
     private Bitmap testBitmap;

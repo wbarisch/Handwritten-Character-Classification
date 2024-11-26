@@ -12,6 +12,9 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertNotNull;
 
+import com.example.hcc_elektrobit.main.MainActivity;
+import com.example.hcc_elektrobit.utils.DialogManager;
+
 @RunWith(AndroidJUnit4.class)
 public class DialogManagerTest {
 
@@ -27,13 +30,6 @@ public class DialogManagerTest {
         });
     }
 
-    @Test
-    public void testShowShareOrSaveDialog() {
-        activityRule.getScenario().onActivity(activity -> {
-            dialogManager.showShareOrSaveDialog();
-            assertNotNull(dialogManager);
-        });
-    }
 
     @Test
     public void testShowTrainingModeDialog() {

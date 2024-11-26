@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.example.hcc_elektrobit.model.CNNonnxModel;
+
 @RunWith(AndroidJUnit4.class)
 public class CNNonnxModelTest {
 
@@ -31,8 +33,8 @@ public class CNNonnxModelTest {
         Context context = ApplicationProvider.getApplicationContext();
         cnnOnnxModel = CNNonnxModel.getInstance(context);
 
-        try (InputStream inputStream = context.getAssets().open("number6.bmp")) {
-            testBitmap = BitmapFactory.decodeStream(inputStream);
+        try (InputStream inputStream = context.getAssets().open("test_data/6_864.png")) {
+            testBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeStream(inputStream),28,28,false);
         }
     }
 

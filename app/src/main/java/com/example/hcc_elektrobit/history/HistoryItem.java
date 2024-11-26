@@ -8,7 +8,7 @@ public class HistoryItem {
     String pred;
     long timeCreated;
 
-    HistoryItem(Bitmap bmp, String prediction, Object prediction_tensor){
+    public HistoryItem(Bitmap bmp, String prediction, Object prediction_tensor){
         this.bitmap = bmp;
         this.pred = prediction;
         this.model_tensor = prediction_tensor;

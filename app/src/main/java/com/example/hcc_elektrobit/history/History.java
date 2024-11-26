@@ -191,7 +191,7 @@ public class History {
         return result;
     }
 
-    Map<String, Float> getSimilarityMapFromJSON(File file, File source){
+    public Map<String, Float> getSimilarityMapFromJSON(File file, File source){
         Map<String, Float> resultMap = new HashMap<>();
 
         String jsonContent;
