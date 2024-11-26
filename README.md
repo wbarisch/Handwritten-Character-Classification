@@ -13,6 +13,8 @@ In order to get this repo up and running, you need to have `Gradle` installed on
 #### Using VSCODE
 Setup the devcontainer by opening this repo in VSCode. It should recognize the `.devcontainer` folder automatically and start building it. Further instructions on how to setup the devcontainer can be found under the [Devcontainer documentation](.devcontainer/DEV_CONTAINER_SETUP)
 
+The python model training code is in the `NeuralNetwork` folder.
+
 #### Other environments
 For other environments, the following are required:
 
@@ -33,8 +35,6 @@ For other environments, the following are required:
 - **Ipywidgets**: Version 8.1.5
 - **Python-Graphviz**: Version 0.20.3
 
-The required dev files for the Pytorch environment are in the `Neural-network-base-branch` branch.
-
 ## Changing the UI
 
 Since the main scope of our project is to have a backbone ready for further refinement, this repo is easily expandable and loosely coupled. As a design pattern, we used MVVM for Android development.
@@ -49,4 +49,4 @@ Make sure that the ONNX files for both `comparison` and `embedding` are present 
 
 ### Setting up the support set
 
-To setup the support set, you will need to manually enter the characters you want to recognize. Simple go to the `Support set` menu and add as many characters as needed. Keep in mind that the label only needs to be set one, and then every drawing will be linked to that character.
+To setup the support set, you will need to manually enter the characters you want to recognize. Simple go to the `Support set` menu and add as many characters as needed. Keep in mind that the label only needs to be set one, and then every drawing will be linked to that character. It is possible to also add support set item through the application assets under the support_set folder
