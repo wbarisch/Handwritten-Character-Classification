@@ -10,4 +10,6 @@
     <color name="dark_background">#333333</color>
     <color name="green">#4CAF50</color>
     <color name="green_dark">#388E3C</color>
+    <color name="selected">#0d47a1</color>
+    <color name="not_selected">#bdbdbd</color>
 </resources>
