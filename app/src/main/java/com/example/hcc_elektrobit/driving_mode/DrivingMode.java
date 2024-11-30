@@ -23,11 +23,10 @@ import com.example.hcc_elektrobit.R;
 import com.example.hcc_elektrobit.support_set.SupportSet;
 import com.example.hcc_elektrobit.utils.AudioPlayerManager;
 import com.example.hcc_elektrobit.utils.InputMode;
-import com.example.hcc_elektrobit.utils.TimeoutActivity;
 
 import java.util.TimerTask;
 
-public class DrivingMode extends AppCompatActivity implements TimeoutActivity {
+public class DrivingMode extends AppCompatActivity {
 
     // UI components
     private DrawingCanvas drawingCanvas;
